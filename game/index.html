@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Three Kingdoms: Mandate of Heaven — Prototype</title>
+<style>
+:root{
+  --ink:#1a1614; --paper:#efe6d4; --paper2:#e3d6bd; --gold:#b8893a; --gold2:#d8a94d;
+  --red:#9c2b25; --jade:#2f6b54; --blue:#2c4d6e; --sun:#c9772f;
+  --line:#5b4a36; --shadow:rgba(20,12,6,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:"Georgia","Songti SC","Noto Serif",serif;color:var(--ink);background:#0f0c0a}
+#app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* Title bar */
+#topbar{display:flex;align-items:center;gap:18px;padding:8px 16px;
+  background:linear-gradient(180deg,#241a12,#15100b);color:var(--paper);
+  border-bottom:2px solid var(--gold);box-shadow:0 2px 10px #000;z-index:5;flex-wrap:wrap}
+#topbar .brand{font-size:18px;letter-spacing:1px;color:var(--gold2);text-shadow:0 1px 2px #000;white-space:nowrap}
+#topbar .brand small{display:block;font-size:10px;letter-spacing:2px;color:#8a7a5e}
+.stat{display:flex;flex-direction:column;line-height:1.1;font-size:13px;min-width:62px}
+.stat b{font-size:16px;color:var(--gold2)}
+.stat span{font-size:10px;color:#9c8c70;text-transform:uppercase;letter-spacing:1px}
+#turnbox{margin-left:auto;display:flex;align-items:center;gap:10px}
+button{font-family:inherit;cursor:pointer;border:1px solid var(--line);background:var(--paper2);
+  color:var(--ink);padding:7px 12px;border-radius:4px;font-size:13px;transition:.12s}
+button:hover{background:var(--gold2);border-color:var(--gold)}
+button:disabled{opacity:.4;cursor:not-allowed;background:#c9bfa8}
+button.primary{background:var(--red);color:#fff;border-color:#5e1a16;font-weight:bold}
+button.primary:hover{background:#bb352e}
+
+/* Main layout */
+#main{flex:1;display:flex;min-height:0}
+#mapwrap{flex:1;position:relative;background:radial-gradient(circle at 40% 30%,#3a4a44,#1e2622)}
+canvas{display:block;width:100%;height:100%}
+#side{width:340px;background:var(--paper);border-left:3px solid var(--line);
+  display:flex;flex-direction:column;overflow:hidden}
+#sidehead{padding:10px 14px;background:var(--paper2);border-bottom:2px solid var(--line);
+  font-size:15px;font-weight:bold;color:var(--line)}
+#sidebody{flex:1;overflow-y:auto;padding:12px 14px}
+.hint{color:#7a6a50;font-size:13px;line-height:1.5}
+
+/* Cards */
+.card{background:#f6efe0;border:1px solid #cdbf9f;border-radius:6px;padding:10px;margin-bottom:10px;box-shadow:0 1px 3px var(--shadow)}
+.card h3{margin:0 0 6px;font-size:15px;display:flex;align-items:center;gap:8px}
+.tag{font-size:10px;padding:2px 6px;border-radius:10px;color:#fff;letter-spacing:.5px}
+.row{display:flex;justify-content:space-between;font-size:13px;padding:2px 0}
+.row b{font-variant-numeric:tabular-nums}
+.bar{height:7px;background:#d8cbb0;border-radius:4px;overflow:hidden;margin:3px 0 6px}
+.bar>i{display:block;height:100%}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.actions button{padding:6px 4px;font-size:12px}
+.officer{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:5px;margin:3px 0;background:#efe5d2;border:1px solid #d6c8a8}
+.officer .av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:bold;color:#fff;font-size:13px;flex-shrink:0;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
+.officer .nm{flex:1;font-size:13px;line-height:1.2}
+.officer .nm small{color:#7a6a50;font-size:10px;display:block}
+.officer .st{font-size:10px;color:#5b4a36;text-align:right;line-height:1.3;font-variant-numeric:tabular-nums}
+.divider{border:0;border-top:1px dashed #c3b596;margin:12px 0}
+
+/* Log */
+#log{height:120px;overflow-y:auto;background:#15100b;color:#d8cbb0;font-size:12px;
+  padding:8px 12px;line-height:1.5;border-top:2px solid var(--gold)}
+#log .l{margin:2px 0;border-left:2px solid #3a2c1c;padding-left:8px}
+#log .l.war{border-color:var(--red);color:#e8a59f}
+#log .l.good{border-color:var(--jade);color:#9fd8bf}
+#log .l.gold{border-color:var(--gold);color:var(--gold2)}
+
+/* Modal */
+#modal{position:fixed;inset:0;background:rgba(10,6,2,.72);display:none;align-items:center;justify-content:center;z-index:20}
+#modal.show{display:flex}
+.dialog{background:var(--paper);border:3px solid var(--gold);border-radius:10px;max-width:560px;width:90%;
+  max-height:85vh;overflow:auto;box-shadow:0 12px 50px #000}
+.dialog .dh{padding:14px 18px;background:linear-gradient(180deg,#241a12,#15100b);color:var(--gold2);
+  font-size:18px;letter-spacing:1px;border-bottom:2px solid var(--gold)}
+.dialog .db{padding:18px}
+.dialog .df{padding:12px 18px;border-top:1px solid #cdbf9f;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.battle-line{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #cdbf9f}
+.battle-side{font-size:14px}
+.vs{font-size:20px;color:var(--red);font-weight:bold;padding:0 10px}
+.evt{font-size:14px;line-height:1.6}
+.legend{position:absolute;bottom:10px;left:10px;background:rgba(21,16,11,.82);color:#d8cbb0;
+  padding:8px 12px;border-radius:6px;font-size:12px;border:1px solid var(--gold)}
+.legend .li{display:flex;align-items:center;gap:6px;margin:2px 0}
+.legend .dot{width:11px;height:11px;border-radius:50%}
+.target{outline:2px dashed var(--gold2)}
+#help{position:absolute;top:10px;left:10px;background:rgba(21,16,11,.82);color:#d8cbb0;
+  padding:6px 10px;border-radius:6px;font-size:12px;border:1px solid var(--gold);max-width:240px;line-height:1.4}
+@media(max-width:760px){#side{width:280px}#help{display:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div class="brand">三國 · MANDATE OF HEAVEN<small>RED CLIFFS · 208 AD — PROTOTYPE</small></div>
+    <div class="stat"><b id="s-gold">—</b><span>Gold</span></div>
+    <div class="stat"><b id="s-food">—</b><span>Food</span></div>
+    <div class="stat"><b id="s-cities">—</b><span>Cities</span></div>
+    <div class="stat"><b id="s-officers">—</b><span>Officers</span></div>
+    <div class="stat"><b id="s-ap">—</b><span>Actions</span></div>
+    <div id="turnbox">
+      <div class="stat" style="text-align:right"><b id="s-turn">—</b><span id="s-season">—</span></div>
+      <button id="endturn" class="primary">End Turn ▸</button>
+    </div>
+  </div>
+  <div id="main">
+    <div id="mapwrap">
+      <canvas id="map"></canvas>
+      <div id="help">Click a <b>city</b> to manage it. Click your army's city then an
+        adjacent enemy/neutral city to <b>march &amp; attack</b>. Spend Actions, then End Turn.</div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div id="side">
+      <div id="sidehead">Realm</div>
+      <div id="sidebody"><div class="hint">Select a city on the map to begin.</div></div>
+    </div>
+  </div>
+  <div id="log"></div>
+</div>
+
+<div id="modal"><div class="dialog">
+  <div class="dh" id="m-head">Event</div>
+  <div class="db" id="m-body"></div>
+  <div class="df" id="m-foot"></div>
+</div></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Three Kingdoms: Mandate of Heaven — vertical-slice prototype
+   Pure-JS implementation of the strategic loop + abstracted battle.
+   ============================================================ */
+
+// ---------- Factions ----------
+const FACTIONS = {
+  shu:   {name:"Liu Bei (Shu)",  color:"#2f8f5b", ai:false},
+  wei:   {name:"Cao Cao (Wei)",  color:"#3a6ea5", ai:true},
+  wu:    {name:"Sun Quan (Wu)",  color:"#c0392b", ai:true},
+  neu:   {name:"Independent",    color:"#8a7d63", ai:true},
+};
+
+// ---------- Officers (subset of the historical roster) ----------
+// stats: cmd (Command), mgt (Might), int (Intellect), pol (Politics), cha (Charisma)
+const ROSTER = [
+  // Shu
+  {id:"liubei",  name:"Liu Bei",     cmd:75,mgt:73,int:74,pol:80,cha:99,fac:"shu"},
+  {id:"guanyu",  name:"Guan Yu",     cmd:95,mgt:97,int:75,pol:62,cha:94,fac:"shu",trait:"Duelist"},
+  {id:"zhangfei",name:"Zhang Fei",   cmd:85,mgt:98,int:30,pol:22,cha:45,fac:"shu",trait:"Duelist"},
+  {id:"zhaoyun", name:"Zhao Yun",    cmd:91,mgt:96,int:76,pol:65,cha:81,fac:"shu",trait:"Duelist"},
+  {id:"zhuge",   name:"Zhuge Liang", cmd:92,mgt:38,int:100,pol:95,cha:92,fac:"shu",trait:"Fire Stratagem"},
+  // Wei
+  {id:"caocao",  name:"Cao Cao",     cmd:91,mgt:72,int:91,pol:94,cha:96,fac:"wei"},
+  {id:"xiahou",  name:"Xiahou Dun",  cmd:90,mgt:90,int:60,pol:52,cha:78,fac:"wei",trait:"Cavalry"},
+  {id:"zhangliao",name:"Zhang Liao", cmd:93,mgt:92,int:78,pol:58,cha:80,fac:"wei",trait:"Cavalry"},
+  {id:"simayi",  name:"Sima Yi",     cmd:88,mgt:50,int:98,pol:93,cha:84,fac:"wei",trait:"Ambush"},
+  {id:"xuhuang", name:"Xu Huang",    cmd:88,mgt:89,int:70,pol:55,cha:72,fac:"wei"},
+  // Wu
+  {id:"sunquan", name:"Sun Quan",    cmd:78,mgt:70,int:78,pol:85,cha:92,fac:"wu"},
+  {id:"zhouyu",  name:"Zhou Yu",     cmd:96,mgt:71,int:96,pol:86,cha:90,fac:"wu",trait:"Fire Stratagem"},
+  {id:"luxun",   name:"Lu Xun",      cmd:93,mgt:67,int:95,pol:82,cha:78,fac:"wu",trait:"Fire Stratagem"},
+  {id:"ganning", name:"Gan Ning",    cmd:86,mgt:94,int:62,pol:40,cha:70,fac:"wu",trait:"Navy"},
+  {id:"taishi",  name:"Taishi Ci",   cmd:85,mgt:92,int:60,pol:48,cha:74,fac:"wu",trait:"Duelist"},
+  // Independents (recruitable)
+  {id:"huangzhong",name:"Huang Zhong",cmd:88,mgt:93,int:62,pol:50,cha:75,fac:"neu",trait:"Archer"},
+  {id:"weiyan",  name:"Wei Yan",     cmd:84,mgt:90,int:65,pol:48,cha:60,fac:"neu"},
+  {id:"pangtong",name:"Pang Tong",   cmd:80,mgt:42,int:97,pol:88,cha:79,fac:"neu",trait:"Ambush"},
+  {id:"machao",  name:"Ma Chao",     cmd:90,mgt:96,int:58,pol:50,cha:82,fac:"neu",trait:"Cavalry"},
+  {id:"huatuo",  name:"Hua Tuo",     cmd:20,mgt:30,int:88,pol:70,cha:80,fac:"neu",trait:"Healer"},
+];
+
+// ---------- Cities (simplified Red Cliffs map) ----------
+// x,y are normalized 0..1 on the map.
+const CITY_DEFS = [
+  {id:"xuchang", name:"Xuchang",   x:.58,y:.30, owner:"wei", econ:7, def:6, base:true},
+  {id:"luoyang", name:"Luoyang",   x:.45,y:.26, owner:"wei", econ:6, def:7},
+  {id:"ye",      name:"Ye",        x:.60,y:.16, owner:"wei", econ:6, def:5},
+  {id:"wancheng",name:"Wancheng",  x:.46,y:.42, owner:"wei", econ:5, def:5},
+  {id:"xinye",   name:"Xinye",     x:.42,y:.50, owner:"shu", econ:3, def:3, base:true},
+  {id:"jiangling",name:"Jiangling",x:.40,y:.62, owner:"neu", econ:5, def:5},
+  {id:"jiangxia",name:"Jiangxia",  x:.52,y:.62, owner:"shu", econ:4, def:4},
+  {id:"chaisang",name:"Chaisang",  x:.66,y:.66, owner:"wu",  econ:5, def:5, base:true},
+  {id:"jianye",  name:"Jianye",    x:.80,y:.58, owner:"wu",  econ:7, def:6},
+  {id:"wu",      name:"Wujun",     x:.84,y:.68, owner:"wu",  econ:6, def:5},
+  {id:"changsha",name:"Changsha",  x:.50,y:.80, owner:"neu", econ:5, def:4},
+  {id:"chengdu", name:"Chengdu",   x:.20,y:.58, owner:"neu", econ:8, def:6},
+  {id:"hanzhong",name:"Hanzhong",  x:.28,y:.42, owner:"neu", econ:4, def:6},
+];
+// adjacency (marches allowed between connected cities)
+const EDGES = [
+  ["ye","luoyang"],["ye","xuchang"],["luoyang","xuchang"],["luoyang","wancheng"],
+  ["xuchang","wancheng"],["wancheng","xinye"],["xinye","jiangling"],["xinye","jiangxia"],
+  ["jiangling","jiangxia"],["jiangling","changsha"],["jiangxia","chaisang"],
+  ["chaisang","jianye"],["jianye","wu"],["chaisang","wu"],["chaisang","changsha"],
+  ["jiangling","hanzhong"],["hanzhong","chengdu"],["chengdu","changsha"],
+  ["wancheng","hanzhong"],["jiangxia","changsha"],
+];
+
+// ---------- Game state ----------
+let G;
+function initGame(){
+  const cities = CITY_DEFS.map(c=>({
+    ...c, troops: c.base?12000:(6000+c.econ*500),
+    pop: 20000+c.econ*4000, order:78, wall: c.def*10,
+    food: 8000, devEcon:c.econ, devMil:c.def, officers:[], justTook:false,
+  }));
+  const cityById = Object.fromEntries(cities.map(c=>[c.id,c]));
+  // place officers in faction capitals / spread
+  const officers = ROSTER.map(o=>({...o, loyalty:90, where:null, ap:1}));
+  const obyf = {};
+  officers.forEach(o=>{(obyf[o.fac]=obyf[o.fac]||[]).push(o)});
+  const capitalOf={shu:"xinye",wei:"xuchang",wu:"chaisang",neu:null};
+  for(const f of ["shu","wei","wu"]){
+    const cap=cityById[capitalOf[f]];
+    obyf[f].forEach((o,i)=>{
+      const homeCities=cities.filter(c=>c.owner===f);
+      const c=homeCities[i%homeCities.length]||cap;
+      o.where=c.id; c.officers.push(o.id);
+    });
+  }
+  // independents sit in neutral cities
+  const neutralCities=cities.filter(c=>c.owner==="neu");
+  obyf["neu"].forEach((o,i)=>{const c=neutralCities[i%neutralCities.length];o.where=c.id;c.officers.push(o.id);});
+
+  G={
+    turn:1, season:0, cities, cityById, officers,
+    obyId:Object.fromEntries(officers.map(o=>[o.id,o])),
+    treasury:{shu:3000,wei:6000,wu:5000,neu:0},
+    foodStore:{shu:6000,wei:12000,wu:10000,neu:0},
+    ap:4, maxAp:4, sel:null, marchFrom:null, over:false,
+  };
+  log("The realm fractures. Liu Bei holds Xinye against Cao Cao's southern advance. Forge an alliance, recruit heroes, and claim the Mandate of Heaven.","gold");
+}
+const SEASONS=["Spring","Summer","Autumn","Winter"];
+
+// ---------- Helpers ----------
+function adj(a,b){return EDGES.some(e=>(e[0]===a&&e[1]===b)||(e[1]===a&&e[0]===b));}
+function neighborsOf(id){const r=[];EDGES.forEach(e=>{if(e[0]===id)r.push(e[1]);if(e[1]===id)r.push(e[0]);});return r;}
+function citiesOf(f){return G.cities.filter(c=>c.owner===f);}
+function officersAt(id){return G.cityById[id].officers.map(o=>G.obyId[o]);}
+function bestOfficerStat(city,stat){const os=officersAt(city.id);return os.length?Math.max(...os.map(o=>o[stat])):40;}
+function initials(n){const p=n.split(" ");return (p[0][0]+(p[1]?p[1][0]:"")).toUpperCase();}
+function fmt(n){return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":""+Math.round(n);}
+
+function log(msg,cls){const el=document.getElementById("log");const d=document.createElement("div");
+  d.className="l"+(cls?" "+cls:"");d.innerHTML="◦ "+msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+
+// ---------- Rendering ----------
+const cv=document.getElementById("map"),ctx=cv.getContext("2d");
+let DPR=window.devicePixelRatio||1;
+function resize(){const w=cv.clientWidth,h=cv.clientHeight;cv.width=w*DPR;cv.height=h*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);draw();}
+window.addEventListener("resize",resize);
+function px(c){return {x:c.x*cv.clientWidth, y:c.y*cv.clientHeight};}
+
+function draw(){
+  if(!G)return;
+  const w=cv.clientWidth,h=cv.clientHeight;
+  ctx.clearRect(0,0,w,h);
+  // parchment-ish terrain wash
+  const g=ctx.createLinearGradient(0,0,w,h);
+  g.addColorStop(0,"#33403a");g.addColorStop(.5,"#2a342f");g.addColorStop(1,"#222b27");
+  ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+  // faint river (Yangtze) sweeping across
+  ctx.strokeStyle="rgba(120,170,190,.35)";ctx.lineWidth=14;ctx.lineCap="round";
+  ctx.beginPath();
+  ctx.moveTo(.16*w,.55*h);ctx.bezierCurveTo(.35*w,.72*h,.55*w,.60*h,.70*w,.70*h);
+  ctx.bezierCurveTo(.80*w,.74*h,.88*w,.66*h,.95*w,.72*h);
+  ctx.stroke();
+  ctx.lineWidth=1;
+  // edges
+  EDGES.forEach(e=>{
+    const a=px(G.cityById[e[0]]),b=px(G.cityById[e[1]]);
+    ctx.strokeStyle="rgba(220,200,160,.28)";ctx.setLineDash([6,5]);ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);
+  });
+  // highlight valid march targets
+  if(G.marchFrom){
+    neighborsOf(G.marchFrom).forEach(nid=>{
+      const c=G.cityById[nid];if(c.owner==="shu")return;
+      const p=px(c);ctx.strokeStyle="#d8a94d";ctx.lineWidth=3;
+      ctx.beginPath();ctx.arc(p.x,p.y,26,0,7);ctx.stroke();
+    });
+    const f=px(G.cityById[G.marchFrom]);ctx.fillStyle="#d8a94d";
+    ctx.font="11px Georgia";ctx.textAlign="center";ctx.fillText("marching from here →",f.x,f.y-30);
+  }
+  // cities
+  G.cities.forEach(c=>{
+    const p=px(c),col=FACTIONS[c.owner].color;
+    const r=12+c.devEcon*1.1;
+    // glow for selected
+    if(G.sel===c.id){ctx.fillStyle="rgba(216,169,77,.25)";ctx.beginPath();ctx.arc(p.x,p.y,r+12,0,7);ctx.fill();}
+    // base disc
+    ctx.fillStyle=col;ctx.strokeStyle="#15100b";ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fill();ctx.stroke();
+    // inner ring = wall/def
+    ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(p.x,p.y,r-4,0,7*(c.wall/100));ctx.stroke();
+    // base star
+    if(c.base){ctx.fillStyle="#ffe9a8";ctx.font="bold 13px Georgia";ctx.textAlign="center";ctx.fillText("★",p.x,p.y-r-4);}
+    // troop count
+    ctx.fillStyle="#fff";ctx.font="bold 11px Georgia";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(fmt(c.troops),p.x,p.y);
+    // name
+    ctx.fillStyle="#f3ead7";ctx.font="13px Georgia";ctx.textBaseline="top";
+    ctx.fillText(c.name,p.x,p.y+r+3);
+    // officer pips
+    const os=c.officers.length;if(os){ctx.fillStyle="#ffe9a8";ctx.font="10px Georgia";
+      ctx.fillText("⚑".repeat(Math.min(os,5)),p.x,p.y-r-(c.base?18:6));}
+  });
+  ctx.textBaseline="alphabetic";
+}
+
+// ---------- Side panel ----------
+function pct(v,max,col){return `<div class="bar"><i style="width:${Math.max(0,Math.min(100,v/max*100))}%;background:${col}"></i></div>`;}
+function officerRow(o){
+  const col=FACTIONS[o.fac].color;
+  return `<div class="officer">
+    <div class="av" style="background:${col}">${initials(o.name)}</div>
+    <div class="nm">${o.name}${o.trait?` <small>${o.trait}</small>`:" <small>&nbsp;</small>"}</div>
+    <div class="st">CMD ${o.cmd} · MGT ${o.mgt}<br>INT ${o.int} · CHA ${o.cha}</div>
+  </div>`;
+}
+function renderSide(){
+  const head=document.getElementById("sidehead"),body=document.getElementById("sidebody");
+  if(!G.sel){head.textContent="Realm";
+    const mine=citiesOf("shu");
+    body.innerHTML=`<div class="hint">Select a city on the map.</div>
+      <hr class="divider"><div class="card"><h3>Liu Bei (Shu)</h3>
+      <div class="row"><span>Cities</span><b>${mine.length}/${G.cities.length}</b></div>
+      <div class="row"><span>Total troops</span><b>${fmt(mine.reduce((s,c)=>s+c.troops,0))}</b></div>
+      <div class="row"><span>Officers</span><b>${G.officers.filter(o=>o.fac==="shu").length}</b></div>
+      </div>`;
+    return;}
+  const c=G.cityById[G.sel],mine=c.owner==="shu";
+  head.textContent=c.name+" — "+FACTIONS[c.owner].name;
+  const os=officersAt(c.id);
+  let h=`<div class="card">
+    <h3>${c.name} <span class="tag" style="background:${FACTIONS[c.owner].color}">${c.owner.toUpperCase()}</span>${c.base?'<span class="tag" style="background:#b8893a">CAPITAL</span>':''}</h3>
+    <div class="row"><span>Garrison</span><b>${fmt(c.troops)} troops</b></div>
+    <div class="row"><span>Walls / Defense</span><b>${c.wall}</b></div>${pct(c.wall,100,"#8a7d63")}
+    <div class="row"><span>Public Order</span><b>${Math.round(c.order)}%</b></div>${pct(c.order,100,c.order<50?"#9c2b25":"#2f6b54")}
+    <div class="row"><span>Economy lv</span><b>${c.devEcon}</b></div>
+    <div class="row"><span>Food store</span><b>${fmt(c.food)}</b></div>
+  </div>`;
+  if(mine){
+    h+=`<div class="card"><h3>Govern</h3><div class="hint">Each action costs 1 AP (you have ${G.ap}).</div>
+      <div class="actions">
+        <button onclick="act('dev')">Develop Economy<br><small>+gold/turn</small></button>
+        <button onclick="act('train')">Train Troops<br><small>+3,000 (gold,food)</small></button>
+        <button onclick="act('wall')">Build Walls<br><small>+defense</small></button>
+        <button onclick="act('order')">Pacify<br><small>+order</small></button>
+        <button onclick="act('recruit')">Recruit Officer<br><small>nearby heroes</small></button>
+        <button onclick="act('march')">March Army ▸<br><small>then click target</small></button>
+      </div></div>`;
+  } else {
+    const reach=citiesOf("shu").some(mc=>adj(mc.id,c.id));
+    h+=`<div class="card"><h3>Foreign City</h3>
+      <div class="hint">${reach?"Adjacent to your territory. Select your bordering city, then March to attack.":"Not adjacent to your lands."}</div>
+      ${c.owner==="wu"?`<button onclick="diplomacy()" style="margin-top:8px;width:100%">Propose Alliance vs. Cao Cao</button>`:""}
+      </div>`;
+  }
+  h+=`<div class="card"><h3>Officers <span class="tag" style="background:#5b4a36">${os.length}</span></h3>
+      ${os.length?os.map(officerRow).join(""):'<div class="hint">No officers stationed here.</div>'}</div>`;
+  body.innerHTML=h;
+}
+
+// ---------- Top bar ----------
+function renderTop(){
+  document.getElementById("s-gold").textContent=fmt(G.treasury.shu);
+  document.getElementById("s-food").textContent=fmt(G.foodStore.shu);
+  document.getElementById("s-cities").textContent=citiesOf("shu").length;
+  document.getElementById("s-officers").textContent=G.officers.filter(o=>o.fac==="shu").length;
+  document.getElementById("s-ap").textContent=G.ap+"/"+G.maxAp;
+  document.getElementById("s-turn").textContent="Year "+(208+Math.floor((G.turn-1)/4));
+  document.getElementById("s-season").textContent=SEASONS[G.season]+" · Turn "+G.turn;
+}
+function renderAll(){renderTop();renderSide();draw();}
+
+// ---------- Legend ----------
+function renderLegend(){
+  const el=document.getElementById("legend");
+  el.innerHTML=Object.entries(FACTIONS).map(([k,f])=>
+    `<div class="li"><span class="dot" style="background:${f.color}"></span>${f.name}</div>`).join("")
+    +`<div class="li" style="margin-top:4px;color:#ffe9a8">★ capital&nbsp;&nbsp;⚑ officers</div>`;
+}
+
+// ---------- Actions ----------
+function need(g,fd){if(G.ap<=0){toast("No actions left this turn.");return false;}
+  if(g&&G.treasury.shu<g){toast("Not enough gold.");return false;}
+  if(fd&&G.foodStore.shu<fd){toast("Not enough food.");return false;}return true;}
+function spend(g,fd){G.ap--;if(g)G.treasury.shu-=g;if(fd)G.foodStore.shu-=fd;}
+
+function act(kind){
+  const c=G.cityById[G.sel];if(!c||c.owner!=="shu")return;
+  if(kind==="dev"){if(!need(300))return;spend(300);c.devEcon++;c.pop+=2000;log(`${c.name} markets expand (Economy lv ${c.devEcon}).`,"gold");}
+  else if(kind==="train"){if(!need(400,1500))return;spend(400,1500);c.troops+=3000;log(`${c.name} conscripts and drills +3,000 troops.`);}
+  else if(kind==="wall"){if(!need(350))return;spend(350);c.wall=Math.min(100,c.wall+15);log(`${c.name} reinforces its walls (Def ${c.wall}).`);}
+  else if(kind==="order"){if(!need(150))return;spend(150);c.order=Math.min(100,c.order+20);log(`${c.name} order restored to ${Math.round(c.order)}%.`);}
+  else if(kind==="recruit"){tryRecruit(c);}
+  else if(kind==="march"){if(c.troops<2000){toast("Garrison too small to march (need 2,000+).");return;}
+    G.marchFrom=c.id;toast("Select an adjacent enemy or neutral city to attack.");draw();return;}
+  renderAll();
+  checkVictory();
+}
+
+function tryRecruit(c){
+  // find a recruitable independent officer in this or an adjacent city
+  const pool=[];const ids=[c.id,...neighborsOf(c.id)];
+  ids.forEach(id=>officersAt(id).forEach(o=>{if(o.fac==="neu")pool.push(o);}));
+  if(!pool.length){toast("No unaligned heroes nearby to recruit.");return;}
+  if(!need(250))return;
+  const recruiter=Math.max(bestOfficerStat(c,"cha"),60);
+  const o=pool[0];
+  spend(250);
+  // chance scales with recruiter charisma
+  if(Math.random()*100 < recruiter*0.85){
+    // move officer to shu
+    const from=G.cityById[o.where];from.officers=from.officers.filter(x=>x!==o.id);
+    o.fac="shu";o.where=c.id;o.loyalty=80;c.officers.push(o.id);
+    log(`${o.name} pledges service to Liu Bei at ${c.name}!`,"good");
+  } else {
+    log(`${o.name} declines your overture for now.`);
+  }
+}
+
+function diplomacy(){
+  if(G._allianceWu){toast("Already allied with Sun Quan.");return;}
+  modal("Alliance at Red Cliffs","<div class='evt'>Your envoy Zhuge Liang sails to Chaisang to treat with Sun Quan and Zhou Yu. "
+    +"Together, Shu and Wu might withstand Cao Cao's vast host on the Yangtze.<br><br>"
+    +"<b>Form an alliance with Wu?</b> While allied, Wu will not attack you, and joint defense raises your officers' morale.</div>",
+    [{t:"Seal the alliance",cls:"primary",fn:()=>{G._allianceWu=true;closeModal();
+      log("Shu and Wu are allied! The fire awaits Cao Cao at the Red Cliffs.","good");renderAll();}},
+     {t:"Not yet",fn:closeModal}]);
+}
+
+// ---------- Battle ----------
+function strength(city,attackingTroops,attackerSide){
+  // effective combat power = troops * (1 + cmdBonus) * stratagem mults
+  const os = attackerSide ? attackerSide : officersAt(city.id);
+  const cmd = os.length?Math.max(...os.map(o=>o.cmd)):40;
+  const mgt = os.length?Math.max(...os.map(o=>o.mgt)):40;
+  let power = (attackingTroops||city.troops) * (0.7 + cmd/140 + mgt/300);
+  return {power, cmd, mgt, os};
+}
+function marchAttack(fromId,toId){
+  const from=G.cityById[fromId],to=G.cityById[toId];
+  if(to.owner==="shu"){toast("That city is already yours.");return;}
+  if(G._allianceWu&&to.owner==="wu"){toast("You are allied with Wu. Break it via diplomacy first.");return;}
+  if(!need(1)){G.marchFrom=null;draw();return;}
+  // commit ~70% of garrison as the field army
+  const army=Math.floor(from.troops*0.7);
+  from.troops-=army;
+  const atkOs=officersAt(fromId);
+  spend(1);
+  G.marchFrom=null;
+  resolveBattle(from,to,army,atkOs,true);
+}
+function resolveBattle(from,to,army,atkOs,playerAttacker){
+  const A=strength(null,army,atkOs);
+  // defender gets wall bonus
+  const D=strength(to,to.troops,null);
+  D.power *= (1 + to.wall/120);
+  // stratagems: fire stratagist gives a swing; ambush for defender
+  let aFire=atkOs.some(o=>/Fire/.test(o.trait||"")), aBonus="";
+  let dStrat=D.os.some(o=>/Fire|Ambush/.test(o.trait||""));
+  if(aFire && (G.season===0||G.season===2)){A.power*=1.35;aBonus=" Fire stratagem unleashed!";}
+  if(dStrat){D.power*=1.18;}
+  // alliance morale
+  if(playerAttacker&&G._allianceWu){A.power*=1.08;}
+  // randomness
+  A.power*= (0.85+Math.random()*0.3); D.power*=(0.85+Math.random()*0.3);
+  const win = A.power > D.power;
+  const ratio = A.power/(A.power+D.power);
+  // casualties
+  const aLoss=Math.round(army*(win?0.20+ (1-ratio)*0.5 :0.45+ratio*0.4));
+  const dLoss=Math.round(to.troops*(win?0.6+ratio*0.35 :0.18+(1-ratio)*0.4));
+  const survivors=Math.max(0,army-aLoss);
+  to.troops=Math.max(0,to.troops-dLoss);
+
+  const dueler=atkOs.find(o=>/Duelist/.test(o.trait||""));
+  const ddef=D.os.find(o=>/Duelist/.test(o.trait||""));
+  let duelLine="";
+  if(dueler&&ddef){const dw=dueler.mgt+Math.random()*40>ddef.mgt+Math.random()*40;
+    duelLine=`<div class="battle-line"><div class="battle-side">⚔ Duel: <b>${dueler.name}</b> vs ${ddef.name}</div><div class="battle-side">${dw?"<b style='color:#2f6b54'>"+dueler.name+" prevails!</b>":"<b style='color:#9c2b25'>"+ddef.name+" holds!</b>"}</div></div>`;}
+
+  if(win && to.troops<=0){
+    // capture city
+    const prevOwner=to.owner;
+    to.owner="shu";to.troops=survivors;to.order=Math.max(40,to.order-25);to.justTook=true;
+    // capture/scatter defending officers
+    const defOs=officersAt(to.id);
+    defOs.forEach(o=>{
+      if(Math.random()<0.4){ // captured -> may recruit
+        // leave for player decision later; for now: low-loyalty defectors join, others flee
+        if(o.cha< 90 && Math.random()<0.5){o.fac="shu";o.loyalty=60;log(`${o.name} is captured and pledges to Liu Bei!`,"good");}
+        else{relocateOfficerHome(o,prevOwner);log(`${o.name} escapes the fall of ${to.name}.`);}
+      } else relocateOfficerHome(o,prevOwner);
+    });
+    showBattle(from,to,army,survivors,dLoss,true,true,duelLine,aBonus);
+  } else if(win){
+    // weakened but held - attacker fails to capture, returns some troops
+    from.troops+=survivors;
+    showBattle(from,to,army,survivors,dLoss,true,false,duelLine,aBonus);
+  } else {
+    from.troops+=survivors;
+    showBattle(from,to,army,survivors,dLoss,false,false,duelLine,aBonus);
+  }
+  renderAll();checkVictory();
+}
+function relocateOfficerHome(o,faction){
+  const cur=G.cityById[o.where];cur.officers=cur.officers.filter(x=>x!==o.id);
+  const homes=citiesOf(faction);
+  if(homes.length){const h=homes[0];o.where=h.id;h.officers.push(o.id);}
+  else {o.fac="neu";const n=citiesOf("neu")[0]||G.cities[0];o.where=n.id;n.officers.push(o.id);}
+}
+function showBattle(from,to,army,surv,dLoss,won,captured,duelLine,bonus){
+  const head=captured?`Victory at ${to.name}!`:(won?`Bloody stalemate at ${to.name}`:`Defeat at ${to.name}`);
+  modal(head,
+    `<div class="battle-line"><div class="battle-side" style="color:${FACTIONS.shu.color}"><b>Shu</b> from ${from.name}<br>${fmt(army)} troops</div>
+      <div class="vs">VS</div>
+      <div class="battle-side" style="text-align:right;color:${FACTIONS[to.owner==='shu'?'wei':to.owner].color}"><b>${to.name}</b> garrison<br>walls ${to.wall}</div></div>
+     ${duelLine}
+     <div class="evt" style="margin-top:10px">
+       ${captured?`Your banners fly over <b>${to.name}</b>! The city falls and ${fmt(surv)} troops garrison it.${bonus}`:
+         won?`You shattered the garrison (−${fmt(dLoss)}) but could not hold the walls. Your army of ${fmt(surv)} withdraws to ${from.name}.${bonus}`:
+         `Cao Cao's defenders threw back the assault. Your battered army (${fmt(surv)} left) retreats to ${from.name}.${bonus}`}
+     </div>`,
+    [{t:"Continue",cls:"primary",fn:closeModal}]);
+  log(`${won?(captured?"⚑ Captured":"Bloodied"):"✕ Repulsed at"} ${to.name} (enemy −${fmt(dLoss)}).`, won?(captured?"good":"war"):"war");
+}
+
+// ---------- End turn / AI ----------
+function endTurn(){
+  if(G.over)return;
+  // upkeep for player
+  upkeep("shu");
+  // AI factions act
+  ["wei","wu","neu"].forEach(f=>{if(f!=="neu")upkeep(f);aiTurn(f);});
+  // disasters / order drift
+  G.cities.forEach(c=>{
+    if(c.justTook){c.justTook=false;}
+    if(c.order<40&&c.owner!=="neu"&&Math.random()<0.3){
+      const loss=Math.floor(c.troops*0.1);c.troops-=loss;
+      if(c.owner==="shu")log(`Unrest in ${c.name}! Riots cost ${fmt(loss)} troops. Pacify the city.`,"war");
+    }
+    c.order=Math.min(100,c.order+3); // slow natural recovery
+  });
+  // advance time
+  G.season=(G.season+1)%4; G.turn++;
+  G.ap=G.maxAp;
+  // seasonal income recalencoded in upkeep
+  renderAll();maybeEvent();checkVictory();
+  if(!G.over)log(`— ${SEASONS[G.season]}, Year ${208+Math.floor((G.turn-1)/4)} —`);
+}
+function upkeep(f){
+  let gold=0,food=0;
+  citiesOf(f).forEach(c=>{
+    gold += c.devEcon*120 + Math.round(c.order)* (c.devEcon)/2;
+    food += c.pop*0.05 - c.troops*0.06; // troops eat
+    food += c.devEcon*200;
+  });
+  G.treasury[f]=Math.max(0,(G.treasury[f]||0)+Math.round(gold));
+  G.foodStore[f]=Math.max(0,(G.foodStore[f]||0)+Math.round(food));
+  // starvation
+  if(G.foodStore[f]<=0){citiesOf(f).forEach(c=>{c.troops=Math.floor(c.troops*0.95);c.order-=5;});
+    if(f==="shu")log("Granaries empty! Troops desert and order falls. Develop economy / take farmland.","war");}
+}
+function aiTurn(f){
+  if(f==="neu")return; // independents are passive in the slice
+  const mine=citiesOf(f);
+  // develop a bit
+  mine.forEach(c=>{if((G.treasury[f]||0)>500&&Math.random()<0.4){c.devEcon++;G.treasury[f]-=300;}
+    if((G.treasury[f]||0)>600&&Math.random()<0.5){c.troops+=2500;G.treasury[f]-=400;}});
+  // attack: find weakest adjacent non-ally city
+  let acted=false;
+  for(const c of mine.sort((a,b)=>b.troops-a.troops)){
+    if(acted)break;
+    const targets=neighborsOf(c.id).map(id=>G.cityById[id])
+      .filter(t=>t.owner!==f && !(G._allianceWu&&((f==="wu"&&t.owner==="shu")||(f==="shu"&&t.owner==="wu"))) );
+    if(!targets.length)continue;
+    // prefer neutral or weak
+    targets.sort((a,b)=>(a.troops+a.wall*100)-(b.troops+b.wall*100));
+    const t=targets[0];
+    if(c.troops>t.troops*1.15 && c.troops>4000){
+      const army=Math.floor(c.troops*0.65);c.troops-=army;
+      aiResolve(c,t,army,f);acted=true;
+    }
+  }
+}
+function aiResolve(from,to,army,f){
+  const atkOs=officersAt(from.id);
+  const A=strength(null,army,atkOs);
+  const D=strength(to,to.troops,null);D.power*=(1+to.wall/120);
+  A.power*=(0.85+Math.random()*0.3);D.power*=(0.85+Math.random()*0.3);
+  const win=A.power>D.power*1.05;
+  const dLoss=Math.round(to.troops*(win?0.65:0.25));
+  const aLoss=Math.round(army*(win?0.25:0.5));
+  to.troops=Math.max(0,to.troops-dLoss);
+  const surv=Math.max(0,army-aLoss);
+  const wasMine=to.owner==="shu";
+  if(win&&to.troops<=0){
+    const prev=to.owner;to.owner=f;to.troops=surv;to.order=Math.max(40,to.order-20);
+    officersAt(to.id).slice().forEach(o=>relocateOfficerHome(o,prev));
+    if(wasMine)log(`${FACTIONS[f].name} has captured ${to.name} from you!`,"war");
+    else log(`${FACTIONS[f].name} seized ${to.name} from ${FACTIONS[prev].name}.`);
+  } else {
+    from.troops+=surv;
+  }
+}
+
+// ---------- Events ----------
+function maybeEvent(){
+  if(G.over)return;
+  if(G.turn===2 && !G._allianceWu && citiesOf("shu").length){
+    modal("The Sleeping Dragon Advises","<div class='evt'>Zhuge Liang bows. \"My lord, Cao Cao's host outnumbers us tenfold. Alone we cannot stand. "
+      +"Let me sail to Wu and bind Sun Quan to our cause. United at the river, we may turn his own ships to ash.\"<br><br>"
+      +"<i>Tip: open Wu's city of Chaisang or Jianye and propose an alliance. With Wu neutralized, focus your armies on Cao Cao's south.</i></div>",
+      [{t:"Heed his counsel",cls:"primary",fn:closeModal}]);
+    return;
+  }
+  if(Math.random()<0.25){
+    const c=citiesOf("shu")[Math.floor(Math.random()*Math.max(1,citiesOf("shu").length))];
+    if(!c)return;
+    const r=Math.random();
+    if(r<0.4){const g=300+Math.floor(Math.random()*400);G.treasury.shu+=g;
+      log(`A good harvest in ${c.name} brings ${g} gold to the treasury.`,"gold");}
+    else if(r<0.7){c.order=Math.max(10,c.order-25);
+      log(`Bandits stir near ${c.name}; order falls to ${Math.round(c.order)}%.`,"war");}
+    else {const o=G.officers.find(o=>o.fac==="neu"&&neighborsOf(c.id).concat(c.id).includes(o.where));
+      if(o)log(`A wandering hero, ${o.name}, is seen near ${c.name}. Recruit him!`,"good");}
+  }
+}
+
+// ---------- Victory ----------
+function checkVictory(){
+  if(G.over)return;
+  const total=G.cities.length, mine=citiesOf("shu").length;
+  if(mine===0){G.over=true;
+    modal("The Mandate is Lost","<div class='evt'>Liu Bei's banners have fallen. The dream of restoring the Han ends here. "
+      +"In another telling, the heroes might yet rise again...</div>",
+      [{t:"Restart",cls:"primary",fn:()=>{closeModal();start();}}]);return;}
+  if(mine>=Math.ceil(total*0.6)){G.over=true;
+    modal("Mandate of Heaven Claimed!","<div class='evt'>From the embattled walls of Xinye, Liu Bei has risen to master the heartland of China. "
+      +`With ${mine} of ${total} cities under your banner, you proclaim a new dynasty. The age of division bends toward your will.<br><br>`
+      +"<b>You have won the Red Cliffs vertical slice.</b></div>",
+      [{t:"Play again",cls:"primary",fn:()=>{closeModal();start();}}]);return;}
+}
+
+// ---------- Modal / toast ----------
+function modal(title,body,btns){
+  document.getElementById("m-head").textContent=title;
+  document.getElementById("m-body").innerHTML=body;
+  const f=document.getElementById("m-foot");f.innerHTML="";
+  (btns||[{t:"OK",fn:closeModal}]).forEach(b=>{const el=document.createElement("button");
+    el.textContent=b.t;if(b.cls)el.className=b.cls;el.onclick=b.fn;f.appendChild(el);});
+  document.getElementById("modal").classList.add("show");
+}
+function closeModal(){document.getElementById("modal").classList.remove("show");}
+let toastT;
+function toast(msg){log(msg);}
+
+// ---------- Input ----------
+cv.addEventListener("click",e=>{
+  if(G.over)return;
+  const rect=cv.getBoundingClientRect();
+  const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  let hit=null,best=1e9;
+  G.cities.forEach(c=>{const p=px(c);const d=Math.hypot(p.x-mx,p.y-my);const r=12+c.devEcon*1.1+6;
+    if(d<r&&d<best){best=d;hit=c;}});
+  if(!hit){return;}
+  if(G.marchFrom){
+    if(adj(G.marchFrom,hit.id)&&hit.owner!=="shu"){marchAttack(G.marchFrom,hit.id);return;}
+    else if(hit.id===G.marchFrom){G.marchFrom=null;toast("March cancelled.");draw();return;}
+    else {toast("Not a valid adjacent target.");}
+  }
+  G.sel=hit.id;renderAll();
+});
+document.getElementById("endturn").onclick=endTurn;
+
+// ---------- Boot ----------
+function start(){initGame();renderLegend();resize();renderAll();}
+start();
+</script>
+</body>
+</html>
