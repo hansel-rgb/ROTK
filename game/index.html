@@ -6,14 +6,25 @@
 <title>Three Kingdoms: Mandate of Heaven — Prototype</title>
 <style>
 :root{
+  --bg:#e7ebf2; --bg2:#f3f6fa; --panel:#ffffff; --panel2:#f3f6fb; --elev:#e9eff7;
+  --line:#dde3ec; --line2:#c9d3df;
+  --text:#18202c; --muted:#5a6675;
+  --dim:#8996a6;
+  --accent:#d8452f; --accent-ink:#fff; --accent2:#c0871c;
+  --jade:#1f9e6f; --danger:#d8452f; --warn:#c0871c;
+  --sh:0 1px 2px rgba(24,32,44,.06),0 6px 20px rgba(24,32,44,.09);
+  --topgrad:linear-gradient(180deg,#ffffff,#eef2f7);
+  --overlay:rgba(255,255,255,.92);--overlay-line:rgba(24,32,44,.10);
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+}
+:root[data-theme="dark"]{
   --bg:#0c0f14; --bg2:#11151c; --panel:#161c25; --panel2:#1c232e; --elev:#232c39;
   --line:#28313f; --line2:#33404f;
-  --text:#e8edf4; --muted:#98a4b5; --faint:#67728417;
-  --dim:#6c7789;
-  --accent:#e5533d; --accent-ink:#fff; --accent2:#e0a63f;
-  --jade:#33c08b; --danger:#ef5350; --warn:#e0a63f;
-  --sh:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.25);
-  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  --text:#e8edf4; --muted:#98a4b5; --dim:#6c7789;
+  --accent:#e5533d; --accent2:#e0a63f; --jade:#33c08b; --danger:#ef5350; --warn:#e0a63f;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 8px 26px rgba(0,0,0,.4);
+  --topgrad:linear-gradient(180deg,#151b24,#0f141b);
+  --overlay:rgba(17,21,28,.86);--overlay-line:rgba(255,255,255,.08);
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;font-family:var(--sans);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
@@ -21,7 +32,7 @@ html,body{margin:0;height:100%;font-family:var(--sans);color:var(--text);backgro
 
 /* Top bar */
 #topbar{display:flex;align-items:center;gap:10px;padding:10px 16px;
-  background:var(--bg2);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(255,255,255,.02),0 6px 18px rgba(0,0,0,.35);z-index:5;flex-wrap:wrap}
+  background:var(--topgrad);border-bottom:1px solid var(--line);box-shadow:0 2px 14px rgba(24,32,44,.10);z-index:5;flex-wrap:wrap}
 #topbar .brand{font-size:15px;font-weight:700;letter-spacing:.14em;color:var(--text);white-space:nowrap;text-transform:uppercase;padding-right:6px}
 #topbar .brand small{display:block;font-size:9px;letter-spacing:.22em;color:var(--accent2);font-weight:600;margin-top:1px}
 .stat{display:flex;flex-direction:column;line-height:1.15;padding:4px 12px;min-width:56px;background:var(--panel);border:1px solid var(--line);border-radius:9px}
@@ -35,8 +46,8 @@ button{font-family:inherit;cursor:pointer;border:1px solid var(--line2);backgrou
 button:hover{background:var(--elev);border-color:#42505f}
 button:active{transform:translateY(1px)}
 button:disabled{opacity:.4;cursor:not-allowed}
-button.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;box-shadow:0 2px 10px rgba(229,83,61,.35)}
-button.primary:hover{background:#f06450}
+button.primary{background:linear-gradient(180deg,#e9604b,var(--accent));color:var(--accent-ink);border-color:transparent;box-shadow:0 3px 12px rgba(216,69,47,.35),inset 0 1px 0 rgba(255,255,255,.18)}
+button.primary:hover{filter:brightness(1.06)}
 button.ghost{background:transparent;color:var(--muted);border-color:var(--line)}
 button.ghost:hover{background:var(--panel2);color:var(--text)}
 
@@ -50,7 +61,9 @@ canvas{display:block;width:100%;height:100%}
 .hint{color:var(--muted);font-size:12.5px;line-height:1.55}
 
 /* Cards */
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:12px;box-shadow:var(--sh)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:12px;box-shadow:var(--sh);position:relative}
+.card::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;border-radius:12px 12px 0 0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);opacity:.6;pointer-events:none}
+:root[data-theme="dark"] .card::before{background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)}
 .card h3{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.02em;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--text)}
 .tag{font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff;letter-spacing:.08em;text-transform:uppercase}
 .row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--muted)}
@@ -92,14 +105,14 @@ canvas{display:block;width:100%;height:100%}
 .evt{font-size:14px;line-height:1.65;color:var(--text)}
 
 /* Overlays */
-.legend{position:absolute;bottom:14px;left:14px;background:rgba(17,21,28,.85);backdrop-filter:blur(8px);color:var(--muted);padding:10px 13px;border-radius:12px;font-size:12px;border:1px solid var(--line)}
+.legend{position:absolute;bottom:14px;left:14px;background:var(--overlay);backdrop-filter:blur(10px);color:var(--muted);padding:10px 13px;border-radius:12px;font-size:12px;border:1px solid var(--overlay-line)}
 .legend .li{display:flex;align-items:center;gap:7px;margin:3px 0}
 .legend .dot{width:10px;height:10px;border-radius:50%}
-#help{position:absolute;top:14px;left:14px;background:rgba(17,21,28,.85);backdrop-filter:blur(8px);color:var(--muted);padding:9px 13px;border-radius:12px;font-size:12px;border:1px solid var(--line);max-width:260px;line-height:1.5}
+#help{position:absolute;top:14px;left:14px;background:var(--overlay);backdrop-filter:blur(10px);color:var(--muted);padding:9px 13px;border-radius:12px;font-size:12px;border:1px solid var(--overlay-line);max-width:260px;line-height:1.5}
 @media(max-width:760px){#side{width:290px}#help{display:none}}
 
 /* Battle HUD */
-#bhud{position:absolute;top:0;left:0;right:0;display:none;align-items:center;gap:12px;padding:10px 16px;background:rgba(12,15,20,.9);backdrop-filter:blur(8px);color:var(--text);border-bottom:1px solid var(--line);z-index:6}
+#bhud{position:absolute;top:0;left:0;right:0;display:none;align-items:center;gap:12px;padding:10px 16px;background:var(--overlay);backdrop-filter:blur(10px);color:var(--text);border-bottom:1px solid var(--overlay-line);z-index:6}
 #bhud.show{display:flex}
 #bhud .bstatus{font-size:13px;line-height:1.4;flex:1;color:var(--muted)}
 #bhud .bstatus b{color:var(--text)}
@@ -141,6 +154,7 @@ input,select{background:var(--panel2);color:var(--text);border:1px solid var(--l
     <div class="stat"><b id="s-ap">—</b><span>Actions</span></div>
     <div id="turnbox">
       <button id="b-help" class="ghost" title="How to play">?</button>
+      <button id="b-theme" class="ghost" title="Light / dark theme">🌙</button>
       <button id="b-sound" class="ghost" title="Sound on/off">🔊</button>
       <button id="b-save" class="ghost" title="Save campaign">💾</button>
       <button id="b-annals" class="ghost">📜 Annals</button>
@@ -541,6 +555,28 @@ function avatar(o){ return `<div class="av">${portraitSVG(o)}</div>`; }
 function screenShake(){ const el=document.getElementById("mapwrap"); if(!el)return;
   el.classList.remove("shaking"); void el.offsetWidth; el.classList.add("shaking"); }
 
+// ---------- Theme (light / dark) + color helpers ----------
+const THEME={
+  light:{mapA:"#e0e6ef",mapB:"#eef2f8",grid:"rgba(40,60,90,.05)",river:"rgba(70,140,180,.32)",riverCore:"rgba(150,200,225,.5)",
+    edge:"rgba(60,80,110,.20)",edgeNav:"rgba(45,140,190,.55)",cityStroke:"#ffffff",name:"#2a3646",star:"#c0871c",flag:"#c0871c",
+    terrPlain:"#c6d2c4",terrForest:"#9dbf9f",terrHill:"#d6cba6",terrWater:"#a5cfe0",terrShore:"#d7d1b6",vignette:"rgba(24,32,44,.07)",wallRing:"rgba(255,255,255,.7)"},
+  dark:{mapA:"#111823",mapB:"#0a0e14",grid:"rgba(120,140,170,.045)",river:"rgba(64,130,168,.4)",riverCore:"rgba(120,190,225,.35)",
+    edge:"rgba(150,168,195,.16)",edgeNav:"rgba(90,170,210,.5)",cityStroke:"#0b0e13",name:"#c6cfdb",star:"#e0a63f",flag:"#e0a63f",
+    terrPlain:"#212a25",terrForest:"#20362a",terrHill:"#33322a",terrWater:"#16303f",terrShore:"#2f3226",vignette:"rgba(0,0,0,.30)",wallRing:"rgba(255,255,255,.55)"},
+};
+let THEME_MODE="light";
+function TH(){return THEME[THEME_MODE];}
+function hexA(hex,a){hex=hex.replace("#","");const n=parseInt(hex,16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
+function lighten(hex,amt){hex=hex.replace("#","");let r=(parseInt(hex,16)>>16)&255,g=(parseInt(hex,16)>>8)&255,b=parseInt(hex,16)&255;
+  r=Math.round(r+(255-r)*amt);g=Math.round(g+(255-g)*amt);b=Math.round(b+(255-b)*amt);return `rgb(${r},${g},${b})`;}
+function applyTheme(mode){THEME_MODE=(mode==="dark")?"dark":"light";
+  document.documentElement.setAttribute("data-theme",THEME_MODE==="dark"?"dark":"");
+  const btn=document.getElementById("b-theme"); if(btn)btn.textContent=THEME_MODE==="dark"?"☀":"🌙";
+  try{localStorage.setItem("3k_theme",THEME_MODE);}catch(e){}
+  if(G)draw();
+}
+function toggleTheme(){ applyTheme(THEME_MODE==="dark"?"light":"dark"); }
+
 // ---------- Rendering (strategic map) ----------
 const cv=document.getElementById("map"),ctx=cv.getContext("2d");
 let DPR=window.devicePixelRatio||1;
@@ -553,41 +589,57 @@ function draw(){
   if(G.mode==="battle"){return drawBattle();}
   const w=cv.clientWidth,h=cv.clientHeight;
   ctx.clearRect(0,0,w,h);
+  const T=TH();
   const g=ctx.createLinearGradient(0,0,w,h);
-  g.addColorStop(0,"#111823");g.addColorStop(.5,"#0d131b");g.addColorStop(1,"#0a0e14");
+  g.addColorStop(0,T.mapA);g.addColorStop(1,T.mapB);
   ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
   // subtle grid texture
-  ctx.strokeStyle="rgba(120,140,170,.045)";ctx.lineWidth=1;
+  ctx.strokeStyle=T.grid;ctx.lineWidth=1;
   for(let gx=0;gx<w;gx+=46){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,h);ctx.stroke();}
   for(let gy=0;gy<h;gy+=46){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke();}
-  // Yangtze
-  ctx.strokeStyle="rgba(64,130,168,.45)";ctx.lineWidth=13;ctx.lineCap="round";
+  // faction territory shading — soft influence blobs behind cities build up into regions
+  G.cities.forEach(c=>{ if(c.owner==="neu")return; const p=px(c),col=facColor(c.owner),rad=80+c.devEcon*3;
+    const gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,rad);
+    gr.addColorStop(0,hexA(col,THEME_MODE==="light"?0.20:0.30));gr.addColorStop(1,hexA(col,0));
+    ctx.fillStyle=gr;ctx.beginPath();ctx.arc(p.x,p.y,rad,0,7);ctx.fill(); });
+  // Yangtze — layered for depth
+  ctx.lineCap="round";
+  ctx.strokeStyle=T.river;ctx.lineWidth=15;
+  ctx.beginPath();ctx.moveTo(.14*w,.60*h);ctx.bezierCurveTo(.34*w,.72*h,.52*w,.60*h,.66*w,.68*h);
+  ctx.bezierCurveTo(.78*w,.73*h,.86*w,.62*h,.95*w,.66*h);ctx.stroke();
+  ctx.strokeStyle=T.riverCore;ctx.lineWidth=5;
   ctx.beginPath();ctx.moveTo(.14*w,.60*h);ctx.bezierCurveTo(.34*w,.72*h,.52*w,.60*h,.66*w,.68*h);
   ctx.bezierCurveTo(.78*w,.73*h,.86*w,.62*h,.95*w,.66*h);ctx.stroke();ctx.lineWidth=1;
   // edges
-  EDGES.forEach(e=>{const a=px(G.cityById[e[0]]),b=px(G.cityById[e[1]]);
-    const nav=isNaval(e[0],e[1]);
-    ctx.strokeStyle=nav?"rgba(90,170,210,.5)":"rgba(150,168,195,.16)";
-    ctx.setLineDash(nav?[3,4]:[6,5]);ctx.lineWidth=nav?2.5:1.5;
+  EDGES.forEach(e=>{const a=px(G.cityById[e[0]]),b=px(G.cityById[e[1]]);const nav=isNaval(e[0],e[1]);
+    ctx.strokeStyle=nav?T.edgeNav:T.edge;ctx.setLineDash(nav?[3,4]:[6,5]);ctx.lineWidth=nav?2.5:1.5;
     ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);});
   // march targets
   if(G.marchFrom){
     neighborsOf(G.marchFrom).forEach(nid=>{const c=G.cityById[nid];
       if(c.owner===ME()||c.owner===G.ally)return;
-      const p=px(c);ctx.strokeStyle="#e5533d";ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,24,0,7);ctx.stroke();});
-    const fpt=px(G.cityById[G.marchFrom]);ctx.fillStyle="#e5533d";ctx.font="600 11px system-ui,sans-serif";ctx.textAlign="center";
+      const p=px(c);ctx.strokeStyle=T.march?"#d8452f":"#e5533d";ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,24,0,7);ctx.stroke();});
+    const fpt=px(G.cityById[G.marchFrom]);ctx.fillStyle="#d8452f";ctx.font="600 11px system-ui,sans-serif";ctx.textAlign="center";
     ctx.fillText("marching from here →",fpt.x,fpt.y-28);
   }
-  // cities
+  // vignette (under cities so labels stay crisp)
+  const vg=ctx.createRadialGradient(w/2,h*0.45,Math.min(w,h)*0.32,w/2,h*0.5,Math.max(w,h)*0.72);
+  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,T.vignette);ctx.fillStyle=vg;ctx.fillRect(0,0,w,h);
+  // cities — glossy tokens with shadow
   G.cities.forEach(c=>{
     const p=px(c),col=facColor(c.owner),r=10+c.devEcon*1.0;
-    if(G.sel===c.id){ctx.fillStyle="rgba(229,83,61,.22)";ctx.beginPath();ctx.arc(p.x,p.y,r+11,0,7);ctx.fill();}
-    ctx.fillStyle=col;ctx.strokeStyle="#0b0e13";ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fill();ctx.stroke();
-    ctx.strokeStyle="rgba(255,255,255,.55)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,r-4,0,7*(c.wall/100));ctx.stroke();
-    if(c.base){ctx.fillStyle="#e0a63f";ctx.font="bold 12px system-ui,sans-serif";ctx.textAlign="center";ctx.fillText("★",p.x,p.y-r-3);}
-    ctx.fillStyle="#fff";ctx.font="bold 10px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(fmt(c.troops),p.x,p.y);
-    ctx.fillStyle="#c6cfdb";ctx.font="600 12px system-ui,sans-serif";ctx.textBaseline="top";ctx.fillText(c.name,p.x,p.y+r+3);
-    const os=c.officers.length;if(os){ctx.fillStyle="#e0a63f";ctx.font="9px system-ui,sans-serif";ctx.fillText("⚑".repeat(Math.min(os,5)),p.x,p.y-r-(c.base?16:5));}
+    if(G.sel===c.id){ctx.save();ctx.shadowColor="rgba(216,69,47,.7)";ctx.shadowBlur=16;ctx.fillStyle="rgba(216,69,47,.28)";ctx.beginPath();ctx.arc(p.x,p.y,r+8,0,7);ctx.fill();ctx.restore();}
+    ctx.save();ctx.shadowColor="rgba(0,0,0,"+(THEME_MODE==="light"?.28:.55)+")";ctx.shadowBlur=9;ctx.shadowOffsetY=2;
+    const grd=ctx.createRadialGradient(p.x-r*0.4,p.y-r*0.5,r*0.15,p.x,p.y,r);
+    grd.addColorStop(0,lighten(col,0.4));grd.addColorStop(1,col);
+    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fill();ctx.restore();
+    ctx.strokeStyle=T.cityStroke;ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.stroke();
+    ctx.strokeStyle=T.wallRing;ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,r-4,-1.57,-1.57+6.283*(c.wall/100));ctx.stroke();
+    if(c.base){ctx.fillStyle=T.star;ctx.font="bold 12px system-ui,sans-serif";ctx.textAlign="center";ctx.fillText("★",p.x,p.y-r-3);}
+    ctx.fillStyle="#fff";ctx.font="bold 10px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.save();ctx.shadowColor="rgba(0,0,0,.5)";ctx.shadowBlur=2;ctx.fillText(fmt(c.troops),p.x,p.y);ctx.restore();
+    ctx.fillStyle=T.name;ctx.font="600 12px system-ui,sans-serif";ctx.textBaseline="top";ctx.fillText(c.name,p.x,p.y+r+3);
+    const os=c.officers.length;if(os){ctx.fillStyle=T.flag;ctx.font="9px system-ui,sans-serif";ctx.fillText("⚑".repeat(Math.min(os,5)),p.x,p.y-r-(c.base?16:5));}
   });
   ctx.textBaseline="alphabetic";
 }
@@ -1521,7 +1573,7 @@ function drawBattle(){
   const cw=cv.clientWidth,ch=cv.clientHeight,t=B.terrain,tw=cw/t.cols,th=ch/t.rows;
   for(let r=0;r<t.rows;r++)for(let c=0;c<t.cols;c++){
     const ty=t.tiles[r*t.cols+c].type;
-    ctx.fillStyle=ty==="forest"?"#20362a":ty==="hill"?"#33322a":ty==="water"?"#16303f":ty==="shore"?"#2f3226":"#212a25";
+    const T=TH();ctx.fillStyle=ty==="forest"?T.terrForest:ty==="hill"?T.terrHill:ty==="water"?T.terrWater:ty==="shore"?T.terrShore:T.terrPlain;
     ctx.fillRect(c*tw,r*th,tw+1,th+1);
     if(ty==="forest"){ctx.fillStyle="rgba(60,110,70,.5)";for(let k=0;k<3;k++)ctx.fillRect(c*tw+8+k*14,r*th+10+((k*13)%20),6,10);}
     if(ty==="water"){ctx.strokeStyle="rgba(150,190,210,.12)";ctx.beginPath();ctx.moveTo(c*tw,r*th+th*0.5);ctx.lineTo(c*tw+tw,r*th+th*0.5);ctx.stroke();}
@@ -1632,6 +1684,7 @@ document.getElementById("b-annals").onclick=()=>{if(G&&G.mode!=="battle")openAnn
 document.getElementById("b-help").onclick=()=>{if(G&&G.mode!=="battle")showTutorial(0);};
 document.getElementById("b-save").onclick=()=>{if(G&&G.mode!=="battle")saveGame();};
 document.getElementById("b-sound").onclick=toggleSound;
+document.getElementById("b-theme").onclick=toggleTheme;
 // start audio on first user gesture (browser autoplay policy) and click SFX for buttons
 window.addEventListener("pointerdown",e=>{ startMusic(); if(e.target&&e.target.tagName==="BUTTON")play("click"); },true);
 window.addEventListener("keydown",e=>{if(G&&G.mode==="battle"&&e.code==="Space"){e.preventDefault();
@@ -1783,6 +1836,7 @@ function beginGame(scenId,fac){
 }
 
 // ---------- Boot ----------
+(function(){let t="light";try{t=localStorage.getItem("3k_theme")||"light";}catch(e){}applyTheme(t);})();
 showStart();
 </script>
 </body>
