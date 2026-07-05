@@ -111,6 +111,8 @@ canvas{display:block;width:100%;height:100%}
     <div class="stat"><b id="s-honor">—</b><span>Honor</span></div>
     <div class="stat"><b id="s-ap">—</b><span>Actions</span></div>
     <div id="turnbox">
+      <button id="b-help" class="ghost" title="How to play">?</button>
+      <button id="b-annals" class="ghost">📜 Annals</button>
       <button id="b-diplomacy" class="ghost">⚑ Diplomacy</button>
       <button id="b-prisoners" class="ghost">⛓ 0</button>
       <div class="stat" style="text-align:right"><b id="s-turn">—</b><span id="s-season">—</span></div>
@@ -258,7 +260,7 @@ const SCENARIOS=[
   blurb:"Cao Cao's vast host drives south. Liu Bei clings to Xinye; only an alliance with Sun Quan's Wu can turn the tide on the Yangtze.",
   players:["shu","wu","wei"],
   capitals:{wei:"xuchang",shu:"xinye",wu:"chaisang"},
-  own:{wei:["beiping","nanpi","ye","jinyang","luoyang","changan","wuwei","xuchang","xiapi","shouchun","hefei","wancheng"],
+  own:{wei:["nanpi","ye","jinyang","luoyang","changan","xuchang","shouchun","hefei","wancheng"],
        shu:["xinye","jiangxia"], wu:["chaisang","jianye","wu"]},
   officers:{shu:["liubei","guanyu","zhangfei","zhaoyun","zhuge"],
     wei:["caocao","xiahou","zhangliao","simayi","xuhuang","zhanghe"],
@@ -348,6 +350,7 @@ function initGame(scenId, playerFac){
     mode:"map", reputation:55, prisoners:[], ally:null,
     momentum:{}, nextgen:NEXTGEN.map(g=>({...g})),
     rulers:{}, heirs:{}, legitimacy:{}, relations:{}, coalition:null,
+    annals:[],
   };
   // rulers, heirs, legitimacy, relations
   [...active].filter(f=>f!=="neu").forEach(f=>{
@@ -372,6 +375,15 @@ function fmt(n){n=Math.round(n);return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k
 function facColor(f){return FACTIONS[f].color;}
 function log(msg,cls){const el=document.getElementById("log");const d=document.createElement("div");
   d.className="l"+(cls?" "+cls:"");d.innerHTML="◦ "+msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+// record a notable moment into the reign's chronicle (auto-written, shareable history)
+function chronicle(text,cat){ if(!G||!G.annals)return;
+  annal(text,cat);
+  log(text, cat==="battle"?"war":cat==="triumph"?"good":cat==="death"?"war":undefined);
+}
+function annal(text,cat){ if(!G||!G.annals)return;
+  const year=G.scen.year+Math.floor((G.turn-1)/4);
+  G.annals.push({year,season:SEASONS[G.season],text,cat:cat||"event"});
+}
 
 // ---------- Rendering (strategic map) ----------
 const cv=document.getElementById("map"),ctx=cv.getContext("2d");
@@ -567,7 +579,7 @@ function openDiplomacy(){
 }
 function allyVia(f){if((G.relations[f]??50)<25){toast("Relations too cool.");return;}
   if(G.ally&&G.ally!==f){toast("Break your current alliance first.");return;}
-  G.ally=f;G.relations[f]=Math.min(100,(G.relations[f]??50)+15);log(`You are now allied with ${FACTIONS[f].name}.`,"good");openDiplomacy();renderTop();}
+  G.ally=f;G.relations[f]=Math.min(100,(G.relations[f]??50)+15);chronicle(`You forged an alliance with ${FACTIONS[f].name}.`,"event");openDiplomacy();renderTop();}
 function sendTribute(f){
   if((G.treasury[ME()]||0)<400){toast("Not enough gold for tribute (400).");return;}
   if(G._tributeTurn&&G._tributeTurn[f]===G.turn){toast("Already sent tribute this turn.");return;}
@@ -586,7 +598,7 @@ function arrangeMarriage(f){
   const a=mine.sort((x,y)=>y.cha-x.cha)[0], b=theirs.sort((x,y)=>y.cha-x.cha)[0];
   a.married=b.married=true; G._marriages[f]=true;
   G.relations[f]=Math.min(100,(G.relations[f]??50)+25); a.loyalty=Math.min(100,a.loyalty+8);
-  log(`A dynastic marriage joins ${a.name} of your house to ${b.name} of ${FACTIONS[f].short} (relations +25).`,"good");
+  chronicle(`A dynastic marriage joined ${a.name} of your house to ${b.name} of ${FACTIONS[f].short}.`,"event");
   openDiplomacy();renderTop();
 }
 
@@ -634,15 +646,14 @@ function resolveBattle(from,to,army,atkOs){
   const aLoss=Math.round(army*(win?0.2+(1-ratio)*0.5:0.45+ratio*0.4));
   const dLoss=Math.round(to.troops*(win?0.6+ratio*0.35:0.18+(1-ratio)*0.4));
   const surv=Math.max(0,army-aLoss);to.troops=Math.max(0,to.troops-dLoss);
-  const routed=win&&to.troops<=Math.max(800,surv*0.15);
+  const routed=win&&to.troops<=Math.max(1200,surv*0.28);
   if(routed){
     const prev=to.owner;to.owner=ME();to.troops=surv;to.order=Math.max(40,to.order-25);to.justTook=true;
     const defOs=officersAt(to.id);const captured=[];
     defOs.forEach(o=>{ if(Math.random()<0.45)captured.push(o); else relocateOfficerHome(o,prev); });
     modal(`Victory at ${to.name}!`,`<div class="evt">Your banners fly over ${to.name}!${bonus} ${fmt(surv)} troops garrison it.</div>`,
-      [{t:"Continue",cls:"primary",fn:()=>{closeModal();log(`⚑ Captured ${to.name}.`,"good");
+      [{t:"Continue",cls:"primary",fn:()=>{closeModal();chronicle(`Your army captured ${to.name}.`,"triumph");
         G.to=to;G.from=from;processCaptures(captured,to.name,officersAt(from.id));}}]);
-    log(`⚑ ${to.name} falls to your army.`,"good");
   } else {
     from.troops+=surv;
     modal(win?`Bloody stalemate at ${to.name}`:`Defeat at ${to.name}`,
@@ -717,23 +728,23 @@ function defect(o){
   const target = nb.sort((a,b)=>b.troops-a.troops)[0];
   const cur=G.cityById[o.where]; if(cur)cur.officers=cur.officers.filter(x=>x!==o.id);
   if(target){ o.fac=target.owner; o.where=target.id; o.loyalty=64; target.officers.push(o.id);
-    log(`✕ ${o.name} defects from ${FACTIONS[from].short} to ${FACTIONS[target.owner].short}!`, from===ME()?"war":(target.owner===ME()?"good":undefined));
+    chronicle(`${o.name} defected from ${FACTIONS[from].short} to ${FACTIONS[target.owner].short}.`, from===ME()?"death":"event");
   } else { o.fac="neu"; o.loyalty=70; if(cur)cur.officers.push(o.id);
-    log(`✕ ${o.name} abandons ${FACTIONS[from].short} and turns freelance.`, from===ME()?"war":undefined); }
+    chronicle(`${o.name} abandoned ${FACTIONS[from].short} to become a freelance.`, from===ME()?"death":"event"); }
 }
 function rebel(o,city){
   const from=o.fac;
   city.owner="neu"; o.fac="neu"; o.loyalty=75;
   // other officers here may scatter home
   officersAt(city.id).forEach(x=>{ if(x.id!==o.id&&Math.random()<0.6) relocateOfficerHome(x,from); });
-  log(`⚔ ${o.name} raises the banner of revolt and seizes ${city.name} from ${FACTIONS[from].short}!`, from===ME()?"war":undefined);
+  chronicle(`${o.name} raised the banner of revolt and seized ${city.name} from ${FACTIONS[from].short}.`, from===ME()?"death":"battle");
 }
 function agingPhase(){
   G.officers.slice().forEach(o=>{
     o.age=(o.age||30)+1;
     if(o.age>55){ const chance=(o.age-55)*0.010+0.004;
       if(Math.random()<chance){ const nm=o.name,fac=o.fac; removeOfficer(o);
-        log(`✝ ${nm} passes away at the age of ${o.age}.`, fac===ME()?"war":undefined); } }
+        chronicle(`✝ ${nm} passed away at the age of ${o.age}.`, "death"); } }
   });
   if(G.nextgen.length && Math.random()<0.55){
     const facs=G.active.filter(f=>f!=="neu"&&citiesOf(f).length);
@@ -742,7 +753,7 @@ function agingPhase(){
       const homes=citiesOf(fac); const c=homes[Math.floor(Math.random()*homes.length)];
       const o={...g, fac, loyalty:82, where:c.id, age:20, ambition:g.amb??45};
       G.officers.push(o); G.obyId[o.id]=o; c.officers.push(o.id);
-      log(`A new hero comes of age: ${o.name} enters the service of ${FACTIONS[fac].short}.`, fac===ME()?"good":undefined);
+      chronicle(`A new hero came of age: ${o.name} entered the service of ${FACTIONS[fac].short}.`, fac===ME()?"triumph":"event");
     }
   }
 }
@@ -788,7 +799,7 @@ function handleSuccession(f,fallenName){
   G.officers.filter(o=>o.fac===f&&!o._prisoner).forEach(o=>{o.loyalty=Math.max(0,o.loyalty-shock);});
   G.legitimacy[f]=Math.max(10,(G.legitimacy[f]||40)-14);
   G.heirs[f]=pickHeir(f);
-  log(`${fallenName} is dead. ${heir.name} succeeds as head of ${FACTIONS[f].short}${shock>14?" amid a shaky succession.":"."}`, f===ME()?"war":undefined);
+  chronicle(`${fallenName} died; ${heir.name} succeeded as head of ${FACTIONS[f].short}${shock>14?" amid a shaky succession.":"."}`, f===ME()?"death":"event");
 }
 function designateHeir(){
   const f=ME();const cands=G.officers.filter(o=>o.fac===f&&!o._prisoner&&o.id!==G.rulers[f]);
@@ -815,12 +826,12 @@ function updateCoalition(){
   const sorted=majors.map(f=>({f,n:citiesOf(f).length})).sort((a,b)=>b.n-a.n);
   const lead=sorted[0], second=sorted[1];
   const prev=G.coalition;
-  if(lead && lead.n/total>=0.42 && (!second||lead.n>=second.n*1.4)){
+  if(lead && lead.n/total>=0.5 && (!second||lead.n>=second.n*1.4)){
     G.coalition=lead.f;
     if(prev!==G.coalition){
-      if(G.coalition===ME()){ majors.forEach(f=>{if(f!==ME())G.relations[f]=Math.max(0,(G.relations[f]??50)-25);});
-        log(`⚑ Alarmed by your dominance, the other powers turn against you — a coalition forms!`,"war"); }
-      else log(`⚑ A coalition forms to check the rise of ${FACTIONS[G.coalition].short}.`);
+      if(G.coalition===ME()){ majors.forEach(f=>{if(f!==ME())G.relations[f]=Math.max(0,(G.relations[f]??50)-15);});
+        chronicle(`Alarmed by your dominance, the other powers formed a coalition against you.`,"battle"); }
+      else chronicle(`A coalition formed to check the rise of ${FACTIONS[G.coalition].short}.`,"event");
     }
   } else if(prev){ G.coalition=null; }
 }
@@ -859,7 +870,7 @@ function aiTurn(f){
         if(t.owner===ME() && G.coalition!==ME() && (G.relations[f]??50)>=45)return;
         if(c.troops<=t.troops*1.15)return;               // only strike when we outnumber
         let value=10 + (t.econ+(t.base?5:0))*10 + (t.owner==="neu"?15:0) - t.wall*0.3 - t.troops/1000;
-        if(t.owner===G.coalition) value+=40;             // pile onto the runaway leader
+        if(t.owner===G.coalition) value+=22;             // pile onto the runaway leader
         if(t.owner===ME() && (G.relations[f]??50)<30) value+=15; // a hostile neighbour eyes your lands
         if(value>bestScore){bestScore=value;best=t;bestFrom=c;}
       });
@@ -873,7 +884,7 @@ function aiResolve(from,to,army,f){
   const win=A.power>D.power*1.05;
   const dLoss=Math.round(to.troops*(win?0.65:0.25)),aLoss=Math.round(army*(win?0.25:0.5));
   to.troops=Math.max(0,to.troops-dLoss);const surv=Math.max(0,army-aLoss);
-  const wasMine=to.owner===ME();const routed=win&&to.troops<=Math.max(800,surv*0.15);
+  const wasMine=to.owner===ME();const routed=win&&to.troops<=Math.max(1200,surv*0.28);
   if(routed){const prev=to.owner;to.owner=f;to.troops=surv;to.order=Math.max(40,to.order-20);
     officersAt(to.id).slice().forEach(o=>relocateOfficerHome(o,prev));
     if(wasMine)log(`${FACTIONS[f].name} has captured ${to.name} from you!`,"war");
@@ -910,14 +921,16 @@ function checkVictory(){
   if(G.over)return;
   const total=G.cities.length,mine=citiesOf(ME()).length;
   if(mine===0){G.over=true;
+    annal(`${FACTIONS[ME()].name} was extinguished. The dream ends.`,"death");
     modal("The Mandate is Lost",`<div class="evt">Your banners have fallen and your cause is ended. In another telling, the heroes might yet rise again…</div>`,
-      [{t:"New Campaign",cls:"primary",fn:()=>{closeModal();showStart();}}]);return;}
+      [{t:"📜 Read the Annals",fn:openAnnals},{t:"New Campaign",cls:"primary",fn:()=>{closeModal();showStart();}}]);return;}
   const legit=Math.round(G.legitimacy[ME()]||0);
-  const territorial=mine>=Math.ceil(total*0.6);
-  const mandate=legit>=90 && mine>=Math.ceil(total*0.45) && G.cityById[IMPERIAL_SEAT].owner===ME();
+  const territorial=mine>=Math.ceil(total*0.55);
+  const mandate=legit>=88 && mine>=Math.ceil(total*0.42) && G.cityById[IMPERIAL_SEAT].owner===ME();
   if(territorial||mandate){G.over=true;
+    annal(`${FACTIONS[ME()].name} claimed the Mandate of Heaven and proclaimed a new dynasty over the realm.`,"triumph");
     modal("Mandate of Heaven Claimed!",`<div class="evt">${mandate&&!territorial?`Holding the old capital with a legitimacy of ${legit}, `:""}with ${mine} of ${total} cities under your banner, ${FACTIONS[ME()].name} masters the realm and proclaims a new dynasty. The age of division bends to your will.<br><br><b>Victory!</b></div>`,
-      [{t:"New Campaign",cls:"primary",fn:()=>{closeModal();showStart();}}]);return;}
+      [{t:"📜 Read the Annals",fn:openAnnals},{t:"New Campaign",cls:"primary",fn:()=>{closeModal();showStart();}}]);return;}
 }
 
 // ---------- Prisoner management ----------
@@ -1185,11 +1198,11 @@ function endBattle(result){
     const prev=to.owner;to.owner=from.owner;to.troops=Math.max(500,atkSurv);to.order=Math.max(40,to.order-25);to.justTook=true;
     B.units.filter(u=>u.side==="def"&&alive(u)&&u.off&&!u.off._captain).forEach(u=>relocateOfficerHome(u.off,prev));
     const captured=[];fallen.forEach(u=>{if(Math.random()<0.55)captured.push(u.off);else relocateOfficerHome(u.off,prev);});
-    finishBattleUI(from,to,atkSurv,defSurv,true,()=>{log(`⚑ ${to.name} has fallen to your banners!`,"good");
+    finishBattleUI(from,to,atkSurv,defSurv,true,()=>{chronicle(`Your army stormed ${to.name}${B.naval?" in a battle on the river":""} and took the city.`,"triumph");
       processCaptures(captured,to.name,officersAt(from.id).concat(B.units.filter(u=>u.side==="atk"&&alive(u)).map(u=>u.off)));});
   } else {
     from.troops+=atkSurv;
-    finishBattleUI(from,to,atkSurv,defSurv,false,()=>{log(`✕ Your assault on ${to.name} is thrown back.`,"war");exitBattle();});
+    finishBattleUI(from,to,atkSurv,defSurv,false,()=>{chronicle(`Your assault on ${to.name} was thrown back.`,"battle");exitBattle();});
   }
 }
 function finishBattleUI(from,to,atkSurv,defSurv,won,next){
@@ -1236,7 +1249,7 @@ function processCaptures(list,cityName,recruiters){
       {t:"Recruit",d:"Win them over",fn:()=>{
         const chance=bestCha*0.8-(o.loyalty-50)+(bond?25:0)-(/Loyal|Honorable/.test(o.trait||"")?20:0);
         if(Math.random()*100<chance){o.fac=ME();o.loyalty=68;o.where=G.to.id;o._prisoner=false;G.cityById[G.to.id].officers.push(o.id);
-          G.reputation=Math.min(100,G.reputation+1);resultMsg(`${o.name} is moved by your virtue and pledges to serve you!`,"good",nextOne);}
+          G.reputation=Math.min(100,G.reputation+1);annal(`${o.name} was captured and pledged to serve you.`,"event");resultMsg(`${o.name} is moved by your virtue and pledges to serve you!`,"good",nextOne);}
         else{G.prisoners.push({offId:o.id,cityId:G.to.id});relocatePrisoner(o);resultMsg(`${o.name} refuses and is held prisoner.`,null,nextOne);}
       }},
       {t:"Release",d:"Free them (+honor)",fn:()=>{relocateOfficerHome(o,o.fac);G.reputation=Math.min(100,G.reputation+4);
@@ -1245,6 +1258,7 @@ function processCaptures(list,cityName,recruiters){
         G.reputation=Math.max(0,G.reputation-1);G.cityById[G.to.id].order-=4;resultMsg(`${o.name} is cast into your dungeons.`,null,nextOne);}},
       {t:"Execute",d:"Put to death (−honor)",fn:()=>{const nm=o.name,angered=bond;removeOfficer(o);
         G.reputation=Math.max(0,G.reputation-9);if(angered)angered.loyalty=Math.max(20,angered.loyalty-15);
+        annal(`You had ${nm} executed after his capture.`,"death");
         resultMsg(`${nm} is executed. The realm recoils (honor −9)${angered?`, and ${angered.name} grieves.`:"."}`,"war",nextOne);}},
     ];
     opts.forEach(op=>{const b=document.createElement("button");b.innerHTML=`${op.t}<small>${op.d}</small>`;b.onclick=op.fn;wrap.appendChild(b);});
@@ -1369,6 +1383,8 @@ cv.addEventListener("click",e=>{
 document.getElementById("endturn").onclick=endTurn;
 document.getElementById("b-prisoners").onclick=()=>{if(G&&G.mode!=="battle")openPrisoners();};
 document.getElementById("b-diplomacy").onclick=()=>{if(G&&G.mode!=="battle")openDiplomacy();};
+document.getElementById("b-annals").onclick=()=>{if(G&&G.mode!=="battle")openAnnals();};
+document.getElementById("b-help").onclick=()=>{if(G&&G.mode!=="battle")showTutorial(0);};
 window.addEventListener("keydown",e=>{if(G&&G.mode==="battle"&&e.code==="Space"){e.preventDefault();
   if(B&&!B.over){B.paused=!B.paused;const b=document.getElementById("bpause");if(b){b.classList.toggle("on",B.paused);b.textContent=B.paused?"▶ Resume":"⏸ Pause";}}}});
 
@@ -1382,6 +1398,52 @@ function modal(title,body,btns){
 }
 function closeModal(){document.getElementById("modal").classList.remove("show");}
 function toast(msg){log(msg);}
+
+// ---------- Annals (auto-written, shareable chronicle) ----------
+function annalsText(){
+  const ruler=rulerOf(ME());
+  let out=`ANNALS OF ${FACTIONS[ME()].name.toUpperCase()} — ${G.scen.name} (from ${G.scen.year} AD)\n`;
+  out+=`Ruler: ${ruler?ruler.name:"—"}    Cities: ${citiesOf(ME()).length}/${G.cities.length}    Honor: ${Math.round(G.reputation)}    Legitimacy: ${Math.round(G.legitimacy[ME()]||0)}\n`;
+  out+="".padEnd(64,"—")+"\n";
+  if(!G.annals.length) out+="(No great deeds recorded yet.)\n";
+  G.annals.forEach(a=>{ out+=`${a.year} AD, ${a.season}  —  ${a.text}\n`; });
+  return out;
+}
+function openAnnals(){
+  const icon={triumph:"⚑",battle:"⚔",death:"✝",event:"◦"};
+  const rows = G.annals.length? G.annals.map(a=>{
+    const col=a.cat==="triumph"?"#2f6b54":a.cat==="battle"?"#9c2b25":a.cat==="death"?"#7a4a44":"#5b4a36";
+    return `<div class="battle-line"><div style="font-size:12px;color:#7a6a50;min-width:96px">${a.year} AD · ${a.season}</div>
+      <div class="battle-side" style="flex:1;color:${col}">${icon[a.cat]||"◦"} ${a.text}</div></div>`;}).join("")
+    : '<div class="hint">Your reign has yet to make history. Fight battles, win over heroes, and shape the realm — your deeds will be recorded here.</div>';
+  const ruler=rulerOf(ME());
+  modal(`Annals of ${FACTIONS[ME()].short} — ${G.scen.name}`,
+    `<div class="hint">${ruler?ruler.name:"You"} · ${citiesOf(ME()).length}/${G.cities.length} cities · Honor ${Math.round(G.reputation)} · Legitimacy ${Math.round(G.legitimacy[ME()]||0)}</div>
+     <div style="max-height:48vh;overflow:auto;margin-top:8px">${rows}</div>`,
+    [{t:"⧉ Copy to share",fn:()=>{const t=annalsText();
+        if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast("Annals copied to clipboard."),()=>toast("Copy failed; select the log text manually."));}
+        else toast("Clipboard unavailable in this view.");}},
+     {t:"Close",cls:"primary",fn:()=>{ if(G.over){closeModal();showStart();} else closeModal(); }}]);
+}
+
+// ---------- Onboarding tutorial ----------
+let seenTutorial=false;
+const TIPS=[
+  {t:"Welcome, warlord",b:"You lead one faction in the collapse of Han China. Your goal: unify the realm and claim the <b>Mandate of Heaven</b> — hold a commanding majority of all cities, or the imperial seat at high legitimacy."},
+  {t:"The realm map",b:"Each disc is a city, colored by its faction (yours glows when selected). ★ marks a capital, ⚑ shows stationed officers, and the number is its garrison. Dashed blue links are <b>river crossings</b> — fought as naval battles."},
+  {t:"Govern your cities",b:"Click one of <b>your</b> cities and spend <b>Actions</b> (top bar) to Develop the economy, Train troops, build Walls, Pacify unrest, or Recruit nearby unaligned heroes. Actions refresh each turn."},
+  {t:"Wage war",b:"Select your city, choose <b>March Army</b>, then click an adjacent enemy city. Fight the battle yourself in real-time-with-pause (pause with Space, use officer <b>stratagems</b>), or Auto-resolve. Win, and you decide the fate of captured officers."},
+  {t:"Rule the court",b:"Officers have <b>loyalty</b> that drifts with your fortunes and honor. Neglect them and they defect — or rebel. <b>Reward</b> them, name an <b>heir</b> so your cause survives your ruler's death, and use <b>Diplomacy</b> (⚑) for tribute, marriage, and alliances."},
+  {t:"Your legend awaits",b:"Every great deed is written to your <b>Annals</b> (📜) — a chronicle of your reign you can copy and share. Now: End Turn to let the realm move, and begin your ascent. Fortune favors the bold."},
+];
+function showTutorial(i){
+  i=i||0; const tip=TIPS[i];
+  const last=i>=TIPS.length-1;
+  modal(`${tip.t}  ·  ${i+1}/${TIPS.length}`,`<div class="evt">${tip.b}</div>`,
+    [ ...(i>0?[{t:"◂ Back",fn:()=>showTutorial(i-1)}]:[]),
+      ...(!last?[{t:"Skip",fn:()=>{seenTutorial=true;closeModal();}}]:[]),
+      {t:last?"Begin ▸":"Next ▸",cls:"primary",fn:()=>{ if(last){seenTutorial=true;closeModal();} else showTutorial(i+1); }} ]);
+}
 
 // ---------- Start screen ----------
 function showStart(){
@@ -1403,6 +1465,7 @@ function beginGame(scenId,fac){
   // auto-focus the player's capital
   const cap=citiesOf(ME()).find(c=>c.base)||citiesOf(ME())[0];
   if(cap){G.sel=cap.id;renderAll();}
+  if(!seenTutorial)showTutorial(0);
 }
 
 // ---------- Boot ----------

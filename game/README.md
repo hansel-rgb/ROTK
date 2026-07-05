@@ -26,7 +26,10 @@ dependencies — pure HTML/Canvas/JS. On launch you pick a **scenario** and the
 | `05` Battle layer — land | **Real-time-with-pause tactical battles**: unit movement, troop-type counters, terrain (forest / hill / river), fire stratagems, charge / volley / rally / heal / ambush, cinematic **duels**, morale & routing, sieges |
 | `05` Battle layer — naval | **Naval battles** on river crossings: ships instead of troops, water battlefield, cavalry weakened, **Navy-trait officers** (Gan Ning) strengthened, and **fire attacks that leap between ships** — the Red Cliffs fantasy |
 | Aftermath | **Captured-officer decisions** (recruit / release / imprison / execute) and a **prisoner-management screen** to recruit, release, or execute held captives later — all with honor and sworn-bond consequences |
-| `06` Art & UX | Ink-wash parchment map, lacquer/gold chrome, faction colors, click-the-map UX, alert log, modal events, battle HUD, scenario/faction select |
+| `02` Annals | An auto-written **chronicle of your reign** (📜) — battles, betrayals, successions, deaths, alliances — that reads like a history and can be **copied to share**, shown at game's end |
+| `01` Onboarding | A **6-step tutorial** on first launch (replayable via **?**) covering the map, actions, war, and the court |
+| Balance | Tuned via **batch simulation** (hundreds of AI-vs-AI games): no trivial steamrolls, a reachable "commanding majority" victory, an anti-snowball coalition that slows but doesn't wall off a leader, and winnable-but-demanding underdog scenarios |
+| `06` Art & UX | Ink-wash parchment map, lacquer/gold chrome, faction colors, click-the-map UX, alert log, modal events, battle HUD, scenario/faction select, tutorial |
 
 ## How to play
 
@@ -52,8 +55,10 @@ dependencies — pure HTML/Canvas/JS. On launch you pick a **scenario** and the
 10. **Diplomacy** (⚑ top bar): send **tribute**, arrange a **marriage**, or form an
     **alliance** to warm relations and deter attacks — but beware the **coalition**
     that forms if you grow too dominant.
-11. **End Turn** to let the AI act. **Win** by holding 60% of all cities, or by
-    holding the imperial seat at high **legitimacy** (the Mandate of Heaven).
+11. **Chronicle:** your reign is auto-written to the **Annals** (📜) — read and
+    copy it to share your story. New to the game? The **?** button replays the tutorial.
+12. **End Turn** to let the AI act. **Win** by holding a commanding majority of
+    cities (~55%), or the imperial seat at high **legitimacy** (the Mandate of Heaven).
 
 This remains a balance/feel prototype — the engine-agnostic place to validate
 that the loop is fun before committing to a 3D engine, as `docs/07` describes.
