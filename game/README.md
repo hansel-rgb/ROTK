@@ -34,7 +34,7 @@ dependencies — pure HTML/Canvas/JS. On launch you pick a **scenario** and the
 | `02` Annals | An auto-written **chronicle of your reign** (📜) — battles, betrayals, successions, deaths, alliances — that reads like a history and can be **copied to share**, shown at game's end |
 | `01` Onboarding | A **6-step tutorial** on first launch (replayable via **?**) covering the map, actions, war, and the court |
 | Balance | Tuned via **batch simulation** (hundreds of AI-vs-AI games): no trivial steamrolls, a reachable "commanding majority" victory, an anti-snowball coalition that slows but doesn't wall off a leader, and winnable-but-demanding underdog scenarios |
-| `06` Art & UX | Ink-wash parchment map, lacquer/gold chrome, faction colors, click-the-map UX, alert log, modal events, battle HUD, scenario/faction select, tutorial |
+| `06` Art & UX | A **modern dark "strategy console" UI** — charcoal panels, stat chips, clean system-sans type, a cinnabar accent with jade/amber semantics, glassy overlays, and a cool grid-textured map — plus click-the-map UX, alert log, modal events, battle HUD, scenario/faction select, and tutorial |
 
 ## How to play
 
