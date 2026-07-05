@@ -477,6 +477,8 @@ function resolveBattle(from,to,army,atkOs,playerAttacker){
   const dLoss=Math.round(to.troops*(win?0.6+ratio*0.35 :0.18+(1-ratio)*0.4));
   const survivors=Math.max(0,army-aLoss);
   to.troops=Math.max(0,to.troops-dLoss);
+  // a decisive win routs the garrison and takes the city; a narrow win only bloodies it
+  const routed = win && to.troops <= Math.max(800, survivors*0.15);
 
   const dueler=atkOs.find(o=>/Duelist/.test(o.trait||""));
   const ddef=D.os.find(o=>/Duelist/.test(o.trait||""));
@@ -484,7 +486,7 @@ function resolveBattle(from,to,army,atkOs,playerAttacker){
   if(dueler&&ddef){const dw=dueler.mgt+Math.random()*40>ddef.mgt+Math.random()*40;
     duelLine=`<div class="battle-line"><div class="battle-side">⚔ Duel: <b>${dueler.name}</b> vs ${ddef.name}</div><div class="battle-side">${dw?"<b style='color:#2f6b54'>"+dueler.name+" prevails!</b>":"<b style='color:#9c2b25'>"+ddef.name+" holds!</b>"}</div></div>`;}
 
-  if(win && to.troops<=0){
+  if(routed){
     // capture city
     const prevOwner=to.owner;
     to.owner="shu";to.troops=survivors;to.order=Math.max(40,to.order-25);to.justTook=true;
@@ -599,7 +601,8 @@ function aiResolve(from,to,army,f){
   to.troops=Math.max(0,to.troops-dLoss);
   const surv=Math.max(0,army-aLoss);
   const wasMine=to.owner==="shu";
-  if(win&&to.troops<=0){
+  const routed = win && to.troops <= Math.max(800, surv*0.15);
+  if(routed){
     const prev=to.owner;to.owner=f;to.troops=surv;to.order=Math.max(40,to.order-20);
     officersAt(to.id).slice().forEach(o=>relocateOfficerHome(o,prev));
     if(wasMine)log(`${FACTIONS[f].name} has captured ${to.name} from you!`,"war");
