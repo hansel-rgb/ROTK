@@ -17,7 +17,9 @@ dependencies — pure HTML/Canvas/JS. On launch you pick a **scenario** and the
 |------------|------------------|
 | `02` Setting & scenarios | **4 playable scenarios** — *Contending Heroes* (194), *Guandu* (200), *Red Cliffs* (208), *Three Kingdoms* (220) — on a **24-city map of China** with rivers, passes, and regions. Pick your faction (Shu / Wei / Wu / Yuan Shao where historical). |
 | `03` Officers | 31-officer historical roster (Liu Bei, Guan Yu, Zhuge Liang, Cao Cao, Sima Yi, Sun Quan, Zhou Yu, Lü Bu, Yuan Shao, Ma Chao…) with the 5 ROTK stats, traits, recruitment, capture, defection, and per-scenario placement |
-| `04` Strategic layer | Turn/season loop, action points, economy (gold/food/order), develop / train / fortify / pacify / recruit / march, **alliances with any AI faction**, honor/reputation, AI opponents, seasonal events |
+| `04` Strategic layer | Turn/season loop, action points, economy (gold/food/order), develop / train / fortify / pacify / recruit / march, **alliances with any AI faction**, honor/reputation, seasonal events |
+| `03` Living officers | **Loyalty drifts** each turn (with your momentum, honor, posts, ambition, and sworn bonds); neglected officers **defect** to rivals, and powerful ambitious ones **rebel** and seize their city. **Reward** officers to hold their allegiance. Officers **age and die**, and **next-generation heroes** (Jiang Wei, Deng Ai, Sima Zhao…) come of age over a long campaign. |
+| Strategic AI | Opponents **reward their own restless officers**, **reinforce threatened borders**, and **attack the highest-value city they can actually beat** — they genuinely expand across the map |
 | `05` Battle layer — land | **Real-time-with-pause tactical battles**: unit movement, troop-type counters, terrain (forest / hill / river), fire stratagems, charge / volley / rally / heal / ambush, cinematic **duels**, morale & routing, sieges |
 | `05` Battle layer — naval | **Naval battles** on river crossings: ships instead of troops, water battlefield, cavalry weakened, **Navy-trait officers** (Gan Ning) strengthened, and **fire attacks that leap between ships** — the Red Cliffs fantasy |
 | Aftermath | **Captured-officer decisions** (recruit / release / imprison / execute) and a **prisoner-management screen** to recruit, release, or execute held captives later — all with honor and sworn-bond consequences |
@@ -39,7 +41,10 @@ dependencies — pure HTML/Canvas/JS. On launch you pick a **scenario** and the
    **captured officers**.
 7. **Prisoners:** the **⛓ button** (top bar) opens the prisoner screen to recruit,
    release, or execute captives you're holding.
-8. **End Turn** to let the AI act. **Win** by holding 60% of all cities.
+8. **Keep your officers loyal:** watch the *Restless officers* count in the realm
+   panel and **Reward** officers (in the city panel) before neglect turns them —
+   a disloyal officer may defect, and an ambitious one may rebel and take his city.
+9. **End Turn** to let the AI act. **Win** by holding 60% of all cities.
 
 This remains a balance/feel prototype — the engine-agnostic place to validate
 that the loop is fun before committing to a 3D engine, as `docs/07` describes.

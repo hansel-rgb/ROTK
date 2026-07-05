@@ -156,40 +156,52 @@ const FACTIONS = {
 };
 
 // ---------- Officers (stats; faction is scenario-assigned) ----------
+// born = approximate historical birth year; amb = ambition (0-100)
 const ROSTER = [
-  {id:"liubei",  name:"Liu Bei",     cmd:75,mgt:73,int:74,pol:80,cha:99},
-  {id:"guanyu",  name:"Guan Yu",     cmd:95,mgt:97,int:75,pol:62,cha:94,trait:"Duelist"},
-  {id:"zhangfei",name:"Zhang Fei",   cmd:85,mgt:98,int:30,pol:22,cha:45,trait:"Duelist"},
-  {id:"zhaoyun", name:"Zhao Yun",    cmd:91,mgt:96,int:76,pol:65,cha:81,trait:"Duelist"},
-  {id:"zhuge",   name:"Zhuge Liang", cmd:92,mgt:38,int:100,pol:95,cha:92,trait:"Fire Stratagem"},
-  {id:"huangzhong",name:"Huang Zhong",cmd:88,mgt:93,int:62,pol:50,cha:75,trait:"Archer"},
-  {id:"weiyan",  name:"Wei Yan",     cmd:84,mgt:90,int:65,pol:48,cha:60,trait:"Cavalry"},
-  {id:"machao",  name:"Ma Chao",     cmd:90,mgt:96,int:58,pol:50,cha:82,trait:"Cavalry"},
-  {id:"pangtong",name:"Pang Tong",   cmd:80,mgt:42,int:97,pol:88,cha:79,trait:"Ambush"},
-  {id:"caocao",  name:"Cao Cao",     cmd:91,mgt:72,int:91,pol:94,cha:96},
-  {id:"xiahou",  name:"Xiahou Dun",  cmd:90,mgt:90,int:60,pol:52,cha:78,trait:"Cavalry"},
-  {id:"zhangliao",name:"Zhang Liao", cmd:93,mgt:92,int:78,pol:58,cha:80,trait:"Cavalry"},
-  {id:"simayi",  name:"Sima Yi",     cmd:88,mgt:50,int:98,pol:93,cha:84,trait:"Ambush"},
-  {id:"xuhuang", name:"Xu Huang",    cmd:88,mgt:89,int:70,pol:55,cha:72},
-  {id:"zhanghe", name:"Zhang He",    cmd:90,mgt:88,int:75,pol:60,cha:72,trait:"Cavalry"},
-  {id:"sunquan", name:"Sun Quan",    cmd:78,mgt:70,int:78,pol:85,cha:92},
-  {id:"sunce",   name:"Sun Ce",      cmd:90,mgt:92,int:68,pol:62,cha:88,trait:"Duelist"},
-  {id:"zhouyu",  name:"Zhou Yu",     cmd:96,mgt:71,int:96,pol:86,cha:90,trait:"Fire Stratagem"},
-  {id:"luxun",   name:"Lu Xun",      cmd:93,mgt:67,int:95,pol:82,cha:78,trait:"Fire Stratagem"},
-  {id:"ganning", name:"Gan Ning",    cmd:86,mgt:94,int:62,pol:40,cha:70,trait:"Navy"},
-  {id:"taishi",  name:"Taishi Ci",   cmd:85,mgt:92,int:60,pol:48,cha:74,trait:"Duelist"},
-  {id:"yuanshao",name:"Yuan Shao",   cmd:80,mgt:68,int:72,pol:82,cha:88},
-  {id:"yanliang",name:"Yan Liang",   cmd:82,mgt:93,int:40,pol:35,cha:60,trait:"Duelist"},
-  {id:"wenchou", name:"Wen Chou",    cmd:80,mgt:92,int:42,pol:33,cha:58,trait:"Duelist"},
-  {id:"lubu",    name:"Lu Bu",       cmd:88,mgt:100,int:26,pol:18,cha:42,trait:"Duelist"},
-  {id:"diaochan",name:"Diao Chan",   cmd:10,mgt:15,int:78,pol:60,cha:99},
-  {id:"dongzhuo",name:"Dong Zhuo",   cmd:82,mgt:85,int:58,pol:40,cha:30},
-  {id:"yuanshu", name:"Yuan Shu",    cmd:68,mgt:55,int:60,pol:66,cha:55},
-  {id:"liubiao", name:"Liu Biao",    cmd:70,mgt:50,int:68,pol:78,cha:76},
-  {id:"mateng",  name:"Ma Teng",     cmd:83,mgt:88,int:55,pol:52,cha:74,trait:"Cavalry"},
-  {id:"huatuo",  name:"Hua Tuo",     cmd:20,mgt:30,int:88,pol:70,cha:80,trait:"Healer"},
+  {id:"liubei",  name:"Liu Bei",     cmd:75,mgt:73,int:74,pol:80,cha:99,born:161,amb:60},
+  {id:"guanyu",  name:"Guan Yu",     cmd:95,mgt:97,int:75,pol:62,cha:94,trait:"Duelist",born:160,amb:30},
+  {id:"zhangfei",name:"Zhang Fei",   cmd:85,mgt:98,int:30,pol:22,cha:45,trait:"Duelist",born:165,amb:28},
+  {id:"zhaoyun", name:"Zhao Yun",    cmd:91,mgt:96,int:76,pol:65,cha:81,trait:"Duelist",born:168,amb:25},
+  {id:"zhuge",   name:"Zhuge Liang", cmd:92,mgt:38,int:100,pol:95,cha:92,trait:"Fire Stratagem",born:181,amb:40},
+  {id:"huangzhong",name:"Huang Zhong",cmd:88,mgt:93,int:62,pol:50,cha:75,trait:"Archer",born:145,amb:35},
+  {id:"weiyan",  name:"Wei Yan",     cmd:84,mgt:90,int:65,pol:48,cha:60,trait:"Cavalry",born:174,amb:72},
+  {id:"machao",  name:"Ma Chao",     cmd:90,mgt:96,int:58,pol:50,cha:82,trait:"Cavalry",born:176,amb:70},
+  {id:"pangtong",name:"Pang Tong",   cmd:80,mgt:42,int:97,pol:88,cha:79,trait:"Ambush",born:179,amb:50},
+  {id:"caocao",  name:"Cao Cao",     cmd:91,mgt:72,int:91,pol:94,cha:96,born:155,amb:80},
+  {id:"xiahou",  name:"Xiahou Dun",  cmd:90,mgt:90,int:60,pol:52,cha:78,trait:"Cavalry",born:157,amb:30},
+  {id:"zhangliao",name:"Zhang Liao", cmd:93,mgt:92,int:78,pol:58,cha:80,trait:"Cavalry",born:169,amb:45},
+  {id:"simayi",  name:"Sima Yi",     cmd:88,mgt:50,int:98,pol:93,cha:84,trait:"Ambush",born:179,amb:92},
+  {id:"xuhuang", name:"Xu Huang",    cmd:88,mgt:89,int:70,pol:55,cha:72,born:169,amb:40},
+  {id:"zhanghe", name:"Zhang He",    cmd:90,mgt:88,int:75,pol:60,cha:72,trait:"Cavalry",born:167,amb:55},
+  {id:"sunquan", name:"Sun Quan",    cmd:78,mgt:70,int:78,pol:85,cha:92,born:182,amb:65},
+  {id:"sunce",   name:"Sun Ce",      cmd:90,mgt:92,int:68,pol:62,cha:88,trait:"Duelist",born:175,amb:70},
+  {id:"zhouyu",  name:"Zhou Yu",     cmd:96,mgt:71,int:96,pol:86,cha:90,trait:"Fire Stratagem",born:175,amb:45},
+  {id:"luxun",   name:"Lu Xun",      cmd:93,mgt:67,int:95,pol:82,cha:78,trait:"Fire Stratagem",born:183,amb:42},
+  {id:"ganning", name:"Gan Ning",    cmd:86,mgt:94,int:62,pol:40,cha:70,trait:"Navy",born:175,amb:60},
+  {id:"taishi",  name:"Taishi Ci",   cmd:85,mgt:92,int:60,pol:48,cha:74,trait:"Duelist",born:166,amb:40},
+  {id:"yuanshao",name:"Yuan Shao",   cmd:80,mgt:68,int:72,pol:82,cha:88,born:154,amb:82},
+  {id:"yanliang",name:"Yan Liang",   cmd:82,mgt:93,int:40,pol:35,cha:60,trait:"Duelist",born:160,amb:45},
+  {id:"wenchou", name:"Wen Chou",    cmd:80,mgt:92,int:42,pol:33,cha:58,trait:"Duelist",born:160,amb:45},
+  {id:"lubu",    name:"Lu Bu",       cmd:88,mgt:100,int:26,pol:18,cha:42,trait:"Duelist",born:161,amb:96},
+  {id:"diaochan",name:"Diao Chan",   cmd:10,mgt:15,int:78,pol:60,cha:99,born:172,amb:30},
+  {id:"dongzhuo",name:"Dong Zhuo",   cmd:82,mgt:85,int:58,pol:40,cha:30,born:138,amb:90},
+  {id:"yuanshu", name:"Yuan Shu",    cmd:68,mgt:55,int:60,pol:66,cha:55,born:155,amb:88},
+  {id:"liubiao", name:"Liu Biao",    cmd:70,mgt:50,int:68,pol:78,cha:76,born:142,amb:40},
+  {id:"mateng",  name:"Ma Teng",     cmd:83,mgt:88,int:55,pol:52,cha:74,trait:"Cavalry",born:156,amb:58},
+  {id:"huatuo",  name:"Hua Tuo",     cmd:20,mgt:30,int:88,pol:70,cha:80,trait:"Healer",born:140,amb:20},
 ];
 const ROSTER_BY = Object.fromEntries(ROSTER.map(o=>[o.id,o]));
+// next-generation heroes who "come of age" over a long campaign
+const NEXTGEN = [
+  {id:"guanxing", name:"Guan Xing",  cmd:82,mgt:88,int:66,pol:55,cha:78,trait:"Duelist",amb:40},
+  {id:"zhangbao", name:"Zhang Bao",  cmd:80,mgt:89,int:40,pol:35,cha:60,trait:"Cavalry",amb:38},
+  {id:"jiangwei", name:"Jiang Wei",  cmd:90,mgt:89,int:92,pol:70,cha:78,trait:"Ambush",amb:55},
+  {id:"simazhao", name:"Sima Zhao",  cmd:82,mgt:66,int:90,pol:88,cha:78,amb:90},
+  {id:"dengai",   name:"Deng Ai",    cmd:92,mgt:84,int:88,pol:74,cha:66,trait:"Cavalry",amb:60},
+  {id:"lukang",   name:"Lu Kang",    cmd:90,mgt:70,int:88,pol:80,cha:76,trait:"Fire Stratagem",amb:45},
+  {id:"wenyang",  name:"Wen Yang",   cmd:84,mgt:95,int:55,pol:40,cha:70,trait:"Duelist",amb:52},
+  {id:"zhonghui", name:"Zhong Hui",  cmd:86,mgt:60,int:91,pol:82,cha:70,trait:"Ambush",amb:85},
+];
 
 // ---------- Full China map (geography only; scenarios set ownership) ----------
 const CITY_DEFS = [
@@ -308,7 +320,8 @@ function initGame(scenId, playerFac){
   for(const f in scen.officers){ scen.officers[f].forEach(id=>{facOf[id]=f;}); }
   ROSTER.forEach(base=>{
     const f=facOf[base.id]; if(!f)return; // not present this scenario
-    officers.push({...base, fac:f, loyalty:90, where:null});
+    const age=Math.max(18, scen.year-(base.born||scen.year-35));
+    officers.push({...base, fac:f, loyalty:88, where:null, age, ambition:base.amb??45});
   });
   const obyId=Object.fromEntries(officers.map(o=>[o.id,o]));
   // place officers in their faction's cities (capital first)
@@ -329,6 +342,7 @@ function initGame(scenId, playerFac){
     turn:1, season:0, cities, cityById, officers, obyId,
     treasury, foodStore, ap:4, maxAp:4, sel:null, marchFrom:null, over:false,
     mode:"map", reputation:55, prisoners:[], ally:null,
+    momentum:{}, nextgen:NEXTGEN.map(g=>({...g})),
   };
   const facName=FACTIONS[playerFac].name;
   log(`${scen.name} (${scen.year} AD). You lead ${facName}. Recruit heroes, master the realm, and claim the Mandate of Heaven.`,"gold");
@@ -396,10 +410,12 @@ function draw(){
 
 // ---------- Side panel ----------
 function pct(v,max,col){return `<div class="bar"><i style="width:${Math.max(0,Math.min(100,v/max*100))}%;background:${col}"></i></div>`;}
-function officerRow(o){return `<div class="officer">
+function officerRow(o,mine){
+  const lc=o.loyalty<30?"#c0392b":o.loyalty<60?"#c9772f":"#2f6b54";
+  return `<div class="officer">
   <div class="av" style="background:${facColor(o.fac)}">${initials(o.name)}</div>
-  <div class="nm">${o.name}${o.trait?` <small>${o.trait}</small>`:" <small>&nbsp;</small>"}</div>
-  <div class="st">CMD ${o.cmd} · MGT ${o.mgt}<br>INT ${o.int} · CHA ${o.cha}</div></div>`;}
+  <div class="nm">${o.name}${o.trait?` · ${o.trait}`:""}<small>Loyalty <b style="color:${lc}">${Math.round(o.loyalty)}</b> · Age ${o.age||"?"}${o.ambition>=70?' · <span style="color:#c9772f">ambitious</span>':""}</small></div>
+  <div class="st">CMD ${o.cmd} · MGT ${o.mgt}<br>${mine?`<button style="font-size:10px;padding:2px 7px;margin-top:2px" onclick="rewardOfficer('${o.id}')">Reward</button>`:`INT ${o.int} · CHA ${o.cha}`}</div></div>`;}
 function renderSide(){
   if(G.mode==="battle"){return renderBattleSide();}
   const head=document.getElementById("sidehead"),body=document.getElementById("sidebody");
@@ -409,10 +425,12 @@ function renderSide(){
       <div class="card"><h3>${FACTIONS[ME()].name}</h3>
       <div class="row"><span>Cities</span><b>${mine.length}/${G.cities.length}</b></div>
       <div class="row"><span>Total troops</span><b>${fmt(mine.reduce((s,c)=>s+c.troops,0))}</b></div>
-      <div class="row"><span>Officers</span><b>${G.officers.filter(o=>o.fac===ME()).length}</b></div>
+      <div class="row"><span>Officers</span><b>${G.officers.filter(o=>o.fac===ME()&&!o._prisoner).length}</b></div>
       <div class="row"><span>Honor</span><b>${Math.round(G.reputation)}</b></div>
+      ${(()=>{const r=G.officers.filter(o=>o.fac===ME()&&!o._prisoner&&o.loyalty<40).length;return r?`<div class="row"><span style="color:#9c2b25">Restless officers</span><b style="color:#9c2b25">${r}</b></div>`:"";})()}
       ${G.ally?`<div class="row"><span>Ally</span><b>${FACTIONS[G.ally].short}</b></div>`:""}
-      </div>`; return;}
+      </div>
+      <div class="hint" style="margin-top:6px">Neglected officers lose loyalty and may defect or rebel. Select a city and <b>Reward</b> them to keep their allegiance.</div>`; return;}
   const c=G.cityById[G.sel],mine=c.owner===ME();
   head.textContent=c.name+" — "+FACTIONS[c.owner].short;
   const os=officersAt(c.id).filter(o=>!o._prisoner);
@@ -443,7 +461,7 @@ function renderSide(){
       </div>`;
   }
   h+=`<div class="card"><h3>Officers <span class="tag" style="background:#5b4a36">${os.length}</span></h3>
-      ${os.length?os.map(officerRow).join(""):'<div class="hint">No officers stationed here.</div>'}</div>`;
+      ${os.length?os.map(o=>officerRow(o,mine)).join(""):'<div class="hint">No officers stationed here.</div>'}</div>`;
   body.innerHTML=h;
 }
 
@@ -572,8 +590,10 @@ function resolveBattle(from,to,army,atkOs){
 // ---------- End turn / AI ----------
 function endTurn(){
   if(G.over||G.mode==="battle")return;
+  const before={};G.active.forEach(f=>before[f]=citiesOf(f).length);
   upkeep(ME());
   G.active.filter(f=>f!==ME()).forEach(f=>{if(f!=="neu")upkeep(f);aiTurn(f);});
+  G.momentum={};G.active.forEach(f=>G.momentum[f]=citiesOf(f).length-before[f]);
   G.cities.forEach(c=>{
     if(c.justTook)c.justTook=false;
     if(c.order<40&&c.owner!=="neu"&&Math.random()<0.3){const loss=Math.floor(c.troops*0.1);c.troops-=loss;
@@ -581,8 +601,88 @@ function endTurn(){
     c.order=Math.min(100,c.order+3);
   });
   G.season=(G.season+1)%4;G.turn++;G.ap=G.maxAp;
+  loyaltyPhase();
+  if(G.season===0)agingPhase();
   renderAll();maybeEvent();checkVictory();
   if(!G.over)log(`— ${SEASONS[G.season]}, Year ${G.scen.year+Math.floor((G.turn-1)/4)} —`);
+}
+// ---------- Living-officer simulation ----------
+function loyaltyPhase(){
+  const disloyal=[];
+  G.officers.forEach(o=>{
+    if(o._prisoner)return;
+    const fac=o.fac; let d=0;
+    d += (G.momentum[fac]||0)*3;                      // winning lifts morale, losing erodes it
+    const rep = fac===ME()? G.reputation : 62;         // your honor sways your court
+    d += (rep-55)/12;
+    const city=G.cityById[o.where];
+    if(!(city&&city.owner===fac)) d-=2;                // adrift with no post
+    if(fac!=="neu"&&citiesOf(fac).length<=1) d -= o.ambition/45;   // a dying cause tempts the ambitious
+    d -= (o.ambition-45)/32;                           // baseline ambition erosion
+    if(G.officers.some(x=>x.fac===fac&&x.id!==o.id&&sworn(x,o))) d+=2.5; // sworn brothers hold fast
+    d += (Math.random()-0.5)*2;
+    o.loyalty=Math.max(0,Math.min(100,o.loyalty+d));
+    if(fac===ME()&&o.loyalty<30) disloyal.push(o);
+  });
+  checkDefections();
+  disloyal.forEach(o=>{ if(G.obyId[o.id]&&o.fac===ME()) log(`⚠ ${o.name}'s loyalty is wavering (${Math.round(o.loyalty)}). Reward him before he turns.`,"war"); });
+}
+function checkDefections(){
+  G.officers.slice().forEach(o=>{
+    if(o._prisoner||o.fac==="neu"||!G.obyId[o.id])return;
+    if(o.loyalty>=26)return;
+    const city=G.cityById[o.where];
+    // rebellion: a powerful, ambitious, disloyal top officer seizes his city
+    if(o.loyalty<15 && o.ambition>=70 && city && city.owner===o.fac && city.troops>4000){
+      const top=officersAt(city.id).sort((a,b)=>(b.cmd+b.mgt)-(a.cmd+a.mgt))[0];
+      if(top&&top.id===o.id&&Math.random()<0.5){ rebel(o,city); return; }
+    }
+    const pDef=(26-o.loyalty)*o.ambition/1500;
+    if(Math.random()<pDef) defect(o);
+  });
+}
+function defect(o){
+  const from=o.fac;
+  const nb=neighborsOf(o.where).map(id=>G.cityById[id]).filter(c=>c.owner!==from&&c.owner!=="neu");
+  const target = nb.sort((a,b)=>b.troops-a.troops)[0];
+  const cur=G.cityById[o.where]; if(cur)cur.officers=cur.officers.filter(x=>x!==o.id);
+  if(target){ o.fac=target.owner; o.where=target.id; o.loyalty=64; target.officers.push(o.id);
+    log(`✕ ${o.name} defects from ${FACTIONS[from].short} to ${FACTIONS[target.owner].short}!`, from===ME()?"war":(target.owner===ME()?"good":undefined));
+  } else { o.fac="neu"; o.loyalty=70; if(cur)cur.officers.push(o.id);
+    log(`✕ ${o.name} abandons ${FACTIONS[from].short} and turns freelance.`, from===ME()?"war":undefined); }
+}
+function rebel(o,city){
+  const from=o.fac;
+  city.owner="neu"; o.fac="neu"; o.loyalty=75;
+  // other officers here may scatter home
+  officersAt(city.id).forEach(x=>{ if(x.id!==o.id&&Math.random()<0.6) relocateOfficerHome(x,from); });
+  log(`⚔ ${o.name} raises the banner of revolt and seizes ${city.name} from ${FACTIONS[from].short}!`, from===ME()?"war":undefined);
+}
+function agingPhase(){
+  G.officers.slice().forEach(o=>{
+    o.age=(o.age||30)+1;
+    if(o.age>55){ const chance=(o.age-55)*0.010+0.004;
+      if(Math.random()<chance){ const nm=o.name,fac=o.fac; removeOfficer(o);
+        log(`✝ ${nm} passes away at the age of ${o.age}.`, fac===ME()?"war":undefined); } }
+  });
+  if(G.nextgen.length && Math.random()<0.55){
+    const facs=G.active.filter(f=>f!=="neu"&&citiesOf(f).length);
+    if(facs.length){ const g=G.nextgen.shift();
+      const fac=facs[Math.floor(Math.random()*facs.length)];
+      const homes=citiesOf(fac); const c=homes[Math.floor(Math.random()*homes.length)];
+      const o={...g, fac, loyalty:82, where:c.id, age:20, ambition:g.amb??45};
+      G.officers.push(o); G.obyId[o.id]=o; c.officers.push(o.id);
+      log(`A new hero comes of age: ${o.name} enters the service of ${FACTIONS[fac].short}.`, fac===ME()?"good":undefined);
+    }
+  }
+}
+function rewardOfficer(id){
+  const o=G.obyId[id]; if(!o||o.fac!==ME())return;
+  if((G.treasury[ME()]||0)<150){toast("Not enough gold to reward (150).");return;}
+  if(o._rewardedTurn===G.turn){toast(`${o.name} was already rewarded this turn.`);return;}
+  G.treasury[ME()]-=150; o.loyalty=Math.min(100,o.loyalty+12); o._rewardedTurn=G.turn;
+  log(`You reward ${o.name} — loyalty rises to ${Math.round(o.loyalty)}.`,"gold");
+  renderAll();
 }
 function upkeep(f){
   let gold=0,food=0;
@@ -596,18 +696,30 @@ function upkeep(f){
 function aiTurn(f){
   if(f==="neu")return;
   const mine=citiesOf(f);
-  mine.forEach(c=>{if((G.treasury[f]||0)>500&&Math.random()<0.4){c.devEcon++;G.treasury[f]-=300;}
-    if((G.treasury[f]||0)>600&&Math.random()<0.5){c.troops+=2500;G.treasury[f]-=400;}});
-  let acted=false;
-  for(const c of mine.sort((a,b)=>b.troops-a.troops)){
-    if(acted)break;
-    const targets=neighborsOf(c.id).map(id=>G.cityById[id])
-      .filter(t=>t.owner!==f && !(f===G.ally&&t.owner===ME()) && !(t.owner===G.ally&&f===ME()));
-    if(!targets.length)continue;
-    targets.sort((a,b)=>(a.troops+a.wall*100)-(b.troops+b.wall*100));
-    const t=targets[0];
-    if(c.troops>t.troops*1.15&&c.troops>4000){const army=Math.floor(c.troops*0.65);c.troops-=army;aiResolve(c,t,army,f);acted=true;}
+  // keep the court loyal: reward the most restless officer when affordable
+  const restless=G.officers.filter(o=>o.fac===f&&!o._prisoner&&o.loyalty<48).sort((a,b)=>a.loyalty-b.loyalty);
+  if(restless.length&&(G.treasury[f]||0)>500){restless[0].loyalty=Math.min(100,restless[0].loyalty+12);G.treasury[f]-=200;}
+  // is a border city threatened? reinforce it; otherwise grow economy
+  mine.forEach(c=>{
+    const threat=Math.max(0,...neighborsOf(c.id).map(id=>G.cityById[id]).filter(t=>t.owner!==f&&t.owner!=="neu"&&t.owner!==(f===G.ally?ME():null)).map(t=>t.troops));
+    if(threat>c.troops&&(G.treasury[f]||0)>400){c.troops+=2500;G.treasury[f]-=400;}
+    else if((G.treasury[f]||0)>500&&Math.random()<0.45){c.devEcon++;G.treasury[f]-=300;}
+    else if((G.treasury[f]||0)>600&&Math.random()<0.4){c.troops+=2500;G.treasury[f]-=400;}
+  });
+  // attack the most valuable adjacent target we can actually beat.
+  // feasibility is gated by the troop check; `value` only ranks preference.
+  let best=null,bestScore=-1e9,bestFrom=null;
+  for(const c of mine){
+    if(c.troops<4500)continue;
+    neighborsOf(c.id).map(id=>G.cityById[id])
+      .filter(t=>t.owner!==f && !(f===G.ally&&t.owner===ME()))
+      .forEach(t=>{
+        if(c.troops<=t.troops*1.15)return;               // only strike when we outnumber
+        const value=10 + (t.econ+(t.base?5:0))*10 + (t.owner==="neu"?15:0) - t.wall*0.3 - t.troops/1000;
+        if(value>bestScore){bestScore=value;best=t;bestFrom=c;}
+      });
   }
+  if(best){const army=Math.floor(bestFrom.troops*0.65);bestFrom.troops-=army;aiResolve(bestFrom,best,army,f);}
 }
 function aiResolve(from,to,army,f){
   const atkOs=officersAt(from.id);
