@@ -89,6 +89,26 @@ canvas{display:block;width:100%;height:100%}
 #help{position:absolute;top:10px;left:10px;background:rgba(21,16,11,.82);color:#d8cbb0;
   padding:6px 10px;border-radius:6px;font-size:12px;border:1px solid var(--gold);max-width:240px;line-height:1.4}
 @media(max-width:760px){#side{width:280px}#help{display:none}}
+
+/* Battle HUD */
+#bhud{position:absolute;top:0;left:0;right:0;display:none;align-items:center;gap:12px;
+  padding:8px 14px;background:linear-gradient(180deg,rgba(21,16,11,.94),rgba(21,16,11,.72));
+  color:var(--paper);border-bottom:2px solid var(--gold);z-index:6}
+#bhud.show{display:flex}
+#bhud .bstatus{font-size:13px;line-height:1.3;flex:1}
+#bhud .bstatus b{color:var(--gold2)}
+#bhud .bbtns{display:flex;gap:6px}
+#bhud button{padding:6px 10px;font-size:12px}
+#bhud button.on{background:var(--gold2);border-color:var(--gold)}
+.tgtcursor{cursor:crosshair}
+.stratchip{display:inline-block;font-size:10px;padding:1px 6px;border-radius:8px;background:#5b4a36;color:#fff;margin-left:4px}
+.orderbtns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.captured-stat{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:10px 0;text-align:center}
+.captured-stat .cs{background:#efe5d2;border:1px solid #d6c8a8;border-radius:5px;padding:5px 2px;font-size:11px}
+.captured-stat .cs b{display:block;font-size:16px;color:var(--line)}
+.cap-choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cap-choices button{padding:10px 6px;text-align:left;font-size:13px;line-height:1.3}
+.cap-choices button small{display:block;color:#7a6a50;font-size:11px;margin-top:2px}
 </style>
 </head>
 <body>
@@ -111,6 +131,7 @@ canvas{display:block;width:100%;height:100%}
       <div id="help">Click a <b>city</b> to manage it. Click your army's city then an
         adjacent enemy/neutral city to <b>march &amp; attack</b>. Spend Actions, then End Turn.</div>
       <div class="legend" id="legend"></div>
+      <div id="bhud"></div>
     </div>
     <div id="side">
       <div id="sidehead">Realm</div>
@@ -229,6 +250,7 @@ function initGame(){
     treasury:{shu:3000,wei:6000,wu:5000,neu:0},
     foodStore:{shu:6000,wei:12000,wu:10000,neu:0},
     ap:4, maxAp:4, sel:null, marchFrom:null, over:false,
+    mode:"map", reputation:55, prisoners:[],
   };
   log("The realm fractures. Liu Bei holds Xinye against Cao Cao's southern advance. Forge an alliance, recruit heroes, and claim the Mandate of Heaven.","gold");
 }
@@ -255,6 +277,7 @@ function px(c){return {x:c.x*cv.clientWidth, y:c.y*cv.clientHeight};}
 
 function draw(){
   if(!G)return;
+  if(G.mode==="battle"){return drawBattle();}
   const w=cv.clientWidth,h=cv.clientHeight;
   ctx.clearRect(0,0,w,h);
   // parchment-ish terrain wash
@@ -322,6 +345,7 @@ function officerRow(o){
   </div>`;
 }
 function renderSide(){
+  if(G.mode==="battle"){return renderBattleSide();}
   const head=document.getElementById("sidehead"),body=document.getElementById("sidebody");
   if(!G.sel){head.textContent="Realm";
     const mine=citiesOf("shu");
@@ -447,14 +471,25 @@ function marchAttack(fromId,toId){
   const from=G.cityById[fromId],to=G.cityById[toId];
   if(to.owner==="shu"){toast("That city is already yours.");return;}
   if(G._allianceWu&&to.owner==="wu"){toast("You are allied with Wu. Break it via diplomacy first.");return;}
-  if(!need(1)){G.marchFrom=null;draw();return;}
+  if(G.ap<=0){toast("No actions left this turn.");G.marchFrom=null;draw();return;}
   // commit ~70% of garrison as the field army
   const army=Math.floor(from.troops*0.7);
-  from.troops-=army;
   const atkOs=officersAt(fromId);
-  spend(1);
-  G.marchFrom=null;
-  resolveBattle(from,to,army,atkOs,true);
+  G.marchFrom=null;draw();
+  const odds=battlePreview(army,atkOs,to);
+  modal(`March on ${to.name}`,
+    `<div class="evt">Your army of <b>${fmt(army)}</b> from ${from.name}`
+    +`${atkOs.length?` under ${atkOs.map(o=>o.name).join(", ")}`:""} advances on ${to.name} `
+    +`(garrison <b>${fmt(to.troops)}</b>, walls ${to.wall}).<br><br>`
+    +`Estimated field strength: <b>${odds}%</b> in your favor.</div>`,
+    [{t:"⚔ Fight on the field",cls:"primary",fn:()=>{closeModal();from.troops-=army;spend(1);startTactical(from,to,army,atkOs);}},
+     {t:"⚡ Auto-resolve",fn:()=>{closeModal();from.troops-=army;spend(1);resolveBattle(from,to,army,atkOs,true);}},
+     {t:"Withdraw",fn:closeModal}]);
+}
+function battlePreview(army,atkOs,to){
+  const A=strength(null,army,atkOs).power;
+  let D=strength(to,to.troops,null).power*(1+to.wall/120);
+  return Math.round(A/(A+D)*100);
 }
 function resolveBattle(from,to,army,atkOs,playerAttacker){
   const A=strength(null,army,atkOs);
@@ -534,7 +569,7 @@ function showBattle(from,to,army,surv,dLoss,won,captured,duelLine,bonus){
 
 // ---------- End turn / AI ----------
 function endTurn(){
-  if(G.over)return;
+  if(G.over||G.mode==="battle")return;
   // upkeep for player
   upkeep("shu");
   // AI factions act
@@ -666,6 +701,7 @@ function toast(msg){log(msg);}
 // ---------- Input ----------
 cv.addEventListener("click",e=>{
   if(G.over)return;
+  if(G.mode==="battle"){return battleClick(e);}
   const rect=cv.getBoundingClientRect();
   const mx=e.clientX-rect.left,my=e.clientY-rect.top;
   let hit=null,best=1e9;
@@ -680,6 +716,577 @@ cv.addEventListener("click",e=>{
   G.sel=hit.id;renderAll();
 });
 document.getElementById("endturn").onclick=endTurn;
+
+/* ============================================================
+   TACTICAL BATTLE LAYER — real-time-with-pause
+   ============================================================ */
+const WB=100, HB=64;                          // battlefield world size
+const TYPES={
+  spear:  {n:"Spears",   spd:8,  rng:2.4, dmg:0.95, tough:1.15, col:"#4f8a55"},
+  sword:  {n:"Infantry", spd:8.5,rng:2.4, dmg:1.05, tough:1.25, col:"#8a7248"},
+  cavalry:{n:"Cavalry",  spd:17, rng:2.6, dmg:1.25, tough:0.95, col:"#b5613a"},
+  archer: {n:"Archers",  spd:8,  rng:16,  dmg:0.85, tough:0.8,  col:"#3f6d9e"},
+  siege:  {n:"Siege",    spd:5,  rng:7,   dmg:0.7,  tough:1.5,  col:"#777"},
+};
+function matchup(a,d){
+  if(a==="spear"  &&d==="cavalry") return 1.75;
+  if(a==="cavalry"&&d==="spear")   return 0.6;
+  if(a==="cavalry"&&d==="archer")  return 1.7;
+  if(a==="cavalry"&&d==="sword")   return 1.15;
+  if(a==="archer" &&d==="spear")   return 1.2;
+  if(a==="sword"  &&d==="archer")  return 1.15;
+  return 1.0;
+}
+function assignType(o,i){const t=o.trait||"";
+  if(/Cavalry/.test(t))return"cavalry"; if(/Archer/.test(t))return"archer";
+  if(/Navy|Duelist/.test(t))return"sword"; if(/Fire|Ambush/.test(t))return"archer";
+  return ["spear","sword","cavalry","archer"][i%4];}
+function assignStrat(o){const t=o.trait||"";
+  if(/Fire/.test(t))  return{id:"fire",  name:"Fire Attack",   once:true};
+  if(/Ambush/.test(t))return{id:"ambush",name:"Ambush",        once:true};
+  if(/Cavalry/.test(t))return{id:"charge",name:"Cavalry Charge",cd:16};
+  if(/Archer/.test(t))return{id:"volley",name:"Arrow Volley",  cd:14};
+  if(/Healer/.test(t))return{id:"heal",  name:"Physician's Aid",cd:12};
+  return{id:"rally",name:"Rally",cd:16};}
+
+let B=null;
+function pickOfficers(os){return os.slice().sort((a,b)=>b.cmd-a.cmd).slice(0,5);}
+function buildSide(troops,officers,faction,side,isDef){
+  const chosen=officers.length?pickOfficers(officers):[];
+  const n=Math.max(1,chosen.length);
+  const share=Math.floor(troops/n);
+  const units=[];
+  const xBase = side==="atk"? 12 : 88;
+  for(let i=0;i<n;i++){
+    const o=chosen[i]||{name:"Captain",cmd:55,mgt:55,int:45,pol:40,cha:45,fac:faction,_captain:true};
+    const y = 10 + (HB-20) * (n===1?0.5:i/(n-1));
+    units.push({
+      id:side+i, side, off:o, faction, type:assignType(o,i),
+      strat:{...assignStrat(o),ready:true,t:0},
+      maxHp:share, hp:share, x:xBase, y, tx:xBase, ty:y,
+      morale:100, order:{type:"idle"}, target:null, cd:0, charge:0,
+      routing:false, dead:false, left:false, isDef, contact:0,
+    });
+  }
+  return units;
+}
+function makeTerrain(){
+  const cols=14,rows=9,tiles=[];
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    let type="plain";
+    if(c>=3&&c<=5&&r>=2&&r<=5) type="forest";      // forest patch (fire!)
+    else if(c>=9&&c<=11&&r>=3&&r<=6) type="hill";   // defensive high ground
+    else if(r===rows-1) type="water";               // river along the bottom
+    tiles.push({type});
+  }
+  return {cols,rows,tiles};
+}
+function terrainAt(x,y){const t=B.terrain;
+  const c=Math.min(t.cols-1,Math.max(0,Math.floor(x/WB*t.cols)));
+  const r=Math.min(t.rows-1,Math.max(0,Math.floor(y/HB*t.rows)));
+  return t.tiles[r*t.cols+c].type;}
+
+function startTactical(from,to,army,atkOs){
+  const defOs=officersAt(to.id);
+  B={
+    from,to,army, atkFac:from.owner, defFac:to.owner,
+    units:[...buildSide(army,atkOs,from.owner,"atk",false),
+           ...buildSide(to.troops,defOs,to.owner,"def",true)],
+    terrain:makeTerrain(), fires:[], texts:[],
+    paused:false, speed:1, time:0, maxTime:150, sel:null,
+    fireAim:null, over:false, duelDone:new Set(), lastTs:null,
+    defWallBonus: 1+to.wall/140, isSiege: to.wall>0,
+  };
+  G.mode="battle"; G.to=to; G.from=from;
+  document.getElementById("help").style.display="none";
+  document.getElementById("legend").style.display="none";
+  document.getElementById("endturn").disabled=true;
+  buildBattleHUD();
+  document.getElementById("sidehead").textContent="Battle — "+to.name;
+  renderBattleSide();
+  requestAnimationFrame(battleLoop);
+  log(`Battle joined at ${to.name}!`,"war");
+}
+
+// ---- main loop ----
+function battleLoop(ts){
+  if(!B)return;
+  if(B.lastTs==null)B.lastTs=ts;
+  let dt=(ts-B.lastTs)/1000; B.lastTs=ts;
+  dt=Math.min(dt,0.05);
+  const modalOpen=document.getElementById("modal").classList.contains("show");
+  if(!B.paused && !B.over && !modalOpen) simulate(dt*B.speed);
+  drawBattle();
+  updateBattleHUD();
+  if(G.mode==="battle") requestAnimationFrame(battleLoop);
+}
+
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+function alive(u){return !u.dead && !u.left;}
+function enemiesOf(u){return B.units.filter(v=>alive(v)&&v.side!==u.side);}
+function nearestEnemy(u){let best=null,bd=1e9;enemiesOf(u).forEach(v=>{const d=dist(u,v);if(d<bd){bd=d;best=v;}});return best;}
+
+function simulate(dt){
+  B.time+=dt;
+  // strat cooldowns
+  B.units.forEach(u=>{ if(u.cd>0)u.cd-=dt; if(u.charge>0)u.charge-=dt; if(u.contact>0)u.contact-=dt; });
+  // fires
+  B.fires.forEach(f=>{f.t-=dt;});
+  B.fires=B.fires.filter(f=>f.t>0);
+  // texts
+  B.texts.forEach(t=>{t.t-=dt;t.y-=8*dt;});B.texts=B.texts.filter(t=>t.t>0);
+
+  // AI orders for enemy (and idle allies auto-engage)
+  B.units.forEach(u=>{ if(!alive(u)||u.routing)return;
+    const isAI = u.side!==playerSide();
+    if(isAI){ aiUnit(u); }
+  });
+
+  // movement + combat
+  for(const u of B.units){
+    if(!alive(u))return;
+    // fire damage
+    B.fires.forEach(f=>{ if(Math.hypot(u.x-f.x,u.y-f.y)<f.r){
+      const amp = terrainAt(u.x,u.y)==="forest"?1.7:1;
+      damage(u, f.rate*amp*dt, null, "fire"); }});
+
+    if(u.routing){ routeMove(u,dt); recover(u,dt,true); continue; }
+
+    let tgt = u.target && alive(u.target) ? u.target : null;
+    // hold-position units only engage nearby enemies
+    if(!tgt){
+      const ne=nearestEnemy(u);
+      if(u.order.type==="hold"){ if(ne && dist(u,ne)< (TYPES[u.type].rng+3)) tgt=ne; }
+      else if(u.order.type==="move"){ if(ne && dist(u,ne)<9) tgt=ne; }
+      else tgt=ne;
+    }
+    const rng=TYPES[u.type].rng;
+    if(tgt){
+      const d=dist(u,tgt);
+      if(d>rng){
+        // move toward target unless a move order to a point is active and no aggro
+        if(u.order.type==="move" && dist({x:u.x,y:u.y},{x:u.order.x,y:u.order.y})>2 && d>9){
+          moveToward(u,u.order.x,u.order.y,dt);
+        } else {
+          if(u.type==="cavalry" && d>6 && u.charge<=0){u.charge=0.01;} // mark closing
+          moveToward(u,tgt.x,tgt.y,dt);
+          if(d-rng<1.5 && u.type==="cavalry" && u.contact<=0){u._chargeHit=true;}
+        }
+      } else {
+        u.contact=0.6;
+        attack(u,tgt,dt);
+      }
+    } else if(u.order.type==="move"){
+      moveToward(u,u.order.x,u.order.y,dt);
+    }
+    recover(u,dt,false);
+  }
+  checkBattleEnd();
+}
+function playerSide(){return "atk";} // player is always attacker in tactical launches
+
+function moveToward(u,tx,ty,dt){
+  const dx=tx-u.x,dy=ty-u.y,d=Math.hypot(dx,dy)||1;
+  let spd=TYPES[u.type].spd;
+  const ter=terrainAt(u.x,u.y);
+  if(ter==="forest")spd*=0.6; else if(ter==="water")spd*=0.5; else if(ter==="hill")spd*=0.8;
+  spd*=0.6+0.4*(u.morale/100);
+  const step=Math.min(d,spd*dt);
+  u.x+=dx/d*step; u.y+=dy/d*step;
+  u.x=Math.max(2,Math.min(WB-2,u.x)); u.y=Math.max(4,Math.min(HB-2,u.y));
+}
+function routeMove(u,dt){
+  const homeX = u.side==="atk"? -5 : WB+5;
+  moveToward(u,homeX,u.y,dt);
+  if(u.side==="atk"? u.x<=3 : u.x>=WB-3){ u.left=true; }
+}
+function attack(u,tgt,dt){
+  let rate = u.hp*0.052*TYPES[u.type].dmg*matchup(u.type,tgt.type);
+  rate *= 0.7+u.off.mgt/200;
+  rate *= 0.5+0.5*(u.morale/100);
+  if(u.off.wounded) rate*=0.7;
+  // defender terrain/wall mitigation
+  const tt=terrainAt(tgt.x,tgt.y);
+  let mit=1; if(tt==="hill")mit*=0.8; if(tt==="forest"&&u.type==="archer")mit*=0.7;
+  if(tgt.isDef && B.isSiege) mit/= B.defWallBonus; // walls protect defenders
+  // cavalry charge burst
+  if(u.type==="cavalry" && u._chargeHit){ rate*=2.0; u._chargeHit=false; u.contact=0.6;
+    floatText(tgt.x,tgt.y,"CHARGE!","#ffca6b"); }
+  const cas=rate*mit*dt;
+  damage(tgt,cas,u,"melee");
+  // duel opportunity
+  maybeDuel(u,tgt);
+}
+function damage(u,cas,src,kind){
+  if(!alive(u))return;
+  u.hp-=cas;
+  u.morale -= cas/u.maxHp*90*(1-u.off.cmd/400);
+  if(kind==="fire") u.morale-=cas/u.maxHp*40;
+  if(u.hp<=0){ u.hp=0; u.dead=true;
+    floatText(u.x,u.y,"ROUTED","#e05b52");
+    // nearby friendly morale shock, enemy boost
+    B.units.forEach(v=>{ if(alive(v)&&dist(v,u)<22){ v.morale += (v.side===u.side? -14: 6); }});
+    log(`${u.off.name}'s ${TYPES[u.type].n} are destroyed at ${B.to.name}.`, u.side===playerSide()?"war":"good");
+  } else if(u.morale<=15 && !u.routing){
+    u.routing=true; floatText(u.x,u.y,"FLEEING!","#e0a35b");
+  }
+}
+function recover(u,dt,routing){
+  if(u.contact>0)return;
+  const base = routing? 22+u.off.cmd/6 : 100;
+  if(u.morale<base){ u.morale=Math.min(base,u.morale+ (routing?4:6)*dt); }
+  if(routing && u.morale>40){ u.routing=false; } // rallied
+}
+function floatText(x,y,txt,col){B.texts.push({x,y,txt,col,t:1.1});}
+
+function aiUnit(u){
+  // enemy AI: engage nearest player unit; archers keep distance; low morale routs naturally
+  const ne=nearestEnemy(u);
+  if(!ne){u.order={type:"idle"};u.target=null;return;}
+  u.target=ne;
+  // AI stratagem: use once when a good target presents
+  if(u.strat.ready && (u.strat.cd?u.cd<=0:true) && !u.routing){
+    if(u.strat.id==="fire"){
+      // aim at densest cluster of player units
+      const pc=clusterCenter(enemiesOf(u));
+      if(pc && pc.n>=2){ castFire(u,pc.x,pc.y); }
+    } else if(dist(u,ne)<TYPES[u.type].rng+2 && Math.random()<0.02){ castStrat(u); }
+  }
+}
+function clusterCenter(list){ if(!list.length)return null;
+  let bx=0,by=0;list.forEach(u=>{bx+=u.x;by+=u.y;});bx/=list.length;by/=list.length;
+  const n=list.filter(u=>Math.hypot(u.x-bx,u.y-by)<14).length;
+  return {x:bx,y:by,n};}
+
+// ---- duels ----
+function maybeDuel(u,tgt){
+  if(B.duelBusy)return;
+  if(!/Duelist/.test(u.off.trait||"") || !/Duelist/.test(tgt.off.trait||""))return;
+  const key=[u.off.id||u.off.name,tgt.off.id||tgt.off.name].sort().join("|");
+  if(B.duelDone.has(key))return;
+  if(Math.random()<0.010){ B.duelDone.add(key); triggerDuel(u,tgt); }
+}
+function triggerDuel(a,d){
+  B.duelBusy=true; B.paused=true;
+  const na=a.off.name, nd=d.off.name;
+  modal("⚔ Single Combat",
+    `<div class="evt" style="text-align:center">On the churning field, <b>${na}</b> (MGT ${a.off.mgt}) `
+    +`spurs forward to challenge <b>${nd}</b> (MGT ${d.off.mgt})!<br><br>The armies pause to watch their champions clash.</div>`,
+    [{t:"Watch the duel",cls:"primary",fn:()=>resolveDuel(a,d)}]);
+}
+function resolveDuel(a,d){
+  const sa=a.off.mgt+(a.hp/a.maxHp)*20+Math.random()*45;
+  const sd=d.off.mgt+(d.hp/d.maxHp)*20+Math.random()*45;
+  const aWin=sa>=sd, win=aWin?a:d, lose=aWin?d:a;
+  const diff=Math.abs(sa-sd);
+  win.morale=Math.min(120,win.morale+28);
+  lose.morale=Math.min(lose.morale, 12); lose.routing=true;
+  let extra="";
+  if(diff>40 && Math.random()<0.4){ lose.off.wounded=true; extra=` ${lose.off.name} is gravely wounded!`; }
+  modal("⚔ Single Combat",
+    `<div class="evt" style="text-align:center;font-size:16px"><b style="color:${aWin?'#2f6b54':'#9c2b25'}">${win.off.name} prevails!</b><br><br>`
+    +`${lose.off.name}'s troops falter and break.${extra}</div>`,
+    [{t:"Continue",cls:"primary",fn:()=>{closeModal();B.duelBusy=false;B.paused=false;
+      log(`⚔ Duel: ${win.off.name} defeats ${lose.off.name}!`, win.side===playerSide()?"good":"war");}}]);
+}
+
+// ---- stratagems ----
+function useSelectedStrat(){
+  const u=B.sel; if(!u||u.side!==playerSide()||u.routing)return;
+  if(!u.strat.ready){toast("Stratagem already used.");return;}
+  if(u.strat.cd && u.cd>0){toast("Stratagem recharging.");return;}
+  if(u.strat.id==="fire"){ B.fireAim=u; cv.classList.add("tgtcursor");
+    toast("Click a location to unleash the fire stratagem."); return; }
+  castStrat(u);
+}
+function castStrat(u){
+  const S=u.strat;
+  if(S.id==="charge"){ u._chargeHit=true; u.morale=Math.min(120,u.morale+15);
+    floatText(u.x,u.y,"CHARGE!","#ffca6b"); }
+  else if(S.id==="volley"){ const t=u.target&&alive(u.target)?u.target:nearestEnemy(u);
+    if(t){ damage(t,u.hp*0.55,u,"melee"); floatText(t.x,t.y,"VOLLEY","#ffe08a"); } }
+  else if(S.id==="heal"){ B.units.filter(v=>alive(v)&&v.side===u.side&&dist(v,u)<20).forEach(v=>{
+      v.hp=Math.min(v.maxHp,v.hp+v.maxHp*0.12); v.morale=Math.min(120,v.morale+18);});
+    floatText(u.x,u.y,"AID","#8fe0b0"); }
+  else if(S.id==="rally"){ B.units.filter(v=>alive(v)&&v.side===u.side&&dist(v,u)<22).forEach(v=>{
+      v.morale=Math.min(120,v.morale+30); if(v.morale>40)v.routing=false;});
+    floatText(u.x,u.y,"RALLY!","#ffe08a"); }
+  else if(S.id==="ambush"){ enemiesOf(u).filter(v=>dist(v,u)<20).forEach(v=>{
+      damage(v,v.maxHp*0.18,u,"melee"); v.morale-=25;});
+    floatText(u.x,u.y,"AMBUSH!","#ff9b5b"); }
+  markStratUsed(u);
+}
+function castFire(u,x,y){
+  B.fires.push({x,y,r:12,rate: u.hp*0.9, t:5.5});
+  floatText(x,y,"🔥 FIRE!","#ff7a2f");
+  const forest=terrainAt(x,y)==="forest";
+  if(forest){ B.fires[B.fires.length-1].r=16; B.fires[B.fires.length-1].t=7.5; }
+  log(`${u.off.name} unleashes a fire stratagem${forest?" — the forest blazes!":"!"}`, u.side===playerSide()?"good":"war");
+  markStratUsed(u);
+}
+function markStratUsed(u){ if(u.strat.once)u.strat.ready=false; if(u.strat.cd)u.cd=u.strat.cd; }
+
+// ---- end / feedback ----
+function checkBattleEnd(){
+  if(B.over)return;
+  const atkStanding=B.units.filter(u=>u.side==="atk"&&alive(u)&&!u.routing).length;
+  const defStanding=B.units.filter(u=>u.side==="def"&&alive(u)&&!u.routing).length;
+  const atkAny=B.units.some(u=>u.side==="atk"&&alive(u));
+  const defAny=B.units.some(u=>u.side==="def"&&alive(u));
+  if(defStanding===0 && (!defAny || atkStanding>0)) return endBattle("win");
+  if(atkStanding===0 && (!atkAny || defStanding>0)) return endBattle("lose");
+  if(B.time>=B.maxTime) return endBattle(sumHp("atk")>=sumHp("def")?"win":"lose");
+}
+function sumHp(side){return B.units.filter(u=>u.side===side&&alive(u)).reduce((s,u)=>s+u.hp,0);}
+function endBattle(result){
+  if(B.over)return; B.over=true;
+  const from=B.from,to=B.to;
+  const atkSurv=Math.round(sumHp("atk")), defSurv=Math.round(sumHp("def"));
+  const won = result==="win";
+  cv.classList.remove("tgtcursor");
+  // defending officers whose unit was destroyed on the field
+  const fallen = B.units.filter(u=>u.side==="def" && u.off && !u.off._captain && (u.dead||u.left));
+  if(won){
+    const prevOwner=to.owner;
+    to.owner=from.owner; to.troops=Math.max(500,atkSurv); to.order=Math.max(40,to.order-25); to.justTook=true;
+    // survivors of the attack garrison the city; nothing returns to `from`
+    // scatter surviving defender officers home
+    B.units.filter(u=>u.side==="def"&&alive(u)&&u.off&&!u.off._captain).forEach(u=>relocateOfficerHome(u.off,prevOwner));
+    // determine captured vs escaped among fallen
+    const captured=[]; fallen.forEach(u=>{ if(Math.random()<0.55) captured.push(u.off); else {relocateOfficerHome(u.off,prevOwner);} });
+    finishBattleUI(from,to,atkSurv,defSurv,true,()=>{
+      log(`⚑ ${to.name} has fallen to your banners!`,"good");
+      processCaptures(captured, to.name, officersAt(from.id).concat(B.units.filter(u=>u.side==="atk"&&alive(u)).map(u=>u.off)));
+    });
+  } else {
+    from.troops += atkSurv; // army withdraws
+    finishBattleUI(from,to,atkSurv,defSurv,false,()=>{
+      log(`✕ Your assault on ${to.name} is thrown back; survivors regroup at ${from.name}.`,"war");
+      exitBattle();
+    });
+  }
+}
+function finishBattleUI(from,to,atkSurv,defSurv,won,next){
+  const head=won?`Victory at ${to.name}!`:`Defeat at ${to.name}`;
+  modal(head,
+    `<div class="battle-line"><div class="battle-side" style="color:${FACTIONS[B.atkFac].color}"><b>Your army</b><br>${fmt(atkSurv)} survive</div>`
+    +`<div class="vs">${won?"⚑":"✕"}</div>`
+    +`<div class="battle-side" style="text-align:right;color:${FACTIONS[B.defFac].color}"><b>${to.name}</b><br>${fmt(defSurv)} remain</div></div>`
+    +`<div class="evt" style="margin-top:10px">${won?`The field is yours. Your surviving troops occupy ${to.name}.`:`Your army could not break the defense and falls back to ${from.name}.`}</div>`,
+    [{t:"Continue",cls:"primary",fn:()=>{closeModal();next();}}]);
+}
+function exitBattle(){
+  B=null; G.mode="map";
+  document.getElementById("bhud").classList.remove("show");
+  document.getElementById("legend").style.display="";
+  document.getElementById("help").style.display="";
+  document.getElementById("endturn").disabled=false;
+  G.sel=G.to?G.to.id:G.sel;
+  renderAll(); checkVictory();
+}
+
+/* ============================================================
+   CAPTURED-OFFICER DECISIONS — recruit / release / imprison / execute
+   ============================================================ */
+function removeOfficer(o){
+  const c=G.cityById[o.where]; if(c)c.officers=c.officers.filter(x=>x!==o.id);
+  G.officers=G.officers.filter(x=>x.id!==o.id); delete G.obyId[o.id];
+  G.prisoners=G.prisoners.filter(p=>p.offId!==o.id);
+}
+function processCaptures(list, cityName, recruiters){
+  const queue=list.slice();
+  const bestCha=Math.max(60,...recruiters.map(o=>o.cha||0));
+  function nextOne(){
+    if(!queue.length){ exitBattle(); return; }
+    const o=queue.shift();
+    const from=G.cityById[o.where];
+    const bond = G.officers.find(x=>x.fac==="shu" && sworn(x,o));
+    modal(`Captured: ${o.name}`,
+      `<div class="evt">${o.name} of ${FACTIONS[o.fac].name} has been taken at ${cityName}.`
+      +`${bond?` <b>${bond.name}</b> shares a sworn bond with this officer.`:""}${/Honorable|Loyal/.test(o.trait||"")?" This officer is known for unbending loyalty.":""}</div>`
+      +`<div class="captured-stat">`
+      +`<div class="cs">CMD<b>${o.cmd}</b></div><div class="cs">MGT<b>${o.mgt}</b></div>`
+      +`<div class="cs">INT<b>${o.int}</b></div><div class="cs">POL<b>${o.pol}</b></div>`
+      +`<div class="cs">CHA<b>${o.cha}</b></div></div>`
+      +`<div class="hint">Reputation shapes how the realm sees you. Honor now stands at <b>${Math.round(G.reputation)}</b>.</div>`,
+      null);
+    const foot=document.getElementById("m-foot");
+    foot.innerHTML="";
+    foot.style.display="block";
+    const wrap=document.createElement("div"); wrap.className="cap-choices";
+    const opts=[
+      {t:"Recruit",d:"Win them to your cause",fn:()=>{
+        const chance = bestCha*0.8 - (o.loyalty-50) + (bond?25:0) - (/Loyal|Honorable/.test(o.trait||"")?20:0);
+        if(Math.random()*100 < chance){ o.fac="shu"; o.loyalty=68; o.where=G.to.id; G.cityById[G.to.id].officers.push(o.id);
+          G.reputation=Math.min(100,G.reputation+1);
+          resultMsg(`${o.name} is moved by your virtue and pledges to serve Liu Bei!`,"good",nextOne);
+        } else { G.prisoners.push({offId:o.id,cityId:G.to.id}); relocatePrisoner(o);
+          resultMsg(`${o.name} refuses to bend and is held prisoner.`,null,nextOne); }
+      }},
+      {t:"Release",d:"Free them (+honor)",fn:()=>{
+        relocateOfficerHome(o,o.fac); G.reputation=Math.min(100,G.reputation+4);
+        resultMsg(`You release ${o.name}. Word of your magnanimity spreads (honor +4).`,"good",nextOne);
+      }},
+      {t:"Imprison",d:"Hold them captive",fn:()=>{
+        G.prisoners.push({offId:o.id,cityId:G.to.id}); relocatePrisoner(o);
+        G.reputation=Math.max(0,G.reputation-1); G.cityById[G.to.id].order-=4;
+        resultMsg(`${o.name} is cast into your dungeons.`,null,nextOne);
+      }},
+      {t:"Execute",d:"Put them to death (−honor)",fn:()=>{
+        const nm=o.name; const angered=bond;
+        removeOfficer(o); G.reputation=Math.max(0,G.reputation-9);
+        if(angered){ angered.loyalty=Math.max(20,angered.loyalty-15); }
+        resultMsg(`${nm} is executed. The realm recoils (honor −9)${angered?`, and ${angered.name} grieves.`:"."}`,"war",nextOne);
+      }},
+    ];
+    opts.forEach(op=>{const b=document.createElement("button");
+      b.innerHTML=`${op.t}<small>${op.d}</small>`;b.onclick=op.fn;wrap.appendChild(b);});
+    foot.appendChild(wrap);
+  }
+  nextOne();
+}
+function resultMsg(msg,cls,then){
+  log(msg,cls||undefined);
+  document.getElementById("m-body").innerHTML=`<div class="evt">${msg}</div>`;
+  const foot=document.getElementById("m-foot"); foot.style.display="";foot.innerHTML="";
+  const b=document.createElement("button");b.className="primary";b.textContent="Continue";b.onclick=()=>{closeModal();then();};
+  foot.appendChild(b);
+}
+function relocatePrisoner(o){ // prisoner held in the captured city (marked but off the map roster of its faction)
+  const cur=G.cityById[o.where]; if(cur)cur.officers=cur.officers.filter(x=>x!==o.id);
+  o.where=G.to.id; o._prisoner=true;
+}
+function sworn(a,b){ // simple sworn-bond model: the Peach Garden trio
+  const oath=["liubei","guanyu","zhangfei"];
+  return oath.includes(a.id)&&oath.includes(b.id);
+}
+
+/* ---- battle rendering ---- */
+function bx(x){return x/WB*cv.clientWidth;}
+function by(y){return y/HB*cv.clientHeight;}
+function drawBattle(){
+  const cw=cv.clientWidth,ch=cv.clientHeight;
+  // terrain
+  const t=B.terrain, tw=cw/t.cols, th=ch/t.rows;
+  for(let r=0;r<t.rows;r++)for(let c=0;c<t.cols;c++){
+    const ty=t.tiles[r*t.cols+c].type;
+    ctx.fillStyle = ty==="forest"?"#2f4a34": ty==="hill"?"#4a4433": ty==="water"?"#2b4a5e":"#3a4a3f";
+    ctx.fillRect(c*tw,r*th,tw+1,th+1);
+    if(ty==="forest"){ctx.fillStyle="rgba(60,110,70,.5)";
+      for(let k=0;k<3;k++)ctx.fillRect(c*tw+8+k*14,r*th+10+((k*13)%20),6,10);}
+    if(ty==="hill"){ctx.strokeStyle="rgba(255,255,255,.06)";ctx.beginPath();ctx.moveTo(c*tw,r*th+th);ctx.lineTo(c*tw+tw/2,r*th+th*0.4);ctx.lineTo(c*tw+tw,r*th+th);ctx.stroke();}
+  }
+  // siege wall line
+  if(B.isSiege){ctx.strokeStyle="rgba(180,140,90,.6)";ctx.lineWidth=4;ctx.setLineDash([2,6]);
+    ctx.beginPath();ctx.moveTo(bx(80),by(2));ctx.lineTo(bx(80),by(HB-2));ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1;}
+  // fires
+  B.fires.forEach(f=>{const a=Math.min(1,f.t/1.5);
+    const g=ctx.createRadialGradient(bx(f.x),by(f.y),4,bx(f.x),by(f.y),bx(f.r));
+    g.addColorStop(0,`rgba(255,180,60,${.7*a})`);g.addColorStop(.5,`rgba(230,90,30,${.5*a})`);g.addColorStop(1,"rgba(120,30,10,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(bx(f.x),by(f.y),bx(f.r),0,7);ctx.fill();});
+  // units
+  B.units.forEach(u=>{ if(u.left)return;
+    const p={x:bx(u.x),y:by(u.y)}; const r=10+Math.sqrt(Math.max(0,u.hp))/12;
+    const fcol=FACTIONS[u.faction].color;
+    if(u.dead){ctx.globalAlpha=.25;}
+    if(u.routing)ctx.globalAlpha=.5;
+    // selection ring
+    if(B.sel===u){ctx.strokeStyle="#ffe08a";ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,r+6,0,7);ctx.stroke();}
+    // body
+    ctx.fillStyle=fcol;ctx.strokeStyle="#12100c";ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fill();ctx.stroke();
+    // type ring
+    ctx.strokeStyle=TYPES[u.type].col;ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,r-3,0,7);ctx.stroke();
+    // type letter
+    ctx.fillStyle="#fff";ctx.font="bold 11px Georgia";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(TYPES[u.type].n[0],p.x,p.y);
+    ctx.globalAlpha=1;
+    // hp bar
+    const bw=r*2;
+    ctx.fillStyle="#000";ctx.fillRect(p.x-r,p.y+r+3,bw,4);
+    ctx.fillStyle=u.side===playerSide()?"#2f8f5b":"#c0392b";ctx.fillRect(p.x-r,p.y+r+3,bw*(u.hp/u.maxHp),4);
+    // morale bar
+    ctx.fillStyle="#000";ctx.fillRect(p.x-r,p.y+r+8,bw,3);
+    ctx.fillStyle=u.morale<30?"#e0a35b":"#d8cbb0";ctx.fillRect(p.x-r,p.y+r+8,bw*Math.max(0,Math.min(1,u.morale/100)),3);
+    // name
+    ctx.fillStyle="#f3ead7";ctx.font="11px Georgia";ctx.textBaseline="top";
+    ctx.fillText(u.off.name+(u.off.wounded?" ⚕":""),p.x,p.y-r-15);
+    ctx.fillStyle=TYPES[u.type].col;ctx.font="9px Georgia";
+    ctx.fillText(fmt(u.hp)+" · "+TYPES[u.type].n,p.x,p.y-r-4);
+  });
+  ctx.textBaseline="alphabetic";
+  // fire aim hint
+  if(B.fireAim){ctx.fillStyle="#ff7a2f";ctx.font="13px Georgia";ctx.textAlign="center";
+    ctx.fillText("◎ click to target fire stratagem",cw/2,24);}
+  // float texts
+  B.texts.forEach(t=>{ctx.globalAlpha=Math.min(1,t.t);ctx.fillStyle=t.col;ctx.font="bold 13px Georgia";ctx.textAlign="center";
+    ctx.fillText(t.txt,bx(t.x),by(t.y));ctx.globalAlpha=1;});
+}
+function battleClick(e){
+  const rect=cv.getBoundingClientRect();
+  const wx=(e.clientX-rect.left)/cv.clientWidth*WB, wy=(e.clientY-rect.top)/cv.clientHeight*HB;
+  if(B.fireAim){ castFire(B.fireAim,wx,wy); B.fireAim=null; cv.classList.remove("tgtcursor"); return; }
+  // hit test units
+  let hit=null,bd=1e9;
+  B.units.forEach(u=>{ if(u.left)return; const d=Math.hypot(bx(u.x)-(e.clientX-rect.left),by(u.y)-(e.clientY-rect.top));
+    const r=14+Math.sqrt(Math.max(0,u.hp))/12; if(d<r&&d<bd){bd=d;hit=u;}});
+  if(hit){
+    if(hit.side===playerSide()){ B.sel=hit; renderBattleSide(); return; }
+    // order selected unit to attack enemy
+    if(B.sel && alive(B.sel)&&!B.sel.routing){ B.sel.order={type:"attack"}; B.sel.target=hit; }
+    return;
+  }
+  // move order to point
+  if(B.sel && alive(B.sel)&&!B.sel.routing){ B.sel.order={type:"move",x:wx,y:wy}; B.sel.target=null; }
+}
+function renderBattleSide(){
+  const body=document.getElementById("sidebody");
+  const u=B&&B.sel;
+  if(!u){ body.innerHTML=`<div class="hint">Click one of your units (green) to select it, then click the ground to move or an enemy to attack. Press <b>Space</b> to pause.</div>`; return; }
+  const S=u.strat, ready = S.ready && (!S.cd || u.cd<=0);
+  body.innerHTML=`<div class="card">
+    <h3>${u.off.name}${u.off.wounded?" ⚕":""} <span class="tag" style="background:${TYPES[u.type].col}">${TYPES[u.type].n}</span></h3>
+    <div class="row"><span>Troops</span><b>${fmt(u.hp)} / ${fmt(u.maxHp)}</b></div>${pct(u.hp,u.maxHp,"#2f8f5b")}
+    <div class="row"><span>Morale</span><b>${Math.round(u.morale)}%${u.routing?" (fleeing!)":""}</b></div>${pct(u.morale,100,u.morale<30?"#c0392b":"#8a7d63")}
+    <div class="row"><span>Command / Might</span><b>${u.off.cmd} / ${u.off.mgt}</b></div>
+    <div class="row"><span>Stratagem</span><b>${S.name}${S.once?" (once)":""}</b></div>
+    <div class="orderbtns">
+      <button onclick="B.sel.order={type:'hold'};B.sel.target=null" >Hold Position</button>
+      <button ${ready?"":"disabled"} onclick="useSelectedStrat()">Use ${S.name}</button>
+    </div>
+    <div class="hint" style="margin-top:8px">Click the map to move; click an enemy to charge them.</div>
+  </div>
+  <div class="card"><h3>Order of Battle</h3>
+    ${B.units.filter(x=>!x.left).map(x=>`<div class="officer">
+      <div class="av" style="background:${FACTIONS[x.faction].color}">${initials(x.off.name)}</div>
+      <div class="nm">${x.off.name}<small>${TYPES[x.type].n} · ${x.side===playerSide()?"yours":"enemy"}</small></div>
+      <div class="st">${x.dead?"routed":fmt(x.hp)}<br>${x.routing&&!x.dead?"fleeing":Math.round(x.morale)+"% mor"}</div></div>`).join("")}
+  </div>`;
+}
+function buildBattleHUD(){
+  const h=document.getElementById("bhud"); h.classList.add("show");
+  h.innerHTML=`<div class="bstatus" id="bstatus"></div>
+    <div class="bbtns">
+      <button id="bpause">⏸ Pause</button>
+      <button id="bspeed">▶ 1×</button>
+      <button id="bretreat">⚑ Retreat</button>
+    </div>`;
+  document.getElementById("bpause").onclick=()=>{B.paused=!B.paused;document.getElementById("bpause").classList.toggle("on",B.paused);document.getElementById("bpause").textContent=B.paused?"▶ Resume":"⏸ Pause";};
+  document.getElementById("bspeed").onclick=()=>{B.speed=B.speed>=4?1:B.speed*2;document.getElementById("bspeed").textContent="▶ "+B.speed+"×";};
+  document.getElementById("bretreat").onclick=()=>{ if(B.over)return; B.paused=true;
+    modal("Sound the Retreat?","<div class='evt'>Withdraw your army from the field? Surviving troops will fall back — the city will not be taken.</div>",
+    [{t:"Retreat",cls:"primary",fn:()=>{closeModal();endBattle("lose");}},{t:"Fight on",fn:()=>{closeModal();B.paused=false;}}]);};
+}
+function updateBattleHUD(){
+  if(!B)return;
+  const a=B.units.filter(u=>u.side==="atk"&&alive(u)), d=B.units.filter(u=>u.side==="def"&&alive(u));
+  const el=document.getElementById("bstatus"); if(!el)return;
+  el.innerHTML=`<b>${B.to.name}</b> · <span style="color:${FACTIONS[B.atkFac].color}">You ${fmt(sumHp("atk"))} (${a.length})</span>`
+    +` vs <span style="color:${FACTIONS[B.defFac].color}">Defenders ${fmt(sumHp("def"))} (${d.length})</span>`
+    +` · ${Math.max(0,Math.ceil(B.maxTime-B.time))}s${B.paused?" · <b>PAUSED</b>":""}`;
+}
+window.addEventListener("keydown",e=>{ if(G&&G.mode==="battle"&&e.code==="Space"){e.preventDefault();
+  if(B&&!B.over){B.paused=!B.paused;const b=document.getElementById("bpause");if(b){b.classList.toggle("on",B.paused);b.textContent=B.paused?"▶ Resume":"⏸ Pause";}}}});
 
 // ---------- Boot ----------
 function start(){initGame();renderLegend();resize();renderAll();}
