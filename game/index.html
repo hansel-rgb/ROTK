@@ -13,14 +13,12 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;font-family:"Georgia","Songti SC","Noto Serif",serif;color:var(--ink);background:#0f0c0a}
 #app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
-
-/* Title bar */
-#topbar{display:flex;align-items:center;gap:18px;padding:8px 16px;
+#topbar{display:flex;align-items:center;gap:16px;padding:8px 16px;
   background:linear-gradient(180deg,#241a12,#15100b);color:var(--paper);
   border-bottom:2px solid var(--gold);box-shadow:0 2px 10px #000;z-index:5;flex-wrap:wrap}
-#topbar .brand{font-size:18px;letter-spacing:1px;color:var(--gold2);text-shadow:0 1px 2px #000;white-space:nowrap}
+#topbar .brand{font-size:17px;letter-spacing:1px;color:var(--gold2);text-shadow:0 1px 2px #000;white-space:nowrap}
 #topbar .brand small{display:block;font-size:10px;letter-spacing:2px;color:#8a7a5e}
-.stat{display:flex;flex-direction:column;line-height:1.1;font-size:13px;min-width:62px}
+.stat{display:flex;flex-direction:column;line-height:1.1;font-size:13px;min-width:52px}
 .stat b{font-size:16px;color:var(--gold2)}
 .stat span{font-size:10px;color:#9c8c70;text-transform:uppercase;letter-spacing:1px}
 #turnbox{margin-left:auto;display:flex;align-items:center;gap:10px}
@@ -30,21 +28,17 @@ button:hover{background:var(--gold2);border-color:var(--gold)}
 button:disabled{opacity:.4;cursor:not-allowed;background:#c9bfa8}
 button.primary{background:var(--red);color:#fff;border-color:#5e1a16;font-weight:bold}
 button.primary:hover{background:#bb352e}
-
-/* Main layout */
+button.ghost{background:transparent;color:var(--gold2);border-color:var(--gold)}
+button.ghost:hover{background:rgba(216,169,77,.18)}
 #main{flex:1;display:flex;min-height:0}
 #mapwrap{flex:1;position:relative;background:radial-gradient(circle at 40% 30%,#3a4a44,#1e2622)}
 canvas{display:block;width:100%;height:100%}
-#side{width:340px;background:var(--paper);border-left:3px solid var(--line);
-  display:flex;flex-direction:column;overflow:hidden}
-#sidehead{padding:10px 14px;background:var(--paper2);border-bottom:2px solid var(--line);
-  font-size:15px;font-weight:bold;color:var(--line)}
+#side{width:340px;background:var(--paper);border-left:3px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+#sidehead{padding:10px 14px;background:var(--paper2);border-bottom:2px solid var(--line);font-size:15px;font-weight:bold;color:var(--line)}
 #sidebody{flex:1;overflow-y:auto;padding:12px 14px}
 .hint{color:#7a6a50;font-size:13px;line-height:1.5}
-
-/* Cards */
 .card{background:#f6efe0;border:1px solid #cdbf9f;border-radius:6px;padding:10px;margin-bottom:10px;box-shadow:0 1px 3px var(--shadow)}
-.card h3{margin:0 0 6px;font-size:15px;display:flex;align-items:center;gap:8px}
+.card h3{margin:0 0 6px;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .tag{font-size:10px;padding:2px 6px;border-radius:10px;color:#fff;letter-spacing:.5px}
 .row{display:flex;justify-content:space-between;font-size:13px;padding:2px 0}
 .row b{font-variant-numeric:tabular-nums}
@@ -53,47 +47,32 @@ canvas{display:block;width:100%;height:100%}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
 .actions button{padding:6px 4px;font-size:12px}
 .officer{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:5px;margin:3px 0;background:#efe5d2;border:1px solid #d6c8a8}
-.officer .av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-weight:bold;color:#fff;font-size:13px;flex-shrink:0;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
+.officer .av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#fff;font-size:13px;flex-shrink:0;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
 .officer .nm{flex:1;font-size:13px;line-height:1.2}
 .officer .nm small{color:#7a6a50;font-size:10px;display:block}
 .officer .st{font-size:10px;color:#5b4a36;text-align:right;line-height:1.3;font-variant-numeric:tabular-nums}
 .divider{border:0;border-top:1px dashed #c3b596;margin:12px 0}
-
-/* Log */
-#log{height:120px;overflow-y:auto;background:#15100b;color:#d8cbb0;font-size:12px;
-  padding:8px 12px;line-height:1.5;border-top:2px solid var(--gold)}
+#log{height:120px;overflow-y:auto;background:#15100b;color:#d8cbb0;font-size:12px;padding:8px 12px;line-height:1.5;border-top:2px solid var(--gold)}
 #log .l{margin:2px 0;border-left:2px solid #3a2c1c;padding-left:8px}
 #log .l.war{border-color:var(--red);color:#e8a59f}
 #log .l.good{border-color:var(--jade);color:#9fd8bf}
 #log .l.gold{border-color:var(--gold);color:var(--gold2)}
-
-/* Modal */
 #modal{position:fixed;inset:0;background:rgba(10,6,2,.72);display:none;align-items:center;justify-content:center;z-index:20}
 #modal.show{display:flex}
-.dialog{background:var(--paper);border:3px solid var(--gold);border-radius:10px;max-width:560px;width:90%;
-  max-height:85vh;overflow:auto;box-shadow:0 12px 50px #000}
-.dialog .dh{padding:14px 18px;background:linear-gradient(180deg,#241a12,#15100b);color:var(--gold2);
-  font-size:18px;letter-spacing:1px;border-bottom:2px solid var(--gold)}
+.dialog{background:var(--paper);border:3px solid var(--gold);border-radius:10px;max-width:600px;width:92%;max-height:88vh;overflow:auto;box-shadow:0 12px 50px #000}
+.dialog .dh{padding:14px 18px;background:linear-gradient(180deg,#241a12,#15100b);color:var(--gold2);font-size:18px;letter-spacing:1px;border-bottom:2px solid var(--gold)}
 .dialog .db{padding:18px}
 .dialog .df{padding:12px 18px;border-top:1px solid #cdbf9f;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .battle-line{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #cdbf9f}
 .battle-side{font-size:14px}
 .vs{font-size:20px;color:var(--red);font-weight:bold;padding:0 10px}
 .evt{font-size:14px;line-height:1.6}
-.legend{position:absolute;bottom:10px;left:10px;background:rgba(21,16,11,.82);color:#d8cbb0;
-  padding:8px 12px;border-radius:6px;font-size:12px;border:1px solid var(--gold)}
+.legend{position:absolute;bottom:10px;left:10px;background:rgba(21,16,11,.82);color:#d8cbb0;padding:8px 12px;border-radius:6px;font-size:12px;border:1px solid var(--gold)}
 .legend .li{display:flex;align-items:center;gap:6px;margin:2px 0}
 .legend .dot{width:11px;height:11px;border-radius:50%}
-.target{outline:2px dashed var(--gold2)}
-#help{position:absolute;top:10px;left:10px;background:rgba(21,16,11,.82);color:#d8cbb0;
-  padding:6px 10px;border-radius:6px;font-size:12px;border:1px solid var(--gold);max-width:240px;line-height:1.4}
+#help{position:absolute;top:10px;left:10px;background:rgba(21,16,11,.82);color:#d8cbb0;padding:6px 10px;border-radius:6px;font-size:12px;border:1px solid var(--gold);max-width:250px;line-height:1.4}
 @media(max-width:760px){#side{width:280px}#help{display:none}}
-
-/* Battle HUD */
-#bhud{position:absolute;top:0;left:0;right:0;display:none;align-items:center;gap:12px;
-  padding:8px 14px;background:linear-gradient(180deg,rgba(21,16,11,.94),rgba(21,16,11,.72));
-  color:var(--paper);border-bottom:2px solid var(--gold);z-index:6}
+#bhud{position:absolute;top:0;left:0;right:0;display:none;align-items:center;gap:12px;padding:8px 14px;background:linear-gradient(180deg,rgba(21,16,11,.94),rgba(21,16,11,.72));color:var(--paper);border-bottom:2px solid var(--gold);z-index:6}
 #bhud.show{display:flex}
 #bhud .bstatus{font-size:13px;line-height:1.3;flex:1}
 #bhud .bstatus b{color:var(--gold2)}
@@ -101,7 +80,6 @@ canvas{display:block;width:100%;height:100%}
 #bhud button{padding:6px 10px;font-size:12px}
 #bhud button.on{background:var(--gold2);border-color:var(--gold)}
 .tgtcursor{cursor:crosshair}
-.stratchip{display:inline-block;font-size:10px;padding:1px 6px;border-radius:8px;background:#5b4a36;color:#fff;margin-left:4px}
 .orderbtns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
 .captured-stat{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:10px 0;text-align:center}
 .captured-stat .cs{background:#efe5d2;border:1px solid #d6c8a8;border-radius:5px;padding:5px 2px;font-size:11px}
@@ -109,18 +87,31 @@ canvas{display:block;width:100%;height:100%}
 .cap-choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .cap-choices button{padding:10px 6px;text-align:left;font-size:13px;line-height:1.3}
 .cap-choices button small{display:block;color:#7a6a50;font-size:11px;margin-top:2px}
+.pick{display:grid;gap:8px;margin:6px 0}
+.pick button{text-align:left;padding:12px 14px}
+.pick button b{font-size:15px;color:var(--red)}
+.pick button small{display:block;color:#6b5c44;font-size:12px;margin-top:3px;line-height:1.4}
+.facpick{display:flex;gap:8px;flex-wrap:wrap}
+.facpick button{flex:1;min-width:120px;text-align:center;padding:12px 8px}
+.prisoner{display:flex;align-items:center;gap:8px;padding:6px;border-radius:6px;margin:5px 0;background:#efe5d2;border:1px solid #d6c8a8}
+.prisoner .pn{flex:1;font-size:13px}
+.prisoner .pn small{display:block;color:#7a6a50;font-size:10px}
+.prisoner .pa{display:flex;gap:4px}
+.prisoner .pa button{padding:4px 8px;font-size:11px}
 </style>
 </head>
 <body>
 <div id="app">
   <div id="topbar">
-    <div class="brand">三國 · MANDATE OF HEAVEN<small>RED CLIFFS · 208 AD — PROTOTYPE</small></div>
+    <div class="brand" id="brand">三國 · MANDATE OF HEAVEN<small id="brandsub">PROTOTYPE</small></div>
     <div class="stat"><b id="s-gold">—</b><span>Gold</span></div>
     <div class="stat"><b id="s-food">—</b><span>Food</span></div>
     <div class="stat"><b id="s-cities">—</b><span>Cities</span></div>
     <div class="stat"><b id="s-officers">—</b><span>Officers</span></div>
+    <div class="stat"><b id="s-honor">—</b><span>Honor</span></div>
     <div class="stat"><b id="s-ap">—</b><span>Actions</span></div>
     <div id="turnbox">
+      <button id="b-prisoners" class="ghost">⛓ 0</button>
       <div class="stat" style="text-align:right"><b id="s-turn">—</b><span id="s-season">—</span></div>
       <button id="endturn" class="primary">End Turn ▸</button>
     </div>
@@ -128,14 +119,13 @@ canvas{display:block;width:100%;height:100%}
   <div id="main">
     <div id="mapwrap">
       <canvas id="map"></canvas>
-      <div id="help">Click a <b>city</b> to manage it. Click your army's city then an
-        adjacent enemy/neutral city to <b>march &amp; attack</b>. Spend Actions, then End Turn.</div>
+      <div id="help">Click a <b>city</b> to manage it. Select your city, then <b>March Army</b> onto an adjacent enemy/neutral city to attack. River crossings are fought as <b>naval battles</b>.</div>
       <div class="legend" id="legend"></div>
       <div id="bhud"></div>
     </div>
     <div id="side">
       <div id="sidehead">Realm</div>
-      <div id="sidebody"><div class="hint">Select a city on the map to begin.</div></div>
+      <div id="sidebody"><div class="hint">Loading…</div></div>
     </div>
   </div>
   <div id="log"></div>
@@ -151,124 +141,213 @@ canvas{display:block;width:100%;height:100%}
 "use strict";
 /* ============================================================
    Three Kingdoms: Mandate of Heaven — vertical-slice prototype
-   Pure-JS implementation of the strategic loop + abstracted battle.
+   Strategic loop + real-time-with-pause tactical & naval battles
+   + captured-officer decisions + prisoner management
+   + multiple scenarios on a full China map.
    ============================================================ */
 
 // ---------- Factions ----------
 const FACTIONS = {
-  shu:   {name:"Liu Bei (Shu)",  color:"#2f8f5b", ai:false},
-  wei:   {name:"Cao Cao (Wei)",  color:"#3a6ea5", ai:true},
-  wu:    {name:"Sun Quan (Wu)",  color:"#c0392b", ai:true},
-  neu:   {name:"Independent",    color:"#8a7d63", ai:true},
+  shu: {name:"Shu (Liu Bei)",  short:"Shu",  color:"#2f8f5b"},
+  wei: {name:"Wei (Cao Cao)",  short:"Wei",  color:"#3a6ea5"},
+  wu:  {name:"Wu (Sun clan)",  short:"Wu",   color:"#c0392b"},
+  yuan:{name:"Yuan Shao",      short:"Yuan", color:"#8156a8"},
+  neu: {name:"Independent",    short:"Ind.", color:"#8a7d63"},
 };
 
-// ---------- Officers (subset of the historical roster) ----------
-// stats: cmd (Command), mgt (Might), int (Intellect), pol (Politics), cha (Charisma)
+// ---------- Officers (stats; faction is scenario-assigned) ----------
 const ROSTER = [
-  // Shu
-  {id:"liubei",  name:"Liu Bei",     cmd:75,mgt:73,int:74,pol:80,cha:99,fac:"shu"},
-  {id:"guanyu",  name:"Guan Yu",     cmd:95,mgt:97,int:75,pol:62,cha:94,fac:"shu",trait:"Duelist"},
-  {id:"zhangfei",name:"Zhang Fei",   cmd:85,mgt:98,int:30,pol:22,cha:45,fac:"shu",trait:"Duelist"},
-  {id:"zhaoyun", name:"Zhao Yun",    cmd:91,mgt:96,int:76,pol:65,cha:81,fac:"shu",trait:"Duelist"},
-  {id:"zhuge",   name:"Zhuge Liang", cmd:92,mgt:38,int:100,pol:95,cha:92,fac:"shu",trait:"Fire Stratagem"},
-  // Wei
-  {id:"caocao",  name:"Cao Cao",     cmd:91,mgt:72,int:91,pol:94,cha:96,fac:"wei"},
-  {id:"xiahou",  name:"Xiahou Dun",  cmd:90,mgt:90,int:60,pol:52,cha:78,fac:"wei",trait:"Cavalry"},
-  {id:"zhangliao",name:"Zhang Liao", cmd:93,mgt:92,int:78,pol:58,cha:80,fac:"wei",trait:"Cavalry"},
-  {id:"simayi",  name:"Sima Yi",     cmd:88,mgt:50,int:98,pol:93,cha:84,fac:"wei",trait:"Ambush"},
-  {id:"xuhuang", name:"Xu Huang",    cmd:88,mgt:89,int:70,pol:55,cha:72,fac:"wei"},
-  // Wu
-  {id:"sunquan", name:"Sun Quan",    cmd:78,mgt:70,int:78,pol:85,cha:92,fac:"wu"},
-  {id:"zhouyu",  name:"Zhou Yu",     cmd:96,mgt:71,int:96,pol:86,cha:90,fac:"wu",trait:"Fire Stratagem"},
-  {id:"luxun",   name:"Lu Xun",      cmd:93,mgt:67,int:95,pol:82,cha:78,fac:"wu",trait:"Fire Stratagem"},
-  {id:"ganning", name:"Gan Ning",    cmd:86,mgt:94,int:62,pol:40,cha:70,fac:"wu",trait:"Navy"},
-  {id:"taishi",  name:"Taishi Ci",   cmd:85,mgt:92,int:60,pol:48,cha:74,fac:"wu",trait:"Duelist"},
-  // Independents (recruitable)
-  {id:"huangzhong",name:"Huang Zhong",cmd:88,mgt:93,int:62,pol:50,cha:75,fac:"neu",trait:"Archer"},
-  {id:"weiyan",  name:"Wei Yan",     cmd:84,mgt:90,int:65,pol:48,cha:60,fac:"neu"},
-  {id:"pangtong",name:"Pang Tong",   cmd:80,mgt:42,int:97,pol:88,cha:79,fac:"neu",trait:"Ambush"},
-  {id:"machao",  name:"Ma Chao",     cmd:90,mgt:96,int:58,pol:50,cha:82,fac:"neu",trait:"Cavalry"},
-  {id:"huatuo",  name:"Hua Tuo",     cmd:20,mgt:30,int:88,pol:70,cha:80,fac:"neu",trait:"Healer"},
+  {id:"liubei",  name:"Liu Bei",     cmd:75,mgt:73,int:74,pol:80,cha:99},
+  {id:"guanyu",  name:"Guan Yu",     cmd:95,mgt:97,int:75,pol:62,cha:94,trait:"Duelist"},
+  {id:"zhangfei",name:"Zhang Fei",   cmd:85,mgt:98,int:30,pol:22,cha:45,trait:"Duelist"},
+  {id:"zhaoyun", name:"Zhao Yun",    cmd:91,mgt:96,int:76,pol:65,cha:81,trait:"Duelist"},
+  {id:"zhuge",   name:"Zhuge Liang", cmd:92,mgt:38,int:100,pol:95,cha:92,trait:"Fire Stratagem"},
+  {id:"huangzhong",name:"Huang Zhong",cmd:88,mgt:93,int:62,pol:50,cha:75,trait:"Archer"},
+  {id:"weiyan",  name:"Wei Yan",     cmd:84,mgt:90,int:65,pol:48,cha:60,trait:"Cavalry"},
+  {id:"machao",  name:"Ma Chao",     cmd:90,mgt:96,int:58,pol:50,cha:82,trait:"Cavalry"},
+  {id:"pangtong",name:"Pang Tong",   cmd:80,mgt:42,int:97,pol:88,cha:79,trait:"Ambush"},
+  {id:"caocao",  name:"Cao Cao",     cmd:91,mgt:72,int:91,pol:94,cha:96},
+  {id:"xiahou",  name:"Xiahou Dun",  cmd:90,mgt:90,int:60,pol:52,cha:78,trait:"Cavalry"},
+  {id:"zhangliao",name:"Zhang Liao", cmd:93,mgt:92,int:78,pol:58,cha:80,trait:"Cavalry"},
+  {id:"simayi",  name:"Sima Yi",     cmd:88,mgt:50,int:98,pol:93,cha:84,trait:"Ambush"},
+  {id:"xuhuang", name:"Xu Huang",    cmd:88,mgt:89,int:70,pol:55,cha:72},
+  {id:"zhanghe", name:"Zhang He",    cmd:90,mgt:88,int:75,pol:60,cha:72,trait:"Cavalry"},
+  {id:"sunquan", name:"Sun Quan",    cmd:78,mgt:70,int:78,pol:85,cha:92},
+  {id:"sunce",   name:"Sun Ce",      cmd:90,mgt:92,int:68,pol:62,cha:88,trait:"Duelist"},
+  {id:"zhouyu",  name:"Zhou Yu",     cmd:96,mgt:71,int:96,pol:86,cha:90,trait:"Fire Stratagem"},
+  {id:"luxun",   name:"Lu Xun",      cmd:93,mgt:67,int:95,pol:82,cha:78,trait:"Fire Stratagem"},
+  {id:"ganning", name:"Gan Ning",    cmd:86,mgt:94,int:62,pol:40,cha:70,trait:"Navy"},
+  {id:"taishi",  name:"Taishi Ci",   cmd:85,mgt:92,int:60,pol:48,cha:74,trait:"Duelist"},
+  {id:"yuanshao",name:"Yuan Shao",   cmd:80,mgt:68,int:72,pol:82,cha:88},
+  {id:"yanliang",name:"Yan Liang",   cmd:82,mgt:93,int:40,pol:35,cha:60,trait:"Duelist"},
+  {id:"wenchou", name:"Wen Chou",    cmd:80,mgt:92,int:42,pol:33,cha:58,trait:"Duelist"},
+  {id:"lubu",    name:"Lu Bu",       cmd:88,mgt:100,int:26,pol:18,cha:42,trait:"Duelist"},
+  {id:"diaochan",name:"Diao Chan",   cmd:10,mgt:15,int:78,pol:60,cha:99},
+  {id:"dongzhuo",name:"Dong Zhuo",   cmd:82,mgt:85,int:58,pol:40,cha:30},
+  {id:"yuanshu", name:"Yuan Shu",    cmd:68,mgt:55,int:60,pol:66,cha:55},
+  {id:"liubiao", name:"Liu Biao",    cmd:70,mgt:50,int:68,pol:78,cha:76},
+  {id:"mateng",  name:"Ma Teng",     cmd:83,mgt:88,int:55,pol:52,cha:74,trait:"Cavalry"},
+  {id:"huatuo",  name:"Hua Tuo",     cmd:20,mgt:30,int:88,pol:70,cha:80,trait:"Healer"},
 ];
+const ROSTER_BY = Object.fromEntries(ROSTER.map(o=>[o.id,o]));
 
-// ---------- Cities (simplified Red Cliffs map) ----------
-// x,y are normalized 0..1 on the map.
+// ---------- Full China map (geography only; scenarios set ownership) ----------
 const CITY_DEFS = [
-  {id:"xuchang", name:"Xuchang",   x:.58,y:.30, owner:"wei", econ:7, def:6, base:true},
-  {id:"luoyang", name:"Luoyang",   x:.45,y:.26, owner:"wei", econ:6, def:7},
-  {id:"ye",      name:"Ye",        x:.60,y:.16, owner:"wei", econ:6, def:5},
-  {id:"wancheng",name:"Wancheng",  x:.46,y:.42, owner:"wei", econ:5, def:5},
-  {id:"xinye",   name:"Xinye",     x:.42,y:.50, owner:"shu", econ:3, def:3, base:true},
-  {id:"jiangling",name:"Jiangling",x:.40,y:.62, owner:"neu", econ:5, def:5},
-  {id:"jiangxia",name:"Jiangxia",  x:.52,y:.62, owner:"shu", econ:4, def:4},
-  {id:"chaisang",name:"Chaisang",  x:.66,y:.66, owner:"wu",  econ:5, def:5, base:true},
-  {id:"jianye",  name:"Jianye",    x:.80,y:.58, owner:"wu",  econ:7, def:6},
-  {id:"wu",      name:"Wujun",     x:.84,y:.68, owner:"wu",  econ:6, def:5},
-  {id:"changsha",name:"Changsha",  x:.50,y:.80, owner:"neu", econ:5, def:4},
-  {id:"chengdu", name:"Chengdu",   x:.20,y:.58, owner:"neu", econ:8, def:6},
-  {id:"hanzhong",name:"Hanzhong",  x:.28,y:.42, owner:"neu", econ:4, def:6},
+  {id:"beiping", name:"Beiping",  x:.74,y:.09, econ:4, def:5},
+  {id:"nanpi",   name:"Nanpi",    x:.65,y:.14, econ:5, def:5},
+  {id:"ye",      name:"Ye",       x:.58,y:.19, econ:6, def:6},
+  {id:"jinyang", name:"Jinyang",  x:.45,y:.15, econ:5, def:6},
+  {id:"luoyang", name:"Luoyang",  x:.45,y:.27, econ:7, def:7},
+  {id:"changan", name:"Chang'an", x:.29,y:.29, econ:6, def:7},
+  {id:"wuwei",   name:"Wuwei",    x:.11,y:.22, econ:3, def:5},
+  {id:"xuchang", name:"Xuchang",  x:.57,y:.31, econ:7, def:6},
+  {id:"xiapi",   name:"Xiapi",    x:.69,y:.35, econ:5, def:5},
+  {id:"shouchun",name:"Shouchun", x:.61,y:.44, econ:5, def:5},
+  {id:"hefei",   name:"Hefei",    x:.71,y:.49, econ:5, def:6},
+  {id:"wancheng",name:"Wancheng", x:.46,y:.41, econ:5, def:5},
+  {id:"hanzhong",name:"Hanzhong", x:.26,y:.43, econ:4, def:7},
+  {id:"chengdu", name:"Chengdu",  x:.15,y:.55, econ:8, def:6},
+  {id:"baidi",   name:"Baidi",    x:.31,y:.60, econ:4, def:6},
+  {id:"xinye",   name:"Xinye",    x:.44,y:.49, econ:3, def:3},
+  {id:"jiangling",name:"Jiangling",x:.41,y:.63, econ:6, def:5},
+  {id:"jiangxia",name:"Jiangxia", x:.53,y:.64, econ:4, def:4},
+  {id:"chaisang",name:"Chaisang", x:.65,y:.66, econ:5, def:5},
+  {id:"jianye",  name:"Jianye",   x:.81,y:.57, econ:7, def:6},
+  {id:"wu",      name:"Wujun",    x:.85,y:.66, econ:6, def:5},
+  {id:"changsha",name:"Changsha", x:.47,y:.80, econ:5, def:4},
+  {id:"wuling",  name:"Wuling",   x:.34,y:.82, econ:4, def:4},
+  {id:"guiyang", name:"Guiyang",  x:.55,y:.90, econ:4, def:4},
 ];
-// adjacency (marches allowed between connected cities)
 const EDGES = [
-  ["ye","luoyang"],["ye","xuchang"],["luoyang","xuchang"],["luoyang","wancheng"],
-  ["xuchang","wancheng"],["wancheng","xinye"],["xinye","jiangling"],["xinye","jiangxia"],
-  ["jiangling","jiangxia"],["jiangling","changsha"],["jiangxia","chaisang"],
-  ["chaisang","jianye"],["jianye","wu"],["chaisang","wu"],["chaisang","changsha"],
-  ["jiangling","hanzhong"],["hanzhong","chengdu"],["chengdu","changsha"],
-  ["wancheng","hanzhong"],["jiangxia","changsha"],
+  ["beiping","nanpi"],["nanpi","ye"],["ye","jinyang"],["ye","xuchang"],["nanpi","xiapi"],
+  ["jinyang","luoyang"],["jinyang","changan"],["luoyang","changan"],["luoyang","xuchang"],
+  ["luoyang","wancheng"],["changan","hanzhong"],["changan","wuwei"],["wuwei","hanzhong"],
+  ["xuchang","wancheng"],["xuchang","xiapi"],["xuchang","shouchun"],["xiapi","shouchun"],
+  ["shouchun","hefei"],["hefei","jianye"],["wancheng","xinye"],["wancheng","hanzhong"],
+  ["hanzhong","chengdu"],["hanzhong","baidi"],["chengdu","baidi"],["baidi","jiangling"],
+  ["xinye","jiangling"],["xinye","jiangxia"],["jiangling","jiangxia"],["jiangling","wuling"],
+  ["jiangling","changsha"],["jiangxia","chaisang"],["jiangxia","changsha"],["changsha","wuling"],
+  ["changsha","guiyang"],["changsha","chaisang"],["chaisang","jianye"],["chaisang","guiyang"],
+  ["jianye","wu"],["chaisang","wu"],["wuling","guiyang"],["shouchun","xinye"],
 ];
+// river crossings → naval battles
+const NAVAL = new Set(["jiangling|jiangxia","jiangxia|chaisang","jiangxia|changsha","jiangling|changsha",
+  "chaisang|changsha","chaisang|jianye","jianye|wu","chaisang|wu","hefei|jianye","baidi|jiangling"]
+  .map(k=>k.split("|").sort().join("|")));
+function isNaval(a,b){return NAVAL.has([a,b].sort().join("|"));}
+
+// ---------- Scenarios ----------
+const SCENARIOS=[
+ {id:"redcliffs",name:"Red Cliffs",year:208,
+  blurb:"Cao Cao's vast host drives south. Liu Bei clings to Xinye; only an alliance with Sun Quan's Wu can turn the tide on the Yangtze.",
+  players:["shu","wu","wei"],
+  capitals:{wei:"xuchang",shu:"xinye",wu:"chaisang"},
+  own:{wei:["beiping","nanpi","ye","jinyang","luoyang","changan","wuwei","xuchang","xiapi","shouchun","hefei","wancheng"],
+       shu:["xinye","jiangxia"], wu:["chaisang","jianye","wu"]},
+  officers:{shu:["liubei","guanyu","zhangfei","zhaoyun","zhuge"],
+    wei:["caocao","xiahou","zhangliao","simayi","xuhuang","zhanghe"],
+    wu:["sunquan","zhouyu","luxun","ganning","taishi"],
+    neu:["huangzhong","weiyan","machao","pangtong","mateng","liubiao","huatuo"]}},
+
+ {id:"guandu",name:"Battle of Guandu",year:200,
+  blurb:"Cao Cao and Yuan Shao contend for the north. Outnumbered, Cao Cao must break Yuan Shao's grip on the great plain.",
+  players:["wei","yuan","wu"],
+  capitals:{wei:"xuchang",yuan:"ye",wu:"jianye"},
+  own:{yuan:["beiping","nanpi","ye","jinyang"],
+       wei:["luoyang","changan","xuchang","wancheng"],
+       wu:["jianye","wu","chaisang"]},
+  officers:{wei:["caocao","xiahou","zhangliao","xuhuang","simayi"],
+    yuan:["yuanshao","yanliang","wenchou","zhanghe"],
+    wu:["sunce","zhouyu","taishi","ganning"],
+    neu:["liubei","guanyu","zhangfei","zhaoyun","machao","mateng","huangzhong","weiyan","pangtong","liubiao","huatuo","luxun"]}},
+
+ {id:"contending",name:"The Contending Heroes",year:194,
+  blurb:"The Han has shattered into a dozen warlord domains. Everyone contends; alliances are brittle and the map is wide open.",
+  players:["wei","wu","yuan","shu"],
+  capitals:{wei:"xuchang",yuan:"ye",wu:"jianye",shu:"xiapi"},
+  own:{wei:["xuchang","wancheng"], yuan:["ye","nanpi","jinyang"],
+       wu:["jianye","wu"], shu:["xiapi"]},
+  officers:{wei:["caocao","xiahou","xuhuang"],
+    yuan:["yuanshao","yanliang","wenchou","zhanghe"],
+    wu:["sunce","zhouyu","taishi"],
+    shu:["liubei","guanyu","zhangfei"],
+    neu:["lubu","diaochan","dongzhuo","yuanshu","liubiao","mateng","machao","huangzhong",
+         "weiyan","pangtong","zhaoyun","zhuge","ganning","luxun","simayi","huatuo","sunquan"]}},
+
+ {id:"threekingdoms",name:"Three Kingdoms",year:220,
+  blurb:"The realm is settled into three great powers: Wei in the north, Shu in the west, Wu in the south. Only one can claim the Mandate.",
+  players:["shu","wei","wu"],
+  capitals:{wei:"luoyang",shu:"chengdu",wu:"jianye"},
+  own:{wei:["beiping","nanpi","ye","jinyang","luoyang","changan","wuwei","xuchang","wancheng","xinye","xiapi","shouchun","hefei"],
+       shu:["chengdu","hanzhong","baidi"],
+       wu:["jianye","wu","chaisang","jiangxia","jiangling","changsha","wuling","guiyang"]},
+  officers:{wei:["caocao","simayi","zhangliao","xuhuang","zhanghe","xiahou"],
+    shu:["liubei","zhuge","zhaoyun","huangzhong","weiyan","machao","guanyu","zhangfei"],
+    wu:["sunquan","luxun","ganning","taishi","zhouyu"]}},
+];
+const SEASONS=["Spring","Summer","Autumn","Winter"];
 
 // ---------- Game state ----------
 let G;
-function initGame(){
-  const cities = CITY_DEFS.map(c=>({
-    ...c, troops: c.base?12000:(6000+c.econ*500),
-    pop: 20000+c.econ*4000, order:78, wall: c.def*10,
-    food: 8000, devEcon:c.econ, devMil:c.def, officers:[], justTook:false,
-  }));
-  const cityById = Object.fromEntries(cities.map(c=>[c.id,c]));
-  // place officers in faction capitals / spread
-  const officers = ROSTER.map(o=>({...o, loyalty:90, where:null, ap:1}));
-  const obyf = {};
-  officers.forEach(o=>{(obyf[o.fac]=obyf[o.fac]||[]).push(o)});
-  const capitalOf={shu:"xinye",wei:"xuchang",wu:"chaisang",neu:null};
-  for(const f of ["shu","wei","wu"]){
-    const cap=cityById[capitalOf[f]];
-    obyf[f].forEach((o,i)=>{
-      const homeCities=cities.filter(c=>c.owner===f);
-      const c=homeCities[i%homeCities.length]||cap;
-      o.where=c.id; c.officers.push(o.id);
-    });
+function initGame(scenId, playerFac){
+  const scen=SCENARIOS.find(s=>s.id===scenId)||SCENARIOS[0];
+  const cities=CITY_DEFS.map(c=>{
+    let owner="neu";
+    for(const f in scen.own){ if(scen.own[f].includes(c.id)){owner=f;break;} }
+    const base = scen.capitals[owner]===c.id;
+    return {...c, owner, base,
+      troops: base?13000:(owner==="neu"?4000+c.econ*400:6000+c.econ*500),
+      pop:20000+c.econ*4000, order:78, wall:c.def*10, food:8000,
+      devEcon:c.econ, devMil:c.def, officers:[], justTook:false};
+  });
+  const cityById=Object.fromEntries(cities.map(c=>[c.id,c]));
+  // active factions in this scenario
+  const active=new Set(["neu"]); Object.keys(scen.own).forEach(f=>active.add(f));
+  // build officers per scenario assignment
+  const officers=[]; const facOf={};
+  for(const f in scen.officers){ scen.officers[f].forEach(id=>{facOf[id]=f;}); }
+  ROSTER.forEach(base=>{
+    const f=facOf[base.id]; if(!f)return; // not present this scenario
+    officers.push({...base, fac:f, loyalty:90, where:null});
+  });
+  const obyId=Object.fromEntries(officers.map(o=>[o.id,o]));
+  // place officers in their faction's cities (capital first)
+  for(const f of active){
+    const os=officers.filter(o=>o.fac===f);
+    if(!os.length)continue;
+    let homes=cities.filter(c=>c.owner===f);
+    if(f==="neu"||!homes.length) homes=cities.filter(c=>c.owner==="neu");
+    if(!homes.length) homes=cities;
+    const cap=cityById[scen.capitals[f]];
+    if(cap&&cap.owner===f) homes=[cap,...homes.filter(c=>c!==cap)];
+    os.forEach((o,i)=>{const c=homes[i%homes.length]; o.where=c.id; c.officers.push(o.id);});
   }
-  // independents sit in neutral cities
-  const neutralCities=cities.filter(c=>c.owner==="neu");
-  obyf["neu"].forEach((o,i)=>{const c=neutralCities[i%neutralCities.length];o.where=c.id;c.officers.push(o.id);});
-
+  const treasury={},foodStore={};
+  active.forEach(f=>{treasury[f]=f===playerFac?3200:(f==="neu"?0:5500); foodStore[f]=f==="neu"?0:9000;});
   G={
-    turn:1, season:0, cities, cityById, officers,
-    obyId:Object.fromEntries(officers.map(o=>[o.id,o])),
-    treasury:{shu:3000,wei:6000,wu:5000,neu:0},
-    foodStore:{shu:6000,wei:12000,wu:10000,neu:0},
-    ap:4, maxAp:4, sel:null, marchFrom:null, over:false,
-    mode:"map", reputation:55, prisoners:[],
+    scen, player:playerFac, active:[...active],
+    turn:1, season:0, cities, cityById, officers, obyId,
+    treasury, foodStore, ap:4, maxAp:4, sel:null, marchFrom:null, over:false,
+    mode:"map", reputation:55, prisoners:[], ally:null,
   };
-  log("The realm fractures. Liu Bei holds Xinye against Cao Cao's southern advance. Forge an alliance, recruit heroes, and claim the Mandate of Heaven.","gold");
+  const facName=FACTIONS[playerFac].name;
+  log(`${scen.name} (${scen.year} AD). You lead ${facName}. Recruit heroes, master the realm, and claim the Mandate of Heaven.`,"gold");
 }
-const SEASONS=["Spring","Summer","Autumn","Winter"];
 
 // ---------- Helpers ----------
+function ME(){return G.player;}
 function adj(a,b){return EDGES.some(e=>(e[0]===a&&e[1]===b)||(e[1]===a&&e[0]===b));}
 function neighborsOf(id){const r=[];EDGES.forEach(e=>{if(e[0]===id)r.push(e[1]);if(e[1]===id)r.push(e[0]);});return r;}
 function citiesOf(f){return G.cities.filter(c=>c.owner===f);}
-function officersAt(id){return G.cityById[id].officers.map(o=>G.obyId[o]);}
+function officersAt(id){return G.cityById[id].officers.map(o=>G.obyId[o]).filter(Boolean);}
 function bestOfficerStat(city,stat){const os=officersAt(city.id);return os.length?Math.max(...os.map(o=>o[stat])):40;}
 function initials(n){const p=n.split(" ");return (p[0][0]+(p[1]?p[1][0]:"")).toUpperCase();}
-function fmt(n){return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":""+Math.round(n);}
-
+function fmt(n){n=Math.round(n);return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":""+n;}
+function facColor(f){return FACTIONS[f].color;}
 function log(msg,cls){const el=document.getElementById("log");const d=document.createElement("div");
   d.className="l"+(cls?" "+cls:"");d.innerHTML="◦ "+msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
 
-// ---------- Rendering ----------
+// ---------- Rendering (strategic map) ----------
 const cv=document.getElementById("map"),ctx=cv.getContext("2d");
 let DPR=window.devicePixelRatio||1;
 function resize(){const w=cv.clientWidth,h=cv.clientHeight;cv.width=w*DPR;cv.height=h*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);draw();}
@@ -280,108 +359,87 @@ function draw(){
   if(G.mode==="battle"){return drawBattle();}
   const w=cv.clientWidth,h=cv.clientHeight;
   ctx.clearRect(0,0,w,h);
-  // parchment-ish terrain wash
   const g=ctx.createLinearGradient(0,0,w,h);
   g.addColorStop(0,"#33403a");g.addColorStop(.5,"#2a342f");g.addColorStop(1,"#222b27");
   ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
-  // faint river (Yangtze) sweeping across
-  ctx.strokeStyle="rgba(120,170,190,.35)";ctx.lineWidth=14;ctx.lineCap="round";
-  ctx.beginPath();
-  ctx.moveTo(.16*w,.55*h);ctx.bezierCurveTo(.35*w,.72*h,.55*w,.60*h,.70*w,.70*h);
-  ctx.bezierCurveTo(.80*w,.74*h,.88*w,.66*h,.95*w,.72*h);
-  ctx.stroke();
-  ctx.lineWidth=1;
+  // Yangtze
+  ctx.strokeStyle="rgba(120,170,190,.35)";ctx.lineWidth=13;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(.14*w,.60*h);ctx.bezierCurveTo(.34*w,.72*h,.52*w,.60*h,.66*w,.68*h);
+  ctx.bezierCurveTo(.78*w,.73*h,.86*w,.62*h,.95*w,.66*h);ctx.stroke();ctx.lineWidth=1;
   // edges
-  EDGES.forEach(e=>{
-    const a=px(G.cityById[e[0]]),b=px(G.cityById[e[1]]);
-    ctx.strokeStyle="rgba(220,200,160,.28)";ctx.setLineDash([6,5]);ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);
-  });
-  // highlight valid march targets
+  EDGES.forEach(e=>{const a=px(G.cityById[e[0]]),b=px(G.cityById[e[1]]);
+    const nav=isNaval(e[0],e[1]);
+    ctx.strokeStyle=nav?"rgba(120,180,210,.5)":"rgba(220,200,160,.26)";
+    ctx.setLineDash(nav?[3,4]:[6,5]);ctx.lineWidth=nav?2.5:2;
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);});
+  // march targets
   if(G.marchFrom){
-    neighborsOf(G.marchFrom).forEach(nid=>{
-      const c=G.cityById[nid];if(c.owner==="shu")return;
-      const p=px(c);ctx.strokeStyle="#d8a94d";ctx.lineWidth=3;
-      ctx.beginPath();ctx.arc(p.x,p.y,26,0,7);ctx.stroke();
-    });
-    const f=px(G.cityById[G.marchFrom]);ctx.fillStyle="#d8a94d";
-    ctx.font="11px Georgia";ctx.textAlign="center";ctx.fillText("marching from here →",f.x,f.y-30);
+    neighborsOf(G.marchFrom).forEach(nid=>{const c=G.cityById[nid];
+      if(c.owner===ME()||c.owner===G.ally)return;
+      const p=px(c);ctx.strokeStyle="#d8a94d";ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,24,0,7);ctx.stroke();});
+    const fpt=px(G.cityById[G.marchFrom]);ctx.fillStyle="#d8a94d";ctx.font="11px Georgia";ctx.textAlign="center";
+    ctx.fillText("marching from here →",fpt.x,fpt.y-28);
   }
   // cities
   G.cities.forEach(c=>{
-    const p=px(c),col=FACTIONS[c.owner].color;
-    const r=12+c.devEcon*1.1;
-    // glow for selected
-    if(G.sel===c.id){ctx.fillStyle="rgba(216,169,77,.25)";ctx.beginPath();ctx.arc(p.x,p.y,r+12,0,7);ctx.fill();}
-    // base disc
-    ctx.fillStyle=col;ctx.strokeStyle="#15100b";ctx.lineWidth=2.5;
-    ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fill();ctx.stroke();
-    // inner ring = wall/def
-    ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(p.x,p.y,r-4,0,7*(c.wall/100));ctx.stroke();
-    // base star
-    if(c.base){ctx.fillStyle="#ffe9a8";ctx.font="bold 13px Georgia";ctx.textAlign="center";ctx.fillText("★",p.x,p.y-r-4);}
-    // troop count
-    ctx.fillStyle="#fff";ctx.font="bold 11px Georgia";ctx.textAlign="center";ctx.textBaseline="middle";
-    ctx.fillText(fmt(c.troops),p.x,p.y);
-    // name
-    ctx.fillStyle="#f3ead7";ctx.font="13px Georgia";ctx.textBaseline="top";
-    ctx.fillText(c.name,p.x,p.y+r+3);
-    // officer pips
-    const os=c.officers.length;if(os){ctx.fillStyle="#ffe9a8";ctx.font="10px Georgia";
-      ctx.fillText("⚑".repeat(Math.min(os,5)),p.x,p.y-r-(c.base?18:6));}
+    const p=px(c),col=facColor(c.owner),r=10+c.devEcon*1.0;
+    if(G.sel===c.id){ctx.fillStyle="rgba(216,169,77,.25)";ctx.beginPath();ctx.arc(p.x,p.y,r+11,0,7);ctx.fill();}
+    ctx.fillStyle=col;ctx.strokeStyle="#15100b";ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fill();ctx.stroke();
+    ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,r-4,0,7*(c.wall/100));ctx.stroke();
+    if(c.base){ctx.fillStyle="#ffe9a8";ctx.font="bold 12px Georgia";ctx.textAlign="center";ctx.fillText("★",p.x,p.y-r-3);}
+    ctx.fillStyle="#fff";ctx.font="bold 10px Georgia";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(fmt(c.troops),p.x,p.y);
+    ctx.fillStyle="#f3ead7";ctx.font="12px Georgia";ctx.textBaseline="top";ctx.fillText(c.name,p.x,p.y+r+2);
+    const os=c.officers.length;if(os){ctx.fillStyle="#ffe9a8";ctx.font="9px Georgia";ctx.fillText("⚑".repeat(Math.min(os,5)),p.x,p.y-r-(c.base?16:5));}
   });
   ctx.textBaseline="alphabetic";
 }
 
 // ---------- Side panel ----------
 function pct(v,max,col){return `<div class="bar"><i style="width:${Math.max(0,Math.min(100,v/max*100))}%;background:${col}"></i></div>`;}
-function officerRow(o){
-  const col=FACTIONS[o.fac].color;
-  return `<div class="officer">
-    <div class="av" style="background:${col}">${initials(o.name)}</div>
-    <div class="nm">${o.name}${o.trait?` <small>${o.trait}</small>`:" <small>&nbsp;</small>"}</div>
-    <div class="st">CMD ${o.cmd} · MGT ${o.mgt}<br>INT ${o.int} · CHA ${o.cha}</div>
-  </div>`;
-}
+function officerRow(o){return `<div class="officer">
+  <div class="av" style="background:${facColor(o.fac)}">${initials(o.name)}</div>
+  <div class="nm">${o.name}${o.trait?` <small>${o.trait}</small>`:" <small>&nbsp;</small>"}</div>
+  <div class="st">CMD ${o.cmd} · MGT ${o.mgt}<br>INT ${o.int} · CHA ${o.cha}</div></div>`;}
 function renderSide(){
   if(G.mode==="battle"){return renderBattleSide();}
   const head=document.getElementById("sidehead"),body=document.getElementById("sidebody");
   if(!G.sel){head.textContent="Realm";
-    const mine=citiesOf("shu");
-    body.innerHTML=`<div class="hint">Select a city on the map.</div>
-      <hr class="divider"><div class="card"><h3>Liu Bei (Shu)</h3>
+    const mine=citiesOf(ME());
+    body.innerHTML=`<div class="hint">Select a city on the map.</div><hr class="divider">
+      <div class="card"><h3>${FACTIONS[ME()].name}</h3>
       <div class="row"><span>Cities</span><b>${mine.length}/${G.cities.length}</b></div>
       <div class="row"><span>Total troops</span><b>${fmt(mine.reduce((s,c)=>s+c.troops,0))}</b></div>
-      <div class="row"><span>Officers</span><b>${G.officers.filter(o=>o.fac==="shu").length}</b></div>
-      </div>`;
-    return;}
-  const c=G.cityById[G.sel],mine=c.owner==="shu";
-  head.textContent=c.name+" — "+FACTIONS[c.owner].name;
-  const os=officersAt(c.id);
+      <div class="row"><span>Officers</span><b>${G.officers.filter(o=>o.fac===ME()).length}</b></div>
+      <div class="row"><span>Honor</span><b>${Math.round(G.reputation)}</b></div>
+      ${G.ally?`<div class="row"><span>Ally</span><b>${FACTIONS[G.ally].short}</b></div>`:""}
+      </div>`; return;}
+  const c=G.cityById[G.sel],mine=c.owner===ME();
+  head.textContent=c.name+" — "+FACTIONS[c.owner].short;
+  const os=officersAt(c.id).filter(o=>!o._prisoner);
   let h=`<div class="card">
-    <h3>${c.name} <span class="tag" style="background:${FACTIONS[c.owner].color}">${c.owner.toUpperCase()}</span>${c.base?'<span class="tag" style="background:#b8893a">CAPITAL</span>':''}</h3>
-    <div class="row"><span>Garrison</span><b>${fmt(c.troops)} troops</b></div>
-    <div class="row"><span>Walls / Defense</span><b>${c.wall}</b></div>${pct(c.wall,100,"#8a7d63")}
-    <div class="row"><span>Public Order</span><b>${Math.round(c.order)}%</b></div>${pct(c.order,100,c.order<50?"#9c2b25":"#2f6b54")}
+    <h3>${c.name} <span class="tag" style="background:${facColor(c.owner)}">${FACTIONS[c.owner].short}</span>${c.base?'<span class="tag" style="background:#b8893a">CAPITAL</span>':''}</h3>
+    <div class="row"><span>Garrison</span><b>${fmt(c.troops)}</b></div>
+    <div class="row"><span>Walls</span><b>${c.wall}</b></div>${pct(c.wall,100,"#8a7d63")}
+    <div class="row"><span>Order</span><b>${Math.round(c.order)}%</b></div>${pct(c.order,100,c.order<50?"#9c2b25":"#2f6b54")}
     <div class="row"><span>Economy lv</span><b>${c.devEcon}</b></div>
-    <div class="row"><span>Food store</span><b>${fmt(c.food)}</b></div>
-  </div>`;
+    <div class="row"><span>Food</span><b>${fmt(c.food)}</b></div></div>`;
   if(mine){
     h+=`<div class="card"><h3>Govern</h3><div class="hint">Each action costs 1 AP (you have ${G.ap}).</div>
       <div class="actions">
-        <button onclick="act('dev')">Develop Economy<br><small>+gold/turn</small></button>
-        <button onclick="act('train')">Train Troops<br><small>+3,000 (gold,food)</small></button>
+        <button onclick="act('dev')">Develop<br><small>+gold/turn</small></button>
+        <button onclick="act('train')">Train<br><small>+3,000 troops</small></button>
         <button onclick="act('wall')">Build Walls<br><small>+defense</small></button>
         <button onclick="act('order')">Pacify<br><small>+order</small></button>
-        <button onclick="act('recruit')">Recruit Officer<br><small>nearby heroes</small></button>
+        <button onclick="act('recruit')">Recruit<br><small>nearby heroes</small></button>
         <button onclick="act('march')">March Army ▸<br><small>then click target</small></button>
       </div></div>`;
   } else {
-    const reach=citiesOf("shu").some(mc=>adj(mc.id,c.id));
+    const reach=citiesOf(ME()).some(mc=>adj(mc.id,c.id));
+    const canAlly = c.owner!=="neu" && c.owner!==G.ally;
     h+=`<div class="card"><h3>Foreign City</h3>
-      <div class="hint">${reach?"Adjacent to your territory. Select your bordering city, then March to attack.":"Not adjacent to your lands."}</div>
-      ${c.owner==="wu"?`<button onclick="diplomacy()" style="margin-top:8px;width:100%">Propose Alliance vs. Cao Cao</button>`:""}
+      <div class="hint">${reach?"Adjacent to your territory. Select your bordering city and March to attack"+(neighborsOf(c.id).some(n=>G.cityById[n].owner===ME()&&isNaval(n,c.id))?" — this front is fought at sea.":"."):"Not adjacent to your lands."}</div>
+      ${canAlly?`<button onclick="proposeAlly('${c.owner}')" style="margin-top:8px;width:100%">Propose Alliance with ${FACTIONS[c.owner].short}</button>`:""}
+      ${c.owner===G.ally?`<button onclick="breakAlly()" style="margin-top:8px;width:100%">Break Alliance with ${FACTIONS[c.owner].short}</button>`:""}
       </div>`;
   }
   h+=`<div class="card"><h3>Officers <span class="tag" style="background:#5b4a36">${os.length}</span></h3>
@@ -391,281 +449,201 @@ function renderSide(){
 
 // ---------- Top bar ----------
 function renderTop(){
-  document.getElementById("s-gold").textContent=fmt(G.treasury.shu);
-  document.getElementById("s-food").textContent=fmt(G.foodStore.shu);
-  document.getElementById("s-cities").textContent=citiesOf("shu").length;
-  document.getElementById("s-officers").textContent=G.officers.filter(o=>o.fac==="shu").length;
+  document.getElementById("s-gold").textContent=fmt(G.treasury[ME()]||0);
+  document.getElementById("s-food").textContent=fmt(G.foodStore[ME()]||0);
+  document.getElementById("s-cities").textContent=citiesOf(ME()).length;
+  document.getElementById("s-officers").textContent=G.officers.filter(o=>o.fac===ME()&&!o._prisoner).length;
+  document.getElementById("s-honor").textContent=Math.round(G.reputation);
   document.getElementById("s-ap").textContent=G.ap+"/"+G.maxAp;
-  document.getElementById("s-turn").textContent="Year "+(208+Math.floor((G.turn-1)/4));
+  document.getElementById("s-turn").textContent="Year "+(G.scen.year+Math.floor((G.turn-1)/4));
   document.getElementById("s-season").textContent=SEASONS[G.season]+" · Turn "+G.turn;
+  document.getElementById("b-prisoners").textContent="⛓ "+G.prisoners.length;
+  document.getElementById("brandsub").textContent=G.scen.name.toUpperCase()+" · "+FACTIONS[ME()].short.toUpperCase();
 }
 function renderAll(){renderTop();renderSide();draw();}
-
-// ---------- Legend ----------
 function renderLegend(){
   const el=document.getElementById("legend");
-  el.innerHTML=Object.entries(FACTIONS).map(([k,f])=>
-    `<div class="li"><span class="dot" style="background:${f.color}"></span>${f.name}</div>`).join("")
-    +`<div class="li" style="margin-top:4px;color:#ffe9a8">★ capital&nbsp;&nbsp;⚑ officers</div>`;
+  el.innerHTML=G.active.map(f=>`<div class="li"><span class="dot" style="background:${facColor(f)}"></span>${FACTIONS[f].name}${f===ME()?" (you)":f===G.ally?" (ally)":""}</div>`).join("")
+    +`<div class="li" style="margin-top:4px;color:#ffe9a8">★ capital&nbsp;&nbsp;⚑ officers&nbsp;&nbsp;~ river</div>`;
 }
 
 // ---------- Actions ----------
 function need(g,fd){if(G.ap<=0){toast("No actions left this turn.");return false;}
-  if(g&&G.treasury.shu<g){toast("Not enough gold.");return false;}
-  if(fd&&G.foodStore.shu<fd){toast("Not enough food.");return false;}return true;}
-function spend(g,fd){G.ap--;if(g)G.treasury.shu-=g;if(fd)G.foodStore.shu-=fd;}
-
+  if(g&&(G.treasury[ME()]||0)<g){toast("Not enough gold.");return false;}
+  if(fd&&(G.foodStore[ME()]||0)<fd){toast("Not enough food.");return false;}return true;}
+function spend(g,fd){G.ap--;if(g)G.treasury[ME()]-=g;if(fd)G.foodStore[ME()]-=fd;}
 function act(kind){
-  const c=G.cityById[G.sel];if(!c||c.owner!=="shu")return;
+  const c=G.cityById[G.sel];if(!c||c.owner!==ME())return;
   if(kind==="dev"){if(!need(300))return;spend(300);c.devEcon++;c.pop+=2000;log(`${c.name} markets expand (Economy lv ${c.devEcon}).`,"gold");}
-  else if(kind==="train"){if(!need(400,1500))return;spend(400,1500);c.troops+=3000;log(`${c.name} conscripts and drills +3,000 troops.`);}
+  else if(kind==="train"){if(!need(400,1500))return;spend(400,1500);c.troops+=3000;log(`${c.name} drills +3,000 troops.`);}
   else if(kind==="wall"){if(!need(350))return;spend(350);c.wall=Math.min(100,c.wall+15);log(`${c.name} reinforces its walls (Def ${c.wall}).`);}
   else if(kind==="order"){if(!need(150))return;spend(150);c.order=Math.min(100,c.order+20);log(`${c.name} order restored to ${Math.round(c.order)}%.`);}
   else if(kind==="recruit"){tryRecruit(c);}
   else if(kind==="march"){if(c.troops<2000){toast("Garrison too small to march (need 2,000+).");return;}
     G.marchFrom=c.id;toast("Select an adjacent enemy or neutral city to attack.");draw();return;}
-  renderAll();
-  checkVictory();
+  renderAll();checkVictory();
 }
-
 function tryRecruit(c){
-  // find a recruitable independent officer in this or an adjacent city
   const pool=[];const ids=[c.id,...neighborsOf(c.id)];
-  ids.forEach(id=>officersAt(id).forEach(o=>{if(o.fac==="neu")pool.push(o);}));
+  ids.forEach(id=>officersAt(id).forEach(o=>{if(o.fac==="neu"&&!o._prisoner)pool.push(o);}));
   if(!pool.length){toast("No unaligned heroes nearby to recruit.");return;}
   if(!need(250))return;
   const recruiter=Math.max(bestOfficerStat(c,"cha"),60);
-  const o=pool[0];
-  spend(250);
-  // chance scales with recruiter charisma
+  const o=pool[0];spend(250);
   if(Math.random()*100 < recruiter*0.85){
-    // move officer to shu
     const from=G.cityById[o.where];from.officers=from.officers.filter(x=>x!==o.id);
-    o.fac="shu";o.where=c.id;o.loyalty=80;c.officers.push(o.id);
-    log(`${o.name} pledges service to Liu Bei at ${c.name}!`,"good");
-  } else {
-    log(`${o.name} declines your overture for now.`);
-  }
+    o.fac=ME();o.where=c.id;o.loyalty=80;c.officers.push(o.id);
+    log(`${o.name} pledges service to you at ${c.name}!`,"good");
+  } else log(`${o.name} declines your overture for now.`);
 }
-
-function diplomacy(){
-  if(G._allianceWu){toast("Already allied with Sun Quan.");return;}
-  modal("Alliance at Red Cliffs","<div class='evt'>Your envoy Zhuge Liang sails to Chaisang to treat with Sun Quan and Zhou Yu. "
-    +"Together, Shu and Wu might withstand Cao Cao's vast host on the Yangtze.<br><br>"
-    +"<b>Form an alliance with Wu?</b> While allied, Wu will not attack you, and joint defense raises your officers' morale.</div>",
-    [{t:"Seal the alliance",cls:"primary",fn:()=>{G._allianceWu=true;closeModal();
-      log("Shu and Wu are allied! The fire awaits Cao Cao at the Red Cliffs.","good");renderAll();}},
+function proposeAlly(fac){
+  if(G.ally&&G.ally!==fac){toast("Break your current alliance first.");return;}
+  modal(`Alliance with ${FACTIONS[fac].name}`,
+    `<div class="evt">Your envoy proposes a pact against your common rivals. While allied, ${FACTIONS[fac].short} will not attack you, your officers fight with steadier morale, and you may focus your armies elsewhere.</div>`,
+    [{t:"Seal the alliance",cls:"primary",fn:()=>{G.ally=fac;closeModal();log(`You are now allied with ${FACTIONS[fac].name}.`,"good");renderAll();}},
      {t:"Not yet",fn:closeModal}]);
 }
+function breakAlly(){const f=G.ally;G.ally=null;G.reputation=Math.max(0,G.reputation-6);
+  log(`You break your alliance with ${FACTIONS[f].short} (honor −6).`,"war");renderAll();}
 
-// ---------- Battle ----------
+// ---------- Abstract combat (auto-resolve & AI) ----------
 function strength(city,attackingTroops,attackerSide){
-  // effective combat power = troops * (1 + cmdBonus) * stratagem mults
-  const os = attackerSide ? attackerSide : officersAt(city.id);
-  const cmd = os.length?Math.max(...os.map(o=>o.cmd)):40;
-  const mgt = os.length?Math.max(...os.map(o=>o.mgt)):40;
-  let power = (attackingTroops||city.troops) * (0.7 + cmd/140 + mgt/300);
-  return {power, cmd, mgt, os};
+  const os=attackerSide?attackerSide:officersAt(city.id);
+  const cmd=os.length?Math.max(...os.map(o=>o.cmd)):40;
+  const mgt=os.length?Math.max(...os.map(o=>o.mgt)):40;
+  return {power:(attackingTroops||city.troops)*(0.7+cmd/140+mgt/300), cmd, mgt, os};
+}
+function battlePreview(army,atkOs,to){
+  const A=strength(null,army,atkOs).power;
+  const D=strength(to,to.troops,null).power*(1+to.wall/120);
+  return Math.round(A/(A+D)*100);
 }
 function marchAttack(fromId,toId){
   const from=G.cityById[fromId],to=G.cityById[toId];
-  if(to.owner==="shu"){toast("That city is already yours.");return;}
-  if(G._allianceWu&&to.owner==="wu"){toast("You are allied with Wu. Break it via diplomacy first.");return;}
+  if(to.owner===ME()){toast("That city is already yours.");return;}
+  if(G.ally&&to.owner===G.ally){toast(`You are allied with ${FACTIONS[G.ally].short}. Break it first.`);return;}
   if(G.ap<=0){toast("No actions left this turn.");G.marchFrom=null;draw();return;}
-  // commit ~70% of garrison as the field army
   const army=Math.floor(from.troops*0.7);
   const atkOs=officersAt(fromId);
+  const naval=isNaval(fromId,toId);
   G.marchFrom=null;draw();
   const odds=battlePreview(army,atkOs,to);
   modal(`March on ${to.name}`,
     `<div class="evt">Your army of <b>${fmt(army)}</b> from ${from.name}`
     +`${atkOs.length?` under ${atkOs.map(o=>o.name).join(", ")}`:""} advances on ${to.name} `
     +`(garrison <b>${fmt(to.troops)}</b>, walls ${to.wall}).<br><br>`
+    +`${naval?"⚓ <b>This crossing is fought on the river — a naval battle.</b><br>":""}`
     +`Estimated field strength: <b>${odds}%</b> in your favor.</div>`,
-    [{t:"⚔ Fight on the field",cls:"primary",fn:()=>{closeModal();from.troops-=army;spend(1);startTactical(from,to,army,atkOs);}},
-     {t:"⚡ Auto-resolve",fn:()=>{closeModal();from.troops-=army;spend(1);resolveBattle(from,to,army,atkOs,true);}},
+    [{t:naval?"⚓ Fight at sea":"⚔ Fight on the field",cls:"primary",fn:()=>{closeModal();from.troops-=army;spend(1);startTactical(from,to,army,atkOs,naval);}},
+     {t:"⚡ Auto-resolve",fn:()=>{closeModal();from.troops-=army;spend(1);resolveBattle(from,to,army,atkOs);}},
      {t:"Withdraw",fn:closeModal}]);
 }
-function battlePreview(army,atkOs,to){
-  const A=strength(null,army,atkOs).power;
-  let D=strength(to,to.troops,null).power*(1+to.wall/120);
-  return Math.round(A/(A+D)*100);
-}
-function resolveBattle(from,to,army,atkOs,playerAttacker){
-  const A=strength(null,army,atkOs);
-  // defender gets wall bonus
-  const D=strength(to,to.troops,null);
-  D.power *= (1 + to.wall/120);
-  // stratagems: fire stratagist gives a swing; ambush for defender
-  let aFire=atkOs.some(o=>/Fire/.test(o.trait||"")), aBonus="";
-  let dStrat=D.os.some(o=>/Fire|Ambush/.test(o.trait||""));
-  if(aFire && (G.season===0||G.season===2)){A.power*=1.35;aBonus=" Fire stratagem unleashed!";}
-  if(dStrat){D.power*=1.18;}
-  // alliance morale
-  if(playerAttacker&&G._allianceWu){A.power*=1.08;}
-  // randomness
-  A.power*= (0.85+Math.random()*0.3); D.power*=(0.85+Math.random()*0.3);
-  const win = A.power > D.power;
-  const ratio = A.power/(A.power+D.power);
-  // casualties
-  const aLoss=Math.round(army*(win?0.20+ (1-ratio)*0.5 :0.45+ratio*0.4));
-  const dLoss=Math.round(to.troops*(win?0.6+ratio*0.35 :0.18+(1-ratio)*0.4));
-  const survivors=Math.max(0,army-aLoss);
-  to.troops=Math.max(0,to.troops-dLoss);
-  // a decisive win routs the garrison and takes the city; a narrow win only bloodies it
-  const routed = win && to.troops <= Math.max(800, survivors*0.15);
-
-  const dueler=atkOs.find(o=>/Duelist/.test(o.trait||""));
-  const ddef=D.os.find(o=>/Duelist/.test(o.trait||""));
-  let duelLine="";
-  if(dueler&&ddef){const dw=dueler.mgt+Math.random()*40>ddef.mgt+Math.random()*40;
-    duelLine=`<div class="battle-line"><div class="battle-side">⚔ Duel: <b>${dueler.name}</b> vs ${ddef.name}</div><div class="battle-side">${dw?"<b style='color:#2f6b54'>"+dueler.name+" prevails!</b>":"<b style='color:#9c2b25'>"+ddef.name+" holds!</b>"}</div></div>`;}
-
+function resolveBattle(from,to,army,atkOs){
+  const A=strength(null,army,atkOs), D=strength(to,to.troops,null);
+  D.power*=(1+to.wall/120);
+  const aFire=atkOs.some(o=>/Fire/.test(o.trait||"")); let bonus="";
+  if(aFire&&(G.season===0||G.season===2)){A.power*=1.3;bonus=" Fire stratagem unleashed!";}
+  if(D.os.some(o=>/Fire|Ambush/.test(o.trait||"")))D.power*=1.15;
+  if(G.ally)A.power*=1.06;
+  A.power*=(0.85+Math.random()*0.3);D.power*=(0.85+Math.random()*0.3);
+  const win=A.power>D.power, ratio=A.power/(A.power+D.power);
+  const aLoss=Math.round(army*(win?0.2+(1-ratio)*0.5:0.45+ratio*0.4));
+  const dLoss=Math.round(to.troops*(win?0.6+ratio*0.35:0.18+(1-ratio)*0.4));
+  const surv=Math.max(0,army-aLoss);to.troops=Math.max(0,to.troops-dLoss);
+  const routed=win&&to.troops<=Math.max(800,surv*0.15);
   if(routed){
-    // capture city
-    const prevOwner=to.owner;
-    to.owner="shu";to.troops=survivors;to.order=Math.max(40,to.order-25);to.justTook=true;
-    // capture/scatter defending officers
-    const defOs=officersAt(to.id);
-    defOs.forEach(o=>{
-      if(Math.random()<0.4){ // captured -> may recruit
-        // leave for player decision later; for now: low-loyalty defectors join, others flee
-        if(o.cha< 90 && Math.random()<0.5){o.fac="shu";o.loyalty=60;log(`${o.name} is captured and pledges to Liu Bei!`,"good");}
-        else{relocateOfficerHome(o,prevOwner);log(`${o.name} escapes the fall of ${to.name}.`);}
-      } else relocateOfficerHome(o,prevOwner);
-    });
-    showBattle(from,to,army,survivors,dLoss,true,true,duelLine,aBonus);
-  } else if(win){
-    // weakened but held - attacker fails to capture, returns some troops
-    from.troops+=survivors;
-    showBattle(from,to,army,survivors,dLoss,true,false,duelLine,aBonus);
+    const prev=to.owner;to.owner=ME();to.troops=surv;to.order=Math.max(40,to.order-25);to.justTook=true;
+    const defOs=officersAt(to.id);const captured=[];
+    defOs.forEach(o=>{ if(Math.random()<0.45)captured.push(o); else relocateOfficerHome(o,prev); });
+    modal(`Victory at ${to.name}!`,`<div class="evt">Your banners fly over ${to.name}!${bonus} ${fmt(surv)} troops garrison it.</div>`,
+      [{t:"Continue",cls:"primary",fn:()=>{closeModal();log(`⚑ Captured ${to.name}.`,"good");
+        G.to=to;G.from=from;processCaptures(captured,to.name,officersAt(from.id));}}]);
+    log(`⚑ ${to.name} falls to your army.`,"good");
   } else {
-    from.troops+=survivors;
-    showBattle(from,to,army,survivors,dLoss,false,false,duelLine,aBonus);
+    from.troops+=surv;
+    modal(win?`Bloody stalemate at ${to.name}`:`Defeat at ${to.name}`,
+      `<div class="evt">${win?`You shattered the garrison (−${fmt(dLoss)}) but could not take the walls.`:`Your assault was thrown back.`}${bonus} Survivors regroup at ${from.name}.</div>`,
+      [{t:"Continue",cls:"primary",fn:closeModal}]);
+    log(`${win?"Bloodied":"✕ Repulsed at"} ${to.name}.`,"war");
   }
   renderAll();checkVictory();
-}
-function relocateOfficerHome(o,faction){
-  const cur=G.cityById[o.where];cur.officers=cur.officers.filter(x=>x!==o.id);
-  const homes=citiesOf(faction);
-  if(homes.length){const h=homes[0];o.where=h.id;h.officers.push(o.id);}
-  else {o.fac="neu";const n=citiesOf("neu")[0]||G.cities[0];o.where=n.id;n.officers.push(o.id);}
-}
-function showBattle(from,to,army,surv,dLoss,won,captured,duelLine,bonus){
-  const head=captured?`Victory at ${to.name}!`:(won?`Bloody stalemate at ${to.name}`:`Defeat at ${to.name}`);
-  modal(head,
-    `<div class="battle-line"><div class="battle-side" style="color:${FACTIONS.shu.color}"><b>Shu</b> from ${from.name}<br>${fmt(army)} troops</div>
-      <div class="vs">VS</div>
-      <div class="battle-side" style="text-align:right;color:${FACTIONS[to.owner==='shu'?'wei':to.owner].color}"><b>${to.name}</b> garrison<br>walls ${to.wall}</div></div>
-     ${duelLine}
-     <div class="evt" style="margin-top:10px">
-       ${captured?`Your banners fly over <b>${to.name}</b>! The city falls and ${fmt(surv)} troops garrison it.${bonus}`:
-         won?`You shattered the garrison (−${fmt(dLoss)}) but could not hold the walls. Your army of ${fmt(surv)} withdraws to ${from.name}.${bonus}`:
-         `Cao Cao's defenders threw back the assault. Your battered army (${fmt(surv)} left) retreats to ${from.name}.${bonus}`}
-     </div>`,
-    [{t:"Continue",cls:"primary",fn:closeModal}]);
-  log(`${won?(captured?"⚑ Captured":"Bloodied"):"✕ Repulsed at"} ${to.name} (enemy −${fmt(dLoss)}).`, won?(captured?"good":"war"):"war");
 }
 
 // ---------- End turn / AI ----------
 function endTurn(){
   if(G.over||G.mode==="battle")return;
-  // upkeep for player
-  upkeep("shu");
-  // AI factions act
-  ["wei","wu","neu"].forEach(f=>{if(f!=="neu")upkeep(f);aiTurn(f);});
-  // disasters / order drift
+  upkeep(ME());
+  G.active.filter(f=>f!==ME()).forEach(f=>{if(f!=="neu")upkeep(f);aiTurn(f);});
   G.cities.forEach(c=>{
-    if(c.justTook){c.justTook=false;}
-    if(c.order<40&&c.owner!=="neu"&&Math.random()<0.3){
-      const loss=Math.floor(c.troops*0.1);c.troops-=loss;
-      if(c.owner==="shu")log(`Unrest in ${c.name}! Riots cost ${fmt(loss)} troops. Pacify the city.`,"war");
-    }
-    c.order=Math.min(100,c.order+3); // slow natural recovery
+    if(c.justTook)c.justTook=false;
+    if(c.order<40&&c.owner!=="neu"&&Math.random()<0.3){const loss=Math.floor(c.troops*0.1);c.troops-=loss;
+      if(c.owner===ME())log(`Unrest in ${c.name}! Riots cost ${fmt(loss)} troops.`,"war");}
+    c.order=Math.min(100,c.order+3);
   });
-  // advance time
-  G.season=(G.season+1)%4; G.turn++;
-  G.ap=G.maxAp;
-  // seasonal income recalencoded in upkeep
+  G.season=(G.season+1)%4;G.turn++;G.ap=G.maxAp;
   renderAll();maybeEvent();checkVictory();
-  if(!G.over)log(`— ${SEASONS[G.season]}, Year ${208+Math.floor((G.turn-1)/4)} —`);
+  if(!G.over)log(`— ${SEASONS[G.season]}, Year ${G.scen.year+Math.floor((G.turn-1)/4)} —`);
 }
 function upkeep(f){
   let gold=0,food=0;
-  citiesOf(f).forEach(c=>{
-    gold += c.devEcon*120 + Math.round(c.order)* (c.devEcon)/2;
-    food += c.pop*0.05 - c.troops*0.06; // troops eat
-    food += c.devEcon*200;
-  });
+  citiesOf(f).forEach(c=>{gold+=c.devEcon*120+Math.round(c.order)*c.devEcon/2;
+    food+=c.pop*0.05-c.troops*0.06+c.devEcon*200;});
   G.treasury[f]=Math.max(0,(G.treasury[f]||0)+Math.round(gold));
   G.foodStore[f]=Math.max(0,(G.foodStore[f]||0)+Math.round(food));
-  // starvation
-  if(G.foodStore[f]<=0){citiesOf(f).forEach(c=>{c.troops=Math.floor(c.troops*0.95);c.order-=5;});
-    if(f==="shu")log("Granaries empty! Troops desert and order falls. Develop economy / take farmland.","war");}
+  if((G.foodStore[f]||0)<=0){citiesOf(f).forEach(c=>{c.troops=Math.floor(c.troops*0.95);c.order-=5;});
+    if(f===ME())log("Granaries empty! Troops desert. Develop economy or seize farmland.","war");}
 }
 function aiTurn(f){
-  if(f==="neu")return; // independents are passive in the slice
+  if(f==="neu")return;
   const mine=citiesOf(f);
-  // develop a bit
   mine.forEach(c=>{if((G.treasury[f]||0)>500&&Math.random()<0.4){c.devEcon++;G.treasury[f]-=300;}
     if((G.treasury[f]||0)>600&&Math.random()<0.5){c.troops+=2500;G.treasury[f]-=400;}});
-  // attack: find weakest adjacent non-ally city
   let acted=false;
   for(const c of mine.sort((a,b)=>b.troops-a.troops)){
     if(acted)break;
     const targets=neighborsOf(c.id).map(id=>G.cityById[id])
-      .filter(t=>t.owner!==f && !(G._allianceWu&&((f==="wu"&&t.owner==="shu")||(f==="shu"&&t.owner==="wu"))) );
+      .filter(t=>t.owner!==f && !(f===G.ally&&t.owner===ME()) && !(t.owner===G.ally&&f===ME()));
     if(!targets.length)continue;
-    // prefer neutral or weak
     targets.sort((a,b)=>(a.troops+a.wall*100)-(b.troops+b.wall*100));
     const t=targets[0];
-    if(c.troops>t.troops*1.15 && c.troops>4000){
-      const army=Math.floor(c.troops*0.65);c.troops-=army;
-      aiResolve(c,t,army,f);acted=true;
-    }
+    if(c.troops>t.troops*1.15&&c.troops>4000){const army=Math.floor(c.troops*0.65);c.troops-=army;aiResolve(c,t,army,f);acted=true;}
   }
 }
 function aiResolve(from,to,army,f){
   const atkOs=officersAt(from.id);
-  const A=strength(null,army,atkOs);
-  const D=strength(to,to.troops,null);D.power*=(1+to.wall/120);
+  const A=strength(null,army,atkOs),D=strength(to,to.troops,null);D.power*=(1+to.wall/120);
   A.power*=(0.85+Math.random()*0.3);D.power*=(0.85+Math.random()*0.3);
   const win=A.power>D.power*1.05;
-  const dLoss=Math.round(to.troops*(win?0.65:0.25));
-  const aLoss=Math.round(army*(win?0.25:0.5));
-  to.troops=Math.max(0,to.troops-dLoss);
-  const surv=Math.max(0,army-aLoss);
-  const wasMine=to.owner==="shu";
-  const routed = win && to.troops <= Math.max(800, surv*0.15);
-  if(routed){
-    const prev=to.owner;to.owner=f;to.troops=surv;to.order=Math.max(40,to.order-20);
+  const dLoss=Math.round(to.troops*(win?0.65:0.25)),aLoss=Math.round(army*(win?0.25:0.5));
+  to.troops=Math.max(0,to.troops-dLoss);const surv=Math.max(0,army-aLoss);
+  const wasMine=to.owner===ME();const routed=win&&to.troops<=Math.max(800,surv*0.15);
+  if(routed){const prev=to.owner;to.owner=f;to.troops=surv;to.order=Math.max(40,to.order-20);
     officersAt(to.id).slice().forEach(o=>relocateOfficerHome(o,prev));
     if(wasMine)log(`${FACTIONS[f].name} has captured ${to.name} from you!`,"war");
-    else log(`${FACTIONS[f].name} seized ${to.name} from ${FACTIONS[prev].name}.`);
-  } else {
-    from.troops+=surv;
-  }
+    else log(`${FACTIONS[f].short} seized ${to.name} from ${FACTIONS[prev].short}.`);
+  } else from.troops+=surv;
+}
+function relocateOfficerHome(o,faction){
+  const cur=G.cityById[o.where];if(cur)cur.officers=cur.officers.filter(x=>x!==o.id);
+  let homes=citiesOf(faction);
+  if(homes.length){const h=homes[0];o.where=h.id;o.fac=faction;h.officers.push(o.id);}
+  else {o.fac="neu";const n=citiesOf("neu")[0]||G.cities[0];o.where=n.id;n.officers.push(o.id);}
+  o._prisoner=false;
 }
 
 // ---------- Events ----------
 function maybeEvent(){
   if(G.over)return;
-  if(G.turn===2 && !G._allianceWu && citiesOf("shu").length){
-    modal("The Sleeping Dragon Advises","<div class='evt'>Zhuge Liang bows. \"My lord, Cao Cao's host outnumbers us tenfold. Alone we cannot stand. "
-      +"Let me sail to Wu and bind Sun Quan to our cause. United at the river, we may turn his own ships to ash.\"<br><br>"
-      +"<i>Tip: open Wu's city of Chaisang or Jianye and propose an alliance. With Wu neutralized, focus your armies on Cao Cao's south.</i></div>",
-      [{t:"Heed his counsel",cls:"primary",fn:closeModal}]);
-    return;
+  if(G.turn===2 && G.scen.id==="redcliffs" && ME()==="shu" && !G.ally){
+    modal("The Sleeping Dragon Advises","<div class='evt'>Zhuge Liang bows. \"My lord, Cao Cao's host outnumbers us tenfold. Alone we cannot stand. Let me sail to Wu and bind Sun Quan to our cause — then his own ships may turn to ash.\"<br><br><i>Tip: open a Wu city (Chaisang, Jianye) and propose an alliance.</i></div>",
+      [{t:"Heed his counsel",cls:"primary",fn:closeModal}]);return;
   }
   if(Math.random()<0.25){
-    const c=citiesOf("shu")[Math.floor(Math.random()*Math.max(1,citiesOf("shu").length))];
-    if(!c)return;
-    const r=Math.random();
-    if(r<0.4){const g=300+Math.floor(Math.random()*400);G.treasury.shu+=g;
-      log(`A good harvest in ${c.name} brings ${g} gold to the treasury.`,"gold");}
-    else if(r<0.7){c.order=Math.max(10,c.order-25);
-      log(`Bandits stir near ${c.name}; order falls to ${Math.round(c.order)}%.`,"war");}
-    else {const o=G.officers.find(o=>o.fac==="neu"&&neighborsOf(c.id).concat(c.id).includes(o.where));
+    const mine=citiesOf(ME());if(!mine.length)return;
+    const c=mine[Math.floor(Math.random()*mine.length)];const r=Math.random();
+    if(r<0.4){const g=300+Math.floor(Math.random()*400);G.treasury[ME()]+=g;log(`A good harvest in ${c.name} brings ${g} gold.`,"gold");}
+    else if(r<0.7){c.order=Math.max(10,c.order-25);log(`Bandits stir near ${c.name}; order falls to ${Math.round(c.order)}%.`,"war");}
+    else{const o=G.officers.find(o=>o.fac==="neu"&&!o._prisoner&&neighborsOf(c.id).concat(c.id).includes(o.where));
       if(o)log(`A wandering hero, ${o.name}, is seen near ${c.name}. Recruit him!`,"good");}
   }
 }
@@ -673,110 +651,106 @@ function maybeEvent(){
 // ---------- Victory ----------
 function checkVictory(){
   if(G.over)return;
-  const total=G.cities.length, mine=citiesOf("shu").length;
+  const total=G.cities.length,mine=citiesOf(ME()).length;
   if(mine===0){G.over=true;
-    modal("The Mandate is Lost","<div class='evt'>Liu Bei's banners have fallen. The dream of restoring the Han ends here. "
-      +"In another telling, the heroes might yet rise again...</div>",
-      [{t:"Restart",cls:"primary",fn:()=>{closeModal();start();}}]);return;}
+    modal("The Mandate is Lost",`<div class="evt">Your banners have fallen and your cause is ended. In another telling, the heroes might yet rise again…</div>`,
+      [{t:"New Campaign",cls:"primary",fn:()=>{closeModal();showStart();}}]);return;}
   if(mine>=Math.ceil(total*0.6)){G.over=true;
-    modal("Mandate of Heaven Claimed!","<div class='evt'>From the embattled walls of Xinye, Liu Bei has risen to master the heartland of China. "
-      +`With ${mine} of ${total} cities under your banner, you proclaim a new dynasty. The age of division bends toward your will.<br><br>`
-      +"<b>You have won the Red Cliffs vertical slice.</b></div>",
-      [{t:"Play again",cls:"primary",fn:()=>{closeModal();start();}}]);return;}
+    modal("Mandate of Heaven Claimed!",`<div class="evt">With ${mine} of ${total} cities under your banner, ${FACTIONS[ME()].name} masters the realm and proclaims a new dynasty. The age of division bends to your will.<br><br><b>Victory!</b></div>`,
+      [{t:"New Campaign",cls:"primary",fn:()=>{closeModal();showStart();}}]);return;}
 }
 
-// ---------- Modal / toast ----------
-function modal(title,body,btns){
-  document.getElementById("m-head").textContent=title;
-  document.getElementById("m-body").innerHTML=body;
-  const f=document.getElementById("m-foot");f.innerHTML="";
-  (btns||[{t:"OK",fn:closeModal}]).forEach(b=>{const el=document.createElement("button");
-    el.textContent=b.t;if(b.cls)el.className=b.cls;el.onclick=b.fn;f.appendChild(el);});
-  document.getElementById("modal").classList.add("show");
+// ---------- Prisoner management ----------
+function openPrisoners(){
+  if(!G.prisoners.length){modal("Prisoners","<div class='evt'>You hold no captives. Win a battle and choose to imprison defeated officers to hold them here.</div>",[{t:"Close",cls:"primary",fn:closeModal}]);return;}
+  const body=G.prisoners.map(pr=>{const o=G.obyId[pr.offId];const city=G.cityById[pr.cityId];
+    return `<div class="prisoner">
+      <div class="av" style="background:${facColor(o.fac)}">${initials(o.name)}</div>
+      <div class="pn">${o.name}<small>${FACTIONS[o.fac].short} · held at ${city?city.name:"?"} · CMD ${o.cmd} MGT ${o.mgt} INT ${o.int}</small></div>
+      <div class="pa">
+        <button onclick="prisonerAct('${o.id}','recruit')">Recruit</button>
+        <button onclick="prisonerAct('${o.id}','release')">Release</button>
+        <button onclick="prisonerAct('${o.id}','execute')">Execute</button>
+      </div></div>`;}).join("");
+  modal("Prisoners",`<div class="hint">Recruiting costs 1 action and depends on your renown and the captor city's charisma. Releasing raises honor; executing lowers it.</div>${body}`,
+    [{t:"Close",cls:"primary",fn:closeModal}]);
 }
-function closeModal(){document.getElementById("modal").classList.remove("show");}
-let toastT;
-function toast(msg){log(msg);}
-
-// ---------- Input ----------
-cv.addEventListener("click",e=>{
-  if(G.over)return;
-  if(G.mode==="battle"){return battleClick(e);}
-  const rect=cv.getBoundingClientRect();
-  const mx=e.clientX-rect.left,my=e.clientY-rect.top;
-  let hit=null,best=1e9;
-  G.cities.forEach(c=>{const p=px(c);const d=Math.hypot(p.x-mx,p.y-my);const r=12+c.devEcon*1.1+6;
-    if(d<r&&d<best){best=d;hit=c;}});
-  if(!hit){return;}
-  if(G.marchFrom){
-    if(adj(G.marchFrom,hit.id)&&hit.owner!=="shu"){marchAttack(G.marchFrom,hit.id);return;}
-    else if(hit.id===G.marchFrom){G.marchFrom=null;toast("March cancelled.");draw();return;}
-    else {toast("Not a valid adjacent target.");}
+function prisonerAct(id,kind){
+  const o=G.obyId[id];const pr=G.prisoners.find(p=>p.offId===id);if(!o||!pr)return;
+  const city=G.cityById[pr.cityId];
+  if(kind==="recruit"){
+    if(G.ap<=0){toast("No actions left this turn.");return;}
+    G.ap--;
+    const cha=Math.max(60,bestOfficerStat(city,"cha"));
+    const chance=cha*0.7 + G.reputation*0.3 - (/Loyal|Honorable/.test(o.trait||"")?20:0);
+    if(Math.random()*100<chance){o._prisoner=false;o.fac=ME();o.loyalty=66;o.where=city.id;
+      G.prisoners=G.prisoners.filter(p=>p.offId!==id);
+      log(`${o.name} accepts your service and is freed from the dungeon!`,"good");}
+    else log(`${o.name} spurns your offer and remains imprisoned.`);
+  } else if(kind==="release"){
+    G.prisoners=G.prisoners.filter(p=>p.offId!==id);relocateOfficerHome(o,o.fac==="neu"?"neu":o.fac);
+    G.reputation=Math.min(100,G.reputation+4);log(`You release ${o.name} (honor +4).`,"good");
+  } else if(kind==="execute"){
+    G.prisoners=G.prisoners.filter(p=>p.offId!==id);const nm=o.name;removeOfficer(o);
+    G.reputation=Math.max(0,G.reputation-9);log(`${nm} is put to death (honor −9).`,"war");
   }
-  G.sel=hit.id;renderAll();
-});
-document.getElementById("endturn").onclick=endTurn;
+  renderAll();openPrisoners();
+}
 
 /* ============================================================
-   TACTICAL BATTLE LAYER — real-time-with-pause
+   TACTICAL / NAVAL BATTLE LAYER — real-time-with-pause
    ============================================================ */
-const WB=100, HB=64;                          // battlefield world size
+const WB=100,HB=64;
 const TYPES={
-  spear:  {n:"Spears",   spd:8,  rng:2.4, dmg:0.95, tough:1.15, col:"#4f8a55"},
-  sword:  {n:"Infantry", spd:8.5,rng:2.4, dmg:1.05, tough:1.25, col:"#8a7248"},
-  cavalry:{n:"Cavalry",  spd:17, rng:2.6, dmg:1.25, tough:0.95, col:"#b5613a"},
-  archer: {n:"Archers",  spd:8,  rng:16,  dmg:0.85, tough:0.8,  col:"#3f6d9e"},
-  siege:  {n:"Siege",    spd:5,  rng:7,   dmg:0.7,  tough:1.5,  col:"#777"},
+  spear:  {n:"Spears",   spd:8,  rng:2.4, dmg:0.95, col:"#4f8a55"},
+  sword:  {n:"Infantry", spd:8.5,rng:2.4, dmg:1.05, col:"#8a7248"},
+  cavalry:{n:"Cavalry",  spd:17, rng:2.6, dmg:1.25, col:"#b5613a"},
+  archer: {n:"Archers",  spd:8,  rng:16,  dmg:0.85, col:"#3f6d9e"},
 };
 function matchup(a,d){
-  if(a==="spear"  &&d==="cavalry") return 1.75;
-  if(a==="cavalry"&&d==="spear")   return 0.6;
-  if(a==="cavalry"&&d==="archer")  return 1.7;
-  if(a==="cavalry"&&d==="sword")   return 1.15;
-  if(a==="archer" &&d==="spear")   return 1.2;
-  if(a==="sword"  &&d==="archer")  return 1.15;
+  if(a==="spear"&&d==="cavalry")return 1.75;
+  if(a==="cavalry"&&d==="spear")return 0.6;
+  if(a==="cavalry"&&d==="archer")return 1.7;
+  if(a==="cavalry"&&d==="sword")return 1.15;
+  if(a==="archer"&&d==="spear")return 1.2;
+  if(a==="sword"&&d==="archer")return 1.15;
   return 1.0;
 }
 function assignType(o,i){const t=o.trait||"";
-  if(/Cavalry/.test(t))return"cavalry"; if(/Archer/.test(t))return"archer";
-  if(/Navy|Duelist/.test(t))return"sword"; if(/Fire|Ambush/.test(t))return"archer";
+  if(/Cavalry/.test(t))return"cavalry";if(/Archer/.test(t))return"archer";
+  if(/Navy|Duelist/.test(t))return"sword";if(/Fire|Ambush/.test(t))return"archer";
   return ["spear","sword","cavalry","archer"][i%4];}
 function assignStrat(o){const t=o.trait||"";
-  if(/Fire/.test(t))  return{id:"fire",  name:"Fire Attack",   once:true};
-  if(/Ambush/.test(t))return{id:"ambush",name:"Ambush",        once:true};
+  if(/Fire/.test(t))return{id:"fire",name:"Fire Attack",once:true};
+  if(/Ambush/.test(t))return{id:"ambush",name:"Ambush",once:true};
   if(/Cavalry/.test(t))return{id:"charge",name:"Cavalry Charge",cd:16};
-  if(/Archer/.test(t))return{id:"volley",name:"Arrow Volley",  cd:14};
-  if(/Healer/.test(t))return{id:"heal",  name:"Physician's Aid",cd:12};
+  if(/Archer/.test(t))return{id:"volley",name:"Arrow Volley",cd:14};
+  if(/Healer/.test(t))return{id:"heal",name:"Physician's Aid",cd:12};
   return{id:"rally",name:"Rally",cd:16};}
 
 let B=null;
 function pickOfficers(os){return os.slice().sort((a,b)=>b.cmd-a.cmd).slice(0,5);}
-function buildSide(troops,officers,faction,side,isDef){
+function buildSide(troops,officers,faction,side){
   const chosen=officers.length?pickOfficers(officers):[];
-  const n=Math.max(1,chosen.length);
-  const share=Math.floor(troops/n);
-  const units=[];
-  const xBase = side==="atk"? 12 : 88;
+  const n=Math.max(1,chosen.length),share=Math.floor(troops/n),units=[];
+  const xBase=side==="atk"?12:88;
   for(let i=0;i<n;i++){
-    const o=chosen[i]||{name:"Captain",cmd:55,mgt:55,int:45,pol:40,cha:45,fac:faction,_captain:true};
-    const y = 10 + (HB-20) * (n===1?0.5:i/(n-1));
-    units.push({
-      id:side+i, side, off:o, faction, type:assignType(o,i),
-      strat:{...assignStrat(o),ready:true,t:0},
-      maxHp:share, hp:share, x:xBase, y, tx:xBase, ty:y,
-      morale:100, order:{type:"idle"}, target:null, cd:0, charge:0,
-      routing:false, dead:false, left:false, isDef, contact:0,
-    });
+    const o=chosen[i]||{name:"Captain",cmd:55,mgt:55,int:45,pol:40,cha:45,_captain:true};
+    const y=10+(HB-20)*(n===1?0.5:i/(n-1));
+    units.push({id:side+i,side,off:o,faction,type:assignType(o,i),
+      strat:{...assignStrat(o),ready:true},maxHp:share,hp:share,x:xBase,y,tx:xBase,ty:y,
+      morale:100,order:{type:"idle"},target:null,cd:0,charge:0,contact:0,routing:false,dead:false,left:false});
   }
   return units;
 }
-function makeTerrain(){
+function makeTerrain(naval){
   const cols=14,rows=9,tiles=[];
   for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
     let type="plain";
-    if(c>=3&&c<=5&&r>=2&&r<=5) type="forest";      // forest patch (fire!)
-    else if(c>=9&&c<=11&&r>=3&&r<=6) type="hill";   // defensive high ground
-    else if(r===rows-1) type="water";               // river along the bottom
+    if(naval){ type = (c===0||c===cols-1)?"shore":"water"; }
+    else if(c>=3&&c<=5&&r>=2&&r<=5)type="forest";
+    else if(c>=9&&c<=11&&r>=3&&r<=6)type="hill";
+    else if(r===rows-1)type="water";
     tiles.push({type});
   }
   return {cols,rows,tiles};
@@ -786,464 +760,304 @@ function terrainAt(x,y){const t=B.terrain;
   const r=Math.min(t.rows-1,Math.max(0,Math.floor(y/HB*t.rows)));
   return t.tiles[r*t.cols+c].type;}
 
-function startTactical(from,to,army,atkOs){
+function startTactical(from,to,army,atkOs,naval){
   const defOs=officersAt(to.id);
-  B={
-    from,to,army, atkFac:from.owner, defFac:to.owner,
-    units:[...buildSide(army,atkOs,from.owner,"atk",false),
-           ...buildSide(to.troops,defOs,to.owner,"def",true)],
-    terrain:makeTerrain(), fires:[], texts:[],
-    paused:false, speed:1, time:0, maxTime:150, sel:null,
-    fireAim:null, over:false, duelDone:new Set(), lastTs:null,
-    defWallBonus: 1+to.wall/140, isSiege: to.wall>0,
-  };
-  G.mode="battle"; G.to=to; G.from=from;
+  B={from,to,army,naval:!!naval,atkFac:from.owner,defFac:to.owner,
+    units:[...buildSide(army,atkOs,from.owner,"atk"),...buildSide(to.troops,defOs,to.owner,"def")],
+    terrain:makeTerrain(naval),fires:[],texts:[],paused:false,speed:1,time:0,maxTime:150,
+    sel:null,fireAim:null,over:false,duelDone:new Set(),duelBusy:false,lastTs:null,
+    defWallBonus:1+to.wall/140,isSiege:to.wall>0&&!naval};
+  G.mode="battle";G.to=to;G.from=from;
   document.getElementById("help").style.display="none";
   document.getElementById("legend").style.display="none";
   document.getElementById("endturn").disabled=true;
-  buildBattleHUD();
-  document.getElementById("sidehead").textContent="Battle — "+to.name;
-  renderBattleSide();
-  requestAnimationFrame(battleLoop);
-  log(`Battle joined at ${to.name}!`,"war");
+  buildBattleHUD();document.getElementById("sidehead").textContent=(naval?"Naval Battle — ":"Battle — ")+to.name;
+  renderBattleSide();requestAnimationFrame(battleLoop);
+  log(`${naval?"Naval battle":"Battle"} joined at ${to.name}!`,"war");
 }
-
-// ---- main loop ----
 function battleLoop(ts){
   if(!B)return;
-  if(B.lastTs==null)B.lastTs=ts;
-  let dt=(ts-B.lastTs)/1000; B.lastTs=ts;
-  dt=Math.min(dt,0.05);
+  if(B.lastTs==null)B.lastTs=ts;let dt=(ts-B.lastTs)/1000;B.lastTs=ts;dt=Math.min(dt,0.05);
   const modalOpen=document.getElementById("modal").classList.contains("show");
-  if(!B.paused && !B.over && !modalOpen) simulate(dt*B.speed);
-  drawBattle();
-  updateBattleHUD();
-  if(G.mode==="battle") requestAnimationFrame(battleLoop);
+  if(!B.paused&&!B.over&&!modalOpen)simulate(dt*B.speed);
+  drawBattle();updateBattleHUD();
+  if(G.mode==="battle")requestAnimationFrame(battleLoop);
 }
-
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
-function alive(u){return !u.dead && !u.left;}
+function alive(u){return !u.dead&&!u.left;}
 function enemiesOf(u){return B.units.filter(v=>alive(v)&&v.side!==u.side);}
 function nearestEnemy(u){let best=null,bd=1e9;enemiesOf(u).forEach(v=>{const d=dist(u,v);if(d<bd){bd=d;best=v;}});return best;}
+function playerSide(){return "atk";}
 
 function simulate(dt){
   B.time+=dt;
-  // strat cooldowns
-  B.units.forEach(u=>{ if(u.cd>0)u.cd-=dt; if(u.charge>0)u.charge-=dt; if(u.contact>0)u.contact-=dt; });
-  // fires
-  B.fires.forEach(f=>{f.t-=dt;});
-  B.fires=B.fires.filter(f=>f.t>0);
-  // texts
+  B.units.forEach(u=>{if(u.cd>0)u.cd-=dt;if(u.charge>0)u.charge-=dt;if(u.contact>0)u.contact-=dt;});
+  B.fires.forEach(f=>f.t-=dt);B.fires=B.fires.filter(f=>f.t>0);
   B.texts.forEach(t=>{t.t-=dt;t.y-=8*dt;});B.texts=B.texts.filter(t=>t.t>0);
-
-  // AI orders for enemy (and idle allies auto-engage)
-  B.units.forEach(u=>{ if(!alive(u)||u.routing)return;
-    const isAI = u.side!==playerSide();
-    if(isAI){ aiUnit(u); }
-  });
-
-  // movement + combat
+  B.units.forEach(u=>{if(alive(u)&&!u.routing&&u.side!==playerSide())aiUnit(u);});
   for(const u of B.units){
-    if(!alive(u))return;
-    // fire damage
-    B.fires.forEach(f=>{ if(Math.hypot(u.x-f.x,u.y-f.y)<f.r){
-      const amp = terrainAt(u.x,u.y)==="forest"?1.7:1;
-      damage(u, f.rate*amp*dt, null, "fire"); }});
-
-    if(u.routing){ routeMove(u,dt); recover(u,dt,true); continue; }
-
-    let tgt = u.target && alive(u.target) ? u.target : null;
-    // hold-position units only engage nearby enemies
-    if(!tgt){
-      const ne=nearestEnemy(u);
-      if(u.order.type==="hold"){ if(ne && dist(u,ne)< (TYPES[u.type].rng+3)) tgt=ne; }
-      else if(u.order.type==="move"){ if(ne && dist(u,ne)<9) tgt=ne; }
-      else tgt=ne;
-    }
+    if(!alive(u))continue;
+    B.fires.forEach(f=>{if(Math.hypot(u.x-f.x,u.y-f.y)<f.r){
+      const amp=(terrainAt(u.x,u.y)==="forest"||B.naval)?1.7:1;damage(u,f.rate*amp*dt,null,"fire");}});
+    if(u.routing){routeMove(u,dt);recover(u,dt,true);continue;}
+    let tgt=u.target&&alive(u.target)?u.target:null;
+    if(!tgt){const ne=nearestEnemy(u);
+      if(u.order.type==="hold"){if(ne&&dist(u,ne)<TYPES[u.type].rng+3)tgt=ne;}
+      else if(u.order.type==="move"){if(ne&&dist(u,ne)<9)tgt=ne;}
+      else tgt=ne;}
     const rng=TYPES[u.type].rng;
-    if(tgt){
-      const d=dist(u,tgt);
+    if(tgt){const d=dist(u,tgt);
       if(d>rng){
-        // move toward target unless a move order to a point is active and no aggro
-        if(u.order.type==="move" && dist({x:u.x,y:u.y},{x:u.order.x,y:u.order.y})>2 && d>9){
-          moveToward(u,u.order.x,u.order.y,dt);
-        } else {
-          if(u.type==="cavalry" && d>6 && u.charge<=0){u.charge=0.01;} // mark closing
-          moveToward(u,tgt.x,tgt.y,dt);
-          if(d-rng<1.5 && u.type==="cavalry" && u.contact<=0){u._chargeHit=true;}
-        }
-      } else {
-        u.contact=0.6;
-        attack(u,tgt,dt);
-      }
-    } else if(u.order.type==="move"){
-      moveToward(u,u.order.x,u.order.y,dt);
-    }
+        if(u.order.type==="move"&&Math.hypot(u.x-u.order.x,u.y-u.order.y)>2&&d>9)moveToward(u,u.order.x,u.order.y,dt);
+        else{moveToward(u,tgt.x,tgt.y,dt);if(d-rng<1.5&&u.type==="cavalry"&&u.contact<=0)u._chargeHit=true;}
+      } else {u.contact=0.6;attack(u,tgt,dt);}
+    } else if(u.order.type==="move")moveToward(u,u.order.x,u.order.y,dt);
     recover(u,dt,false);
   }
   checkBattleEnd();
 }
-function playerSide(){return "atk";} // player is always attacker in tactical launches
-
 function moveToward(u,tx,ty,dt){
-  const dx=tx-u.x,dy=ty-u.y,d=Math.hypot(dx,dy)||1;
-  let spd=TYPES[u.type].spd;
+  const dx=tx-u.x,dy=ty-u.y,d=Math.hypot(dx,dy)||1;let spd=TYPES[u.type].spd;
   const ter=terrainAt(u.x,u.y);
-  if(ter==="forest")spd*=0.6; else if(ter==="water")spd*=0.5; else if(ter==="hill")spd*=0.8;
+  if(B.naval){spd*=(/Navy/.test(u.off.trait||"")?1.15:u.type==="cavalry"?0.8:0.95);}
+  else{if(ter==="forest")spd*=0.6;else if(ter==="water")spd*=0.5;else if(ter==="hill")spd*=0.8;}
   spd*=0.6+0.4*(u.morale/100);
-  const step=Math.min(d,spd*dt);
-  u.x+=dx/d*step; u.y+=dy/d*step;
-  u.x=Math.max(2,Math.min(WB-2,u.x)); u.y=Math.max(4,Math.min(HB-2,u.y));
+  const step=Math.min(d,spd*dt);u.x+=dx/d*step;u.y+=dy/d*step;
+  u.x=Math.max(2,Math.min(WB-2,u.x));u.y=Math.max(4,Math.min(HB-2,u.y));
 }
-function routeMove(u,dt){
-  const homeX = u.side==="atk"? -5 : WB+5;
-  moveToward(u,homeX,u.y,dt);
-  if(u.side==="atk"? u.x<=3 : u.x>=WB-3){ u.left=true; }
-}
+function routeMove(u,dt){const homeX=u.side==="atk"?-5:WB+5;moveToward(u,homeX,u.y,dt);
+  if(u.side==="atk"?u.x<=3:u.x>=WB-3)u.left=true;}
 function attack(u,tgt,dt){
-  let rate = u.hp*0.052*TYPES[u.type].dmg*matchup(u.type,tgt.type);
-  rate *= 0.7+u.off.mgt/200;
-  rate *= 0.5+0.5*(u.morale/100);
-  if(u.off.wounded) rate*=0.7;
-  // defender terrain/wall mitigation
-  const tt=terrainAt(tgt.x,tgt.y);
-  let mit=1; if(tt==="hill")mit*=0.8; if(tt==="forest"&&u.type==="archer")mit*=0.7;
-  if(tgt.isDef && B.isSiege) mit/= B.defWallBonus; // walls protect defenders
-  // cavalry charge burst
-  if(u.type==="cavalry" && u._chargeHit){ rate*=2.0; u._chargeHit=false; u.contact=0.6;
-    floatText(tgt.x,tgt.y,"CHARGE!","#ffca6b"); }
-  const cas=rate*mit*dt;
-  damage(tgt,cas,u,"melee");
-  // duel opportunity
-  maybeDuel(u,tgt);
+  let rate=u.hp*0.052*TYPES[u.type].dmg*matchup(u.type,tgt.type);
+  rate*=0.7+u.off.mgt/200;rate*=0.5+0.5*(u.morale/100);
+  if(u.off.wounded)rate*=0.7;
+  if(B.naval){ if(u.type==="cavalry")rate*=0.5; if(/Navy/.test(u.off.trait||""))rate*=1.4; if(u.type==="archer")rate*=1.1; }
+  const tt=terrainAt(tgt.x,tgt.y);let mit=1;
+  if(tt==="hill")mit*=0.8;if(tt==="forest"&&u.type==="archer")mit*=0.7;
+  if(tgt.side==="def"&&B.isSiege)mit/=B.defWallBonus;
+  if(u.type==="cavalry"&&u._chargeHit){rate*=2.0;u._chargeHit=false;u.contact=0.6;floatText(tgt.x,tgt.y,"CHARGE!","#ffca6b");}
+  damage(tgt,rate*mit*dt,u,"melee");maybeDuel(u,tgt);
 }
 function damage(u,cas,src,kind){
   if(!alive(u))return;
-  u.hp-=cas;
-  u.morale -= cas/u.maxHp*90*(1-u.off.cmd/400);
-  if(kind==="fire") u.morale-=cas/u.maxHp*40;
-  if(u.hp<=0){ u.hp=0; u.dead=true;
-    floatText(u.x,u.y,"ROUTED","#e05b52");
-    // nearby friendly morale shock, enemy boost
-    B.units.forEach(v=>{ if(alive(v)&&dist(v,u)<22){ v.morale += (v.side===u.side? -14: 6); }});
-    log(`${u.off.name}'s ${TYPES[u.type].n} are destroyed at ${B.to.name}.`, u.side===playerSide()?"war":"good");
-  } else if(u.morale<=15 && !u.routing){
-    u.routing=true; floatText(u.x,u.y,"FLEEING!","#e0a35b");
-  }
+  u.hp-=cas;u.morale-=cas/u.maxHp*90*(1-u.off.cmd/400);
+  if(kind==="fire")u.morale-=cas/u.maxHp*40;
+  if(u.hp<=0){u.hp=0;u.dead=true;floatText(u.x,u.y,"ROUTED","#e05b52");
+    B.units.forEach(v=>{if(alive(v)&&dist(v,u)<22)v.morale+=(v.side===u.side?-14:6);});
+    log(`${u.off.name}'s ${TYPES[u.type].n} are destroyed.`,u.side===playerSide()?"war":"good");
+  } else if(u.morale<=15&&!u.routing){u.routing=true;floatText(u.x,u.y,"FLEEING!","#e0a35b");}
 }
-function recover(u,dt,routing){
-  if(u.contact>0)return;
-  const base = routing? 22+u.off.cmd/6 : 100;
-  if(u.morale<base){ u.morale=Math.min(base,u.morale+ (routing?4:6)*dt); }
-  if(routing && u.morale>40){ u.routing=false; } // rallied
-}
+function recover(u,dt,routing){if(u.contact>0)return;
+  const base=routing?22+u.off.cmd/6:100;
+  if(u.morale<base)u.morale=Math.min(base,u.morale+(routing?4:6)*dt);
+  if(routing&&u.morale>40)u.routing=false;}
 function floatText(x,y,txt,col){B.texts.push({x,y,txt,col,t:1.1});}
-
 function aiUnit(u){
-  // enemy AI: engage nearest player unit; archers keep distance; low morale routs naturally
-  const ne=nearestEnemy(u);
-  if(!ne){u.order={type:"idle"};u.target=null;return;}
+  const ne=nearestEnemy(u);if(!ne){u.order={type:"idle"};u.target=null;return;}
   u.target=ne;
-  // AI stratagem: use once when a good target presents
-  if(u.strat.ready && (u.strat.cd?u.cd<=0:true) && !u.routing){
-    if(u.strat.id==="fire"){
-      // aim at densest cluster of player units
-      const pc=clusterCenter(enemiesOf(u));
-      if(pc && pc.n>=2){ castFire(u,pc.x,pc.y); }
-    } else if(dist(u,ne)<TYPES[u.type].rng+2 && Math.random()<0.02){ castStrat(u); }
+  if(u.strat.ready&&(u.strat.cd?u.cd<=0:true)&&!u.routing){
+    if(u.strat.id==="fire"){const pc=clusterCenter(enemiesOf(u));if(pc&&pc.n>=2)castFire(u,pc.x,pc.y);}
+    else if(dist(u,ne)<TYPES[u.type].rng+2&&Math.random()<0.02)castStrat(u);
   }
 }
-function clusterCenter(list){ if(!list.length)return null;
-  let bx=0,by=0;list.forEach(u=>{bx+=u.x;by+=u.y;});bx/=list.length;by/=list.length;
-  const n=list.filter(u=>Math.hypot(u.x-bx,u.y-by)<14).length;
-  return {x:bx,y:by,n};}
-
-// ---- duels ----
+function clusterCenter(list){if(!list.length)return null;let bx=0,by=0;list.forEach(u=>{bx+=u.x;by+=u.y;});
+  bx/=list.length;by/=list.length;return{x:bx,y:by,n:list.filter(u=>Math.hypot(u.x-bx,u.y-by)<14).length};}
 function maybeDuel(u,tgt){
   if(B.duelBusy)return;
-  if(!/Duelist/.test(u.off.trait||"") || !/Duelist/.test(tgt.off.trait||""))return;
+  if(!/Duelist/.test(u.off.trait||"")||!/Duelist/.test(tgt.off.trait||""))return;
   const key=[u.off.id||u.off.name,tgt.off.id||tgt.off.name].sort().join("|");
   if(B.duelDone.has(key))return;
-  if(Math.random()<0.010){ B.duelDone.add(key); triggerDuel(u,tgt); }
+  if(Math.random()<0.01){B.duelDone.add(key);triggerDuel(u,tgt);}
 }
-function triggerDuel(a,d){
-  B.duelBusy=true; B.paused=true;
-  const na=a.off.name, nd=d.off.name;
-  modal("⚔ Single Combat",
-    `<div class="evt" style="text-align:center">On the churning field, <b>${na}</b> (MGT ${a.off.mgt}) `
-    +`spurs forward to challenge <b>${nd}</b> (MGT ${d.off.mgt})!<br><br>The armies pause to watch their champions clash.</div>`,
-    [{t:"Watch the duel",cls:"primary",fn:()=>resolveDuel(a,d)}]);
-}
+function triggerDuel(a,d){B.duelBusy=true;B.paused=true;
+  modal("⚔ Single Combat",`<div class="evt" style="text-align:center"><b>${a.off.name}</b> (MGT ${a.off.mgt}) charges forth to challenge <b>${d.off.name}</b> (MGT ${d.off.mgt})! The armies pause to watch their champions clash.</div>`,
+    [{t:"Watch the duel",cls:"primary",fn:()=>resolveDuel(a,d)}]);}
 function resolveDuel(a,d){
-  const sa=a.off.mgt+(a.hp/a.maxHp)*20+Math.random()*45;
-  const sd=d.off.mgt+(d.hp/d.maxHp)*20+Math.random()*45;
-  const aWin=sa>=sd, win=aWin?a:d, lose=aWin?d:a;
-  const diff=Math.abs(sa-sd);
-  win.morale=Math.min(120,win.morale+28);
-  lose.morale=Math.min(lose.morale, 12); lose.routing=true;
-  let extra="";
-  if(diff>40 && Math.random()<0.4){ lose.off.wounded=true; extra=` ${lose.off.name} is gravely wounded!`; }
-  modal("⚔ Single Combat",
-    `<div class="evt" style="text-align:center;font-size:16px"><b style="color:${aWin?'#2f6b54':'#9c2b25'}">${win.off.name} prevails!</b><br><br>`
-    +`${lose.off.name}'s troops falter and break.${extra}</div>`,
-    [{t:"Continue",cls:"primary",fn:()=>{closeModal();B.duelBusy=false;B.paused=false;
-      log(`⚔ Duel: ${win.off.name} defeats ${lose.off.name}!`, win.side===playerSide()?"good":"war");}}]);
+  const sa=a.off.mgt+(a.hp/a.maxHp)*20+Math.random()*45,sd=d.off.mgt+(d.hp/d.maxHp)*20+Math.random()*45;
+  const aWin=sa>=sd,win=aWin?a:d,lose=aWin?d:a,diff=Math.abs(sa-sd);
+  win.morale=Math.min(120,win.morale+28);lose.morale=Math.min(lose.morale,12);lose.routing=true;
+  let extra="";if(diff>40&&Math.random()<0.4){lose.off.wounded=true;extra=` ${lose.off.name} is gravely wounded!`;}
+  modal("⚔ Single Combat",`<div class="evt" style="text-align:center;font-size:16px"><b style="color:${aWin?'#2f6b54':'#9c2b25'}">${win.off.name} prevails!</b><br><br>${lose.off.name}'s troops falter and break.${extra}</div>`,
+    [{t:"Continue",cls:"primary",fn:()=>{closeModal();B.duelBusy=false;B.paused=false;log(`⚔ Duel: ${win.off.name} defeats ${lose.off.name}!`,win.side===playerSide()?"good":"war");}}]);
 }
-
-// ---- stratagems ----
 function useSelectedStrat(){
-  const u=B.sel; if(!u||u.side!==playerSide()||u.routing)return;
+  const u=B.sel;if(!u||u.side!==playerSide()||u.routing)return;
   if(!u.strat.ready){toast("Stratagem already used.");return;}
-  if(u.strat.cd && u.cd>0){toast("Stratagem recharging.");return;}
-  if(u.strat.id==="fire"){ B.fireAim=u; cv.classList.add("tgtcursor");
-    toast("Click a location to unleash the fire stratagem."); return; }
+  if(u.strat.cd&&u.cd>0){toast("Stratagem recharging.");return;}
+  if(u.strat.id==="fire"){B.fireAim=u;cv.classList.add("tgtcursor");toast("Click a location to unleash the fire stratagem.");return;}
   castStrat(u);
 }
-function castStrat(u){
-  const S=u.strat;
-  if(S.id==="charge"){ u._chargeHit=true; u.morale=Math.min(120,u.morale+15);
-    floatText(u.x,u.y,"CHARGE!","#ffca6b"); }
-  else if(S.id==="volley"){ const t=u.target&&alive(u.target)?u.target:nearestEnemy(u);
-    if(t){ damage(t,u.hp*0.55,u,"melee"); floatText(t.x,t.y,"VOLLEY","#ffe08a"); } }
-  else if(S.id==="heal"){ B.units.filter(v=>alive(v)&&v.side===u.side&&dist(v,u)<20).forEach(v=>{
-      v.hp=Math.min(v.maxHp,v.hp+v.maxHp*0.12); v.morale=Math.min(120,v.morale+18);});
-    floatText(u.x,u.y,"AID","#8fe0b0"); }
-  else if(S.id==="rally"){ B.units.filter(v=>alive(v)&&v.side===u.side&&dist(v,u)<22).forEach(v=>{
-      v.morale=Math.min(120,v.morale+30); if(v.morale>40)v.routing=false;});
-    floatText(u.x,u.y,"RALLY!","#ffe08a"); }
-  else if(S.id==="ambush"){ enemiesOf(u).filter(v=>dist(v,u)<20).forEach(v=>{
-      damage(v,v.maxHp*0.18,u,"melee"); v.morale-=25;});
-    floatText(u.x,u.y,"AMBUSH!","#ff9b5b"); }
+function castStrat(u){const S=u.strat;
+  if(S.id==="charge"){u._chargeHit=true;u.morale=Math.min(120,u.morale+15);floatText(u.x,u.y,"CHARGE!","#ffca6b");}
+  else if(S.id==="volley"){const t=u.target&&alive(u.target)?u.target:nearestEnemy(u);if(t){damage(t,u.hp*0.55,u,"melee");floatText(t.x,t.y,"VOLLEY","#ffe08a");}}
+  else if(S.id==="heal"){B.units.filter(v=>alive(v)&&v.side===u.side&&dist(v,u)<20).forEach(v=>{v.hp=Math.min(v.maxHp,v.hp+v.maxHp*0.12);v.morale=Math.min(120,v.morale+18);});floatText(u.x,u.y,"AID","#8fe0b0");}
+  else if(S.id==="rally"){B.units.filter(v=>alive(v)&&v.side===u.side&&dist(v,u)<22).forEach(v=>{v.morale=Math.min(120,v.morale+30);if(v.morale>40)v.routing=false;});floatText(u.x,u.y,"RALLY!","#ffe08a");}
+  else if(S.id==="ambush"){enemiesOf(u).filter(v=>dist(v,u)<20).forEach(v=>{damage(v,v.maxHp*0.18,u,"melee");v.morale-=25;});floatText(u.x,u.y,"AMBUSH!","#ff9b5b");}
   markStratUsed(u);
 }
 function castFire(u,x,y){
-  B.fires.push({x,y,r:12,rate: u.hp*0.9, t:5.5});
+  const naval=B.naval,forest=terrainAt(x,y)==="forest";
+  B.fires.push({x,y,r:naval?15:12,rate:u.hp*(naval?1.1:0.9),t:naval?7:5.5});
+  if(forest){const f=B.fires[B.fires.length-1];f.r=16;f.t=7.5;}
+  if(naval){B.fires.push({x:x+8,y:y+4,r:12,rate:u.hp*0.9,t:6});} // fire spreads between ships
   floatText(x,y,"🔥 FIRE!","#ff7a2f");
-  const forest=terrainAt(x,y)==="forest";
-  if(forest){ B.fires[B.fires.length-1].r=16; B.fires[B.fires.length-1].t=7.5; }
-  log(`${u.off.name} unleashes a fire stratagem${forest?" — the forest blazes!":"!"}`, u.side===playerSide()?"good":"war");
+  log(`${u.off.name} unleashes a fire stratagem${naval?" — flames leap between the ships!":forest?" — the forest blazes!":"!"}`,u.side===playerSide()?"good":"war");
   markStratUsed(u);
 }
-function markStratUsed(u){ if(u.strat.once)u.strat.ready=false; if(u.strat.cd)u.cd=u.strat.cd; }
-
-// ---- end / feedback ----
+function markStratUsed(u){if(u.strat.once)u.strat.ready=false;if(u.strat.cd)u.cd=u.strat.cd;}
 function checkBattleEnd(){
   if(B.over)return;
   const atkStanding=B.units.filter(u=>u.side==="atk"&&alive(u)&&!u.routing).length;
   const defStanding=B.units.filter(u=>u.side==="def"&&alive(u)&&!u.routing).length;
-  const atkAny=B.units.some(u=>u.side==="atk"&&alive(u));
-  const defAny=B.units.some(u=>u.side==="def"&&alive(u));
-  if(defStanding===0 && (!defAny || atkStanding>0)) return endBattle("win");
-  if(atkStanding===0 && (!atkAny || defStanding>0)) return endBattle("lose");
-  if(B.time>=B.maxTime) return endBattle(sumHp("atk")>=sumHp("def")?"win":"lose");
+  const atkAny=B.units.some(u=>u.side==="atk"&&alive(u)),defAny=B.units.some(u=>u.side==="def"&&alive(u));
+  if(defStanding===0&&(!defAny||atkStanding>0))return endBattle("win");
+  if(atkStanding===0&&(!atkAny||defStanding>0))return endBattle("lose");
+  if(B.time>=B.maxTime)return endBattle(sumHp("atk")>=sumHp("def")?"win":"lose");
 }
 function sumHp(side){return B.units.filter(u=>u.side===side&&alive(u)).reduce((s,u)=>s+u.hp,0);}
 function endBattle(result){
-  if(B.over)return; B.over=true;
-  const from=B.from,to=B.to;
-  const atkSurv=Math.round(sumHp("atk")), defSurv=Math.round(sumHp("def"));
-  const won = result==="win";
+  if(B.over)return;B.over=true;
+  const from=B.from,to=B.to,won=result==="win";
+  const atkSurv=Math.round(sumHp("atk")),defSurv=Math.round(sumHp("def"));
   cv.classList.remove("tgtcursor");
-  // defending officers whose unit was destroyed on the field
-  const fallen = B.units.filter(u=>u.side==="def" && u.off && !u.off._captain && (u.dead||u.left));
+  const fallen=B.units.filter(u=>u.side==="def"&&u.off&&!u.off._captain&&(u.dead||u.left));
   if(won){
-    const prevOwner=to.owner;
-    to.owner=from.owner; to.troops=Math.max(500,atkSurv); to.order=Math.max(40,to.order-25); to.justTook=true;
-    // survivors of the attack garrison the city; nothing returns to `from`
-    // scatter surviving defender officers home
-    B.units.filter(u=>u.side==="def"&&alive(u)&&u.off&&!u.off._captain).forEach(u=>relocateOfficerHome(u.off,prevOwner));
-    // determine captured vs escaped among fallen
-    const captured=[]; fallen.forEach(u=>{ if(Math.random()<0.55) captured.push(u.off); else {relocateOfficerHome(u.off,prevOwner);} });
-    finishBattleUI(from,to,atkSurv,defSurv,true,()=>{
-      log(`⚑ ${to.name} has fallen to your banners!`,"good");
-      processCaptures(captured, to.name, officersAt(from.id).concat(B.units.filter(u=>u.side==="atk"&&alive(u)).map(u=>u.off)));
-    });
+    const prev=to.owner;to.owner=from.owner;to.troops=Math.max(500,atkSurv);to.order=Math.max(40,to.order-25);to.justTook=true;
+    B.units.filter(u=>u.side==="def"&&alive(u)&&u.off&&!u.off._captain).forEach(u=>relocateOfficerHome(u.off,prev));
+    const captured=[];fallen.forEach(u=>{if(Math.random()<0.55)captured.push(u.off);else relocateOfficerHome(u.off,prev);});
+    finishBattleUI(from,to,atkSurv,defSurv,true,()=>{log(`⚑ ${to.name} has fallen to your banners!`,"good");
+      processCaptures(captured,to.name,officersAt(from.id).concat(B.units.filter(u=>u.side==="atk"&&alive(u)).map(u=>u.off)));});
   } else {
-    from.troops += atkSurv; // army withdraws
-    finishBattleUI(from,to,atkSurv,defSurv,false,()=>{
-      log(`✕ Your assault on ${to.name} is thrown back; survivors regroup at ${from.name}.`,"war");
-      exitBattle();
-    });
+    from.troops+=atkSurv;
+    finishBattleUI(from,to,atkSurv,defSurv,false,()=>{log(`✕ Your assault on ${to.name} is thrown back.`,"war");exitBattle();});
   }
 }
 function finishBattleUI(from,to,atkSurv,defSurv,won,next){
-  const head=won?`Victory at ${to.name}!`:`Defeat at ${to.name}`;
-  modal(head,
-    `<div class="battle-line"><div class="battle-side" style="color:${FACTIONS[B.atkFac].color}"><b>Your army</b><br>${fmt(atkSurv)} survive</div>`
+  modal(won?`Victory at ${to.name}!`:`Defeat at ${to.name}`,
+    `<div class="battle-line"><div class="battle-side" style="color:${facColor(B.atkFac)}"><b>Your army</b><br>${fmt(atkSurv)} survive</div>`
     +`<div class="vs">${won?"⚑":"✕"}</div>`
-    +`<div class="battle-side" style="text-align:right;color:${FACTIONS[B.defFac].color}"><b>${to.name}</b><br>${fmt(defSurv)} remain</div></div>`
-    +`<div class="evt" style="margin-top:10px">${won?`The field is yours. Your surviving troops occupy ${to.name}.`:`Your army could not break the defense and falls back to ${from.name}.`}</div>`,
+    +`<div class="battle-side" style="text-align:right;color:${facColor(B.defFac)}"><b>${to.name}</b><br>${fmt(defSurv)} remain</div></div>`
+    +`<div class="evt" style="margin-top:10px">${won?`The ${B.naval?"river":"field"} is yours. Your survivors occupy ${to.name}.`:`Your army falls back to ${from.name}.`}</div>`,
     [{t:"Continue",cls:"primary",fn:()=>{closeModal();next();}}]);
 }
 function exitBattle(){
-  B=null; G.mode="map";
+  B=null;G.mode="map";
   document.getElementById("bhud").classList.remove("show");
   document.getElementById("legend").style.display="";
   document.getElementById("help").style.display="";
   document.getElementById("endturn").disabled=false;
-  G.sel=G.to?G.to.id:G.sel;
-  renderAll(); checkVictory();
+  if(G.to)G.sel=G.to.id;
+  renderAll();checkVictory();
 }
 
-/* ============================================================
-   CAPTURED-OFFICER DECISIONS — recruit / release / imprison / execute
-   ============================================================ */
+/* ---- captured-officer decisions ---- */
 function removeOfficer(o){
-  const c=G.cityById[o.where]; if(c)c.officers=c.officers.filter(x=>x!==o.id);
-  G.officers=G.officers.filter(x=>x.id!==o.id); delete G.obyId[o.id];
+  const c=G.cityById[o.where];if(c)c.officers=c.officers.filter(x=>x!==o.id);
+  G.officers=G.officers.filter(x=>x.id!==o.id);delete G.obyId[o.id];
   G.prisoners=G.prisoners.filter(p=>p.offId!==o.id);
 }
-function processCaptures(list, cityName, recruiters){
-  const queue=list.slice();
-  const bestCha=Math.max(60,...recruiters.map(o=>o.cha||0));
+function relocatePrisoner(o){const cur=G.cityById[o.where];if(cur)cur.officers=cur.officers.filter(x=>x!==o.id);
+  o.where=G.to.id;o._prisoner=true;if(!G.cityById[G.to.id].officers.includes(o.id))G.cityById[G.to.id].officers.push(o.id);}
+function sworn(a,b){const oath=["liubei","guanyu","zhangfei"];return oath.includes(a.id)&&oath.includes(b.id);}
+function processCaptures(list,cityName,recruiters){
+  const queue=list.slice();const bestCha=Math.max(60,...recruiters.map(o=>o.cha||0));
   function nextOne(){
-    if(!queue.length){ exitBattle(); return; }
+    if(!queue.length){exitBattle();return;}
     const o=queue.shift();
-    const from=G.cityById[o.where];
-    const bond = G.officers.find(x=>x.fac==="shu" && sworn(x,o));
+    const bond=G.officers.find(x=>x.fac===ME()&&sworn(x,o));
     modal(`Captured: ${o.name}`,
-      `<div class="evt">${o.name} of ${FACTIONS[o.fac].name} has been taken at ${cityName}.`
-      +`${bond?` <b>${bond.name}</b> shares a sworn bond with this officer.`:""}${/Honorable|Loyal/.test(o.trait||"")?" This officer is known for unbending loyalty.":""}</div>`
-      +`<div class="captured-stat">`
-      +`<div class="cs">CMD<b>${o.cmd}</b></div><div class="cs">MGT<b>${o.mgt}</b></div>`
-      +`<div class="cs">INT<b>${o.int}</b></div><div class="cs">POL<b>${o.pol}</b></div>`
-      +`<div class="cs">CHA<b>${o.cha}</b></div></div>`
-      +`<div class="hint">Reputation shapes how the realm sees you. Honor now stands at <b>${Math.round(G.reputation)}</b>.</div>`,
-      null);
-    const foot=document.getElementById("m-foot");
-    foot.innerHTML="";
-    foot.style.display="block";
-    const wrap=document.createElement("div"); wrap.className="cap-choices";
+      `<div class="evt">${o.name} of ${FACTIONS[o.fac].name} is taken at ${cityName}.${bond?` <b>${bond.name}</b> shares a sworn bond with this officer.`:""}${/Honorable|Loyal/.test(o.trait||"")?" This officer is known for unbending loyalty.":""}</div>`
+      +`<div class="captured-stat"><div class="cs">CMD<b>${o.cmd}</b></div><div class="cs">MGT<b>${o.mgt}</b></div><div class="cs">INT<b>${o.int}</b></div><div class="cs">POL<b>${o.pol}</b></div><div class="cs">CHA<b>${o.cha}</b></div></div>`
+      +`<div class="hint">Your honor stands at <b>${Math.round(G.reputation)}</b>.</div>`,null);
+    const foot=document.getElementById("m-foot");foot.innerHTML="";foot.style.display="block";
+    const wrap=document.createElement("div");wrap.className="cap-choices";
     const opts=[
-      {t:"Recruit",d:"Win them to your cause",fn:()=>{
-        const chance = bestCha*0.8 - (o.loyalty-50) + (bond?25:0) - (/Loyal|Honorable/.test(o.trait||"")?20:0);
-        if(Math.random()*100 < chance){ o.fac="shu"; o.loyalty=68; o.where=G.to.id; G.cityById[G.to.id].officers.push(o.id);
-          G.reputation=Math.min(100,G.reputation+1);
-          resultMsg(`${o.name} is moved by your virtue and pledges to serve Liu Bei!`,"good",nextOne);
-        } else { G.prisoners.push({offId:o.id,cityId:G.to.id}); relocatePrisoner(o);
-          resultMsg(`${o.name} refuses to bend and is held prisoner.`,null,nextOne); }
+      {t:"Recruit",d:"Win them over",fn:()=>{
+        const chance=bestCha*0.8-(o.loyalty-50)+(bond?25:0)-(/Loyal|Honorable/.test(o.trait||"")?20:0);
+        if(Math.random()*100<chance){o.fac=ME();o.loyalty=68;o.where=G.to.id;o._prisoner=false;G.cityById[G.to.id].officers.push(o.id);
+          G.reputation=Math.min(100,G.reputation+1);resultMsg(`${o.name} is moved by your virtue and pledges to serve you!`,"good",nextOne);}
+        else{G.prisoners.push({offId:o.id,cityId:G.to.id});relocatePrisoner(o);resultMsg(`${o.name} refuses and is held prisoner.`,null,nextOne);}
       }},
-      {t:"Release",d:"Free them (+honor)",fn:()=>{
-        relocateOfficerHome(o,o.fac); G.reputation=Math.min(100,G.reputation+4);
-        resultMsg(`You release ${o.name}. Word of your magnanimity spreads (honor +4).`,"good",nextOne);
-      }},
-      {t:"Imprison",d:"Hold them captive",fn:()=>{
-        G.prisoners.push({offId:o.id,cityId:G.to.id}); relocatePrisoner(o);
-        G.reputation=Math.max(0,G.reputation-1); G.cityById[G.to.id].order-=4;
-        resultMsg(`${o.name} is cast into your dungeons.`,null,nextOne);
-      }},
-      {t:"Execute",d:"Put them to death (−honor)",fn:()=>{
-        const nm=o.name; const angered=bond;
-        removeOfficer(o); G.reputation=Math.max(0,G.reputation-9);
-        if(angered){ angered.loyalty=Math.max(20,angered.loyalty-15); }
-        resultMsg(`${nm} is executed. The realm recoils (honor −9)${angered?`, and ${angered.name} grieves.`:"."}`,"war",nextOne);
-      }},
+      {t:"Release",d:"Free them (+honor)",fn:()=>{relocateOfficerHome(o,o.fac);G.reputation=Math.min(100,G.reputation+4);
+        resultMsg(`You release ${o.name}; word of your magnanimity spreads (honor +4).`,"good",nextOne);}},
+      {t:"Imprison",d:"Hold captive",fn:()=>{G.prisoners.push({offId:o.id,cityId:G.to.id});relocatePrisoner(o);
+        G.reputation=Math.max(0,G.reputation-1);G.cityById[G.to.id].order-=4;resultMsg(`${o.name} is cast into your dungeons.`,null,nextOne);}},
+      {t:"Execute",d:"Put to death (−honor)",fn:()=>{const nm=o.name,angered=bond;removeOfficer(o);
+        G.reputation=Math.max(0,G.reputation-9);if(angered)angered.loyalty=Math.max(20,angered.loyalty-15);
+        resultMsg(`${nm} is executed. The realm recoils (honor −9)${angered?`, and ${angered.name} grieves.`:"."}`,"war",nextOne);}},
     ];
-    opts.forEach(op=>{const b=document.createElement("button");
-      b.innerHTML=`${op.t}<small>${op.d}</small>`;b.onclick=op.fn;wrap.appendChild(b);});
+    opts.forEach(op=>{const b=document.createElement("button");b.innerHTML=`${op.t}<small>${op.d}</small>`;b.onclick=op.fn;wrap.appendChild(b);});
     foot.appendChild(wrap);
   }
   nextOne();
 }
-function resultMsg(msg,cls,then){
-  log(msg,cls||undefined);
+function resultMsg(msg,cls,then){log(msg,cls||undefined);
   document.getElementById("m-body").innerHTML=`<div class="evt">${msg}</div>`;
-  const foot=document.getElementById("m-foot"); foot.style.display="";foot.innerHTML="";
-  const b=document.createElement("button");b.className="primary";b.textContent="Continue";b.onclick=()=>{closeModal();then();};
-  foot.appendChild(b);
-}
-function relocatePrisoner(o){ // prisoner held in the captured city (marked but off the map roster of its faction)
-  const cur=G.cityById[o.where]; if(cur)cur.officers=cur.officers.filter(x=>x!==o.id);
-  o.where=G.to.id; o._prisoner=true;
-}
-function sworn(a,b){ // simple sworn-bond model: the Peach Garden trio
-  const oath=["liubei","guanyu","zhangfei"];
-  return oath.includes(a.id)&&oath.includes(b.id);
-}
+  const foot=document.getElementById("m-foot");foot.style.display="";foot.innerHTML="";
+  const b=document.createElement("button");b.className="primary";b.textContent="Continue";b.onclick=()=>{closeModal();then();};foot.appendChild(b);}
 
 /* ---- battle rendering ---- */
 function bx(x){return x/WB*cv.clientWidth;}
 function by(y){return y/HB*cv.clientHeight;}
 function drawBattle(){
-  const cw=cv.clientWidth,ch=cv.clientHeight;
-  // terrain
-  const t=B.terrain, tw=cw/t.cols, th=ch/t.rows;
+  const cw=cv.clientWidth,ch=cv.clientHeight,t=B.terrain,tw=cw/t.cols,th=ch/t.rows;
   for(let r=0;r<t.rows;r++)for(let c=0;c<t.cols;c++){
     const ty=t.tiles[r*t.cols+c].type;
-    ctx.fillStyle = ty==="forest"?"#2f4a34": ty==="hill"?"#4a4433": ty==="water"?"#2b4a5e":"#3a4a3f";
+    ctx.fillStyle=ty==="forest"?"#2f4a34":ty==="hill"?"#4a4433":ty==="water"?"#2b4a5e":ty==="shore"?"#5a5238":"#3a4a3f";
     ctx.fillRect(c*tw,r*th,tw+1,th+1);
-    if(ty==="forest"){ctx.fillStyle="rgba(60,110,70,.5)";
-      for(let k=0;k<3;k++)ctx.fillRect(c*tw+8+k*14,r*th+10+((k*13)%20),6,10);}
+    if(ty==="forest"){ctx.fillStyle="rgba(60,110,70,.5)";for(let k=0;k<3;k++)ctx.fillRect(c*tw+8+k*14,r*th+10+((k*13)%20),6,10);}
+    if(ty==="water"){ctx.strokeStyle="rgba(150,190,210,.12)";ctx.beginPath();ctx.moveTo(c*tw,r*th+th*0.5);ctx.lineTo(c*tw+tw,r*th+th*0.5);ctx.stroke();}
     if(ty==="hill"){ctx.strokeStyle="rgba(255,255,255,.06)";ctx.beginPath();ctx.moveTo(c*tw,r*th+th);ctx.lineTo(c*tw+tw/2,r*th+th*0.4);ctx.lineTo(c*tw+tw,r*th+th);ctx.stroke();}
   }
-  // siege wall line
   if(B.isSiege){ctx.strokeStyle="rgba(180,140,90,.6)";ctx.lineWidth=4;ctx.setLineDash([2,6]);
     ctx.beginPath();ctx.moveTo(bx(80),by(2));ctx.lineTo(bx(80),by(HB-2));ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1;}
-  // fires
   B.fires.forEach(f=>{const a=Math.min(1,f.t/1.5);
     const g=ctx.createRadialGradient(bx(f.x),by(f.y),4,bx(f.x),by(f.y),bx(f.r));
     g.addColorStop(0,`rgba(255,180,60,${.7*a})`);g.addColorStop(.5,`rgba(230,90,30,${.5*a})`);g.addColorStop(1,"rgba(120,30,10,0)");
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(bx(f.x),by(f.y),bx(f.r),0,7);ctx.fill();});
-  // units
-  B.units.forEach(u=>{ if(u.left)return;
-    const p={x:bx(u.x),y:by(u.y)}; const r=10+Math.sqrt(Math.max(0,u.hp))/12;
-    const fcol=FACTIONS[u.faction].color;
-    if(u.dead){ctx.globalAlpha=.25;}
-    if(u.routing)ctx.globalAlpha=.5;
-    // selection ring
+  B.units.forEach(u=>{if(u.left)return;
+    const p={x:bx(u.x),y:by(u.y)},r=10+Math.sqrt(Math.max(0,u.hp))/12,fcol=facColor(u.faction);
+    if(u.dead)ctx.globalAlpha=.25;else if(u.routing)ctx.globalAlpha=.5;
     if(B.sel===u){ctx.strokeStyle="#ffe08a";ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,r+6,0,7);ctx.stroke();}
-    // body
-    ctx.fillStyle=fcol;ctx.strokeStyle="#12100c";ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fill();ctx.stroke();
-    // type ring
-    ctx.strokeStyle=TYPES[u.type].col;ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,r-3,0,7);ctx.stroke();
-    // type letter
-    ctx.fillStyle="#fff";ctx.font="bold 11px Georgia";ctx.textAlign="center";ctx.textBaseline="middle";
-    ctx.fillText(TYPES[u.type].n[0],p.x,p.y);
+    if(B.naval){ // draw ships as boat shapes
+      ctx.fillStyle=fcol;ctx.strokeStyle="#12100c";ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(p.x-r,p.y);ctx.quadraticCurveTo(p.x,p.y+r*0.9,p.x+r,p.y);ctx.lineTo(p.x+r*0.7,p.y-r*0.4);ctx.lineTo(p.x-r*0.7,p.y-r*0.4);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.strokeStyle=TYPES[u.type].col;ctx.beginPath();ctx.moveTo(p.x,p.y-r*0.4);ctx.lineTo(p.x,p.y-r*1.1);ctx.stroke();
+    } else {
+      ctx.fillStyle=fcol;ctx.strokeStyle="#12100c";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fill();ctx.stroke();
+      ctx.strokeStyle=TYPES[u.type].col;ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,r-3,0,7);ctx.stroke();
+    }
+    ctx.fillStyle="#fff";ctx.font="bold 11px Georgia";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(TYPES[u.type].n[0],p.x,p.y-(B.naval?2:0));
     ctx.globalAlpha=1;
-    // hp bar
     const bw=r*2;
     ctx.fillStyle="#000";ctx.fillRect(p.x-r,p.y+r+3,bw,4);
     ctx.fillStyle=u.side===playerSide()?"#2f8f5b":"#c0392b";ctx.fillRect(p.x-r,p.y+r+3,bw*(u.hp/u.maxHp),4);
-    // morale bar
     ctx.fillStyle="#000";ctx.fillRect(p.x-r,p.y+r+8,bw,3);
     ctx.fillStyle=u.morale<30?"#e0a35b":"#d8cbb0";ctx.fillRect(p.x-r,p.y+r+8,bw*Math.max(0,Math.min(1,u.morale/100)),3);
-    // name
-    ctx.fillStyle="#f3ead7";ctx.font="11px Georgia";ctx.textBaseline="top";
-    ctx.fillText(u.off.name+(u.off.wounded?" ⚕":""),p.x,p.y-r-15);
-    ctx.fillStyle=TYPES[u.type].col;ctx.font="9px Georgia";
-    ctx.fillText(fmt(u.hp)+" · "+TYPES[u.type].n,p.x,p.y-r-4);
+    ctx.fillStyle="#f3ead7";ctx.font="11px Georgia";ctx.textBaseline="top";ctx.fillText(u.off.name+(u.off.wounded?" ⚕":""),p.x,p.y-r-15);
+    ctx.fillStyle=TYPES[u.type].col;ctx.font="9px Georgia";ctx.fillText(fmt(u.hp)+" · "+TYPES[u.type].n,p.x,p.y-r-4);
   });
   ctx.textBaseline="alphabetic";
-  // fire aim hint
-  if(B.fireAim){ctx.fillStyle="#ff7a2f";ctx.font="13px Georgia";ctx.textAlign="center";
-    ctx.fillText("◎ click to target fire stratagem",cw/2,24);}
-  // float texts
-  B.texts.forEach(t=>{ctx.globalAlpha=Math.min(1,t.t);ctx.fillStyle=t.col;ctx.font="bold 13px Georgia";ctx.textAlign="center";
-    ctx.fillText(t.txt,bx(t.x),by(t.y));ctx.globalAlpha=1;});
+  if(B.fireAim){ctx.fillStyle="#ff7a2f";ctx.font="13px Georgia";ctx.textAlign="center";ctx.fillText("◎ click to target fire stratagem",cw/2,24);}
+  B.texts.forEach(t=>{ctx.globalAlpha=Math.min(1,t.t);ctx.fillStyle=t.col;ctx.font="bold 13px Georgia";ctx.textAlign="center";ctx.fillText(t.txt,bx(t.x),by(t.y));ctx.globalAlpha=1;});
 }
 function battleClick(e){
   const rect=cv.getBoundingClientRect();
-  const wx=(e.clientX-rect.left)/cv.clientWidth*WB, wy=(e.clientY-rect.top)/cv.clientHeight*HB;
-  if(B.fireAim){ castFire(B.fireAim,wx,wy); B.fireAim=null; cv.classList.remove("tgtcursor"); return; }
-  // hit test units
+  const wx=(e.clientX-rect.left)/cv.clientWidth*WB,wy=(e.clientY-rect.top)/cv.clientHeight*HB;
+  if(B.fireAim){castFire(B.fireAim,wx,wy);B.fireAim=null;cv.classList.remove("tgtcursor");return;}
   let hit=null,bd=1e9;
-  B.units.forEach(u=>{ if(u.left)return; const d=Math.hypot(bx(u.x)-(e.clientX-rect.left),by(u.y)-(e.clientY-rect.top));
-    const r=14+Math.sqrt(Math.max(0,u.hp))/12; if(d<r&&d<bd){bd=d;hit=u;}});
+  B.units.forEach(u=>{if(u.left)return;const d=Math.hypot(bx(u.x)-(e.clientX-rect.left),by(u.y)-(e.clientY-rect.top));
+    const r=14+Math.sqrt(Math.max(0,u.hp))/12;if(d<r&&d<bd){bd=d;hit=u;}});
   if(hit){
-    if(hit.side===playerSide()){ B.sel=hit; renderBattleSide(); return; }
-    // order selected unit to attack enemy
-    if(B.sel && alive(B.sel)&&!B.sel.routing){ B.sel.order={type:"attack"}; B.sel.target=hit; }
-    return;
+    if(hit.side===playerSide()){B.sel=hit;renderBattleSide();return;}
+    if(B.sel&&alive(B.sel)&&!B.sel.routing){B.sel.order={type:"attack"};B.sel.target=hit;}return;
   }
-  // move order to point
-  if(B.sel && alive(B.sel)&&!B.sel.routing){ B.sel.order={type:"move",x:wx,y:wy}; B.sel.target=null; }
+  if(B.sel&&alive(B.sel)&&!B.sel.routing){B.sel.order={type:"move",x:wx,y:wy};B.sel.target=null;}
 }
 function renderBattleSide(){
-  const body=document.getElementById("sidebody");
-  const u=B&&B.sel;
-  if(!u){ body.innerHTML=`<div class="hint">Click one of your units (green) to select it, then click the ground to move or an enemy to attack. Press <b>Space</b> to pause.</div>`; return; }
-  const S=u.strat, ready = S.ready && (!S.cd || u.cd<=0);
+  const body=document.getElementById("sidebody"),u=B&&B.sel;
+  if(!u){body.innerHTML=`<div class="hint">Click one of your units (${B&&B.naval?"ships":"troops"}) to select it, then click the ${B&&B.naval?"water":"ground"} to move or an enemy to attack. Press <b>Space</b> to pause.</div>`;return;}
+  const S=u.strat,ready=S.ready&&(!S.cd||u.cd<=0);
   body.innerHTML=`<div class="card">
     <h3>${u.off.name}${u.off.wounded?" ⚕":""} <span class="tag" style="background:${TYPES[u.type].col}">${TYPES[u.type].n}</span></h3>
     <div class="row"><span>Troops</span><b>${fmt(u.hp)} / ${fmt(u.maxHp)}</b></div>${pct(u.hp,u.maxHp,"#2f8f5b")}
@@ -1251,46 +1065,86 @@ function renderBattleSide(){
     <div class="row"><span>Command / Might</span><b>${u.off.cmd} / ${u.off.mgt}</b></div>
     <div class="row"><span>Stratagem</span><b>${S.name}${S.once?" (once)":""}</b></div>
     <div class="orderbtns">
-      <button onclick="B.sel.order={type:'hold'};B.sel.target=null" >Hold Position</button>
+      <button onclick="B.sel.order={type:'hold'};B.sel.target=null">Hold Position</button>
       <button ${ready?"":"disabled"} onclick="useSelectedStrat()">Use ${S.name}</button>
-    </div>
-    <div class="hint" style="margin-top:8px">Click the map to move; click an enemy to charge them.</div>
-  </div>
-  <div class="card"><h3>Order of Battle</h3>
+    </div></div>
+    <div class="card"><h3>Order of Battle</h3>
     ${B.units.filter(x=>!x.left).map(x=>`<div class="officer">
-      <div class="av" style="background:${FACTIONS[x.faction].color}">${initials(x.off.name)}</div>
+      <div class="av" style="background:${facColor(x.faction)}">${initials(x.off.name)}</div>
       <div class="nm">${x.off.name}<small>${TYPES[x.type].n} · ${x.side===playerSide()?"yours":"enemy"}</small></div>
-      <div class="st">${x.dead?"routed":fmt(x.hp)}<br>${x.routing&&!x.dead?"fleeing":Math.round(x.morale)+"% mor"}</div></div>`).join("")}
-  </div>`;
+      <div class="st">${x.dead?"routed":fmt(x.hp)}<br>${x.routing&&!x.dead?"fleeing":Math.round(x.morale)+"% mor"}</div></div>`).join("")}</div>`;
 }
 function buildBattleHUD(){
-  const h=document.getElementById("bhud"); h.classList.add("show");
-  h.innerHTML=`<div class="bstatus" id="bstatus"></div>
-    <div class="bbtns">
-      <button id="bpause">⏸ Pause</button>
-      <button id="bspeed">▶ 1×</button>
-      <button id="bretreat">⚑ Retreat</button>
-    </div>`;
-  document.getElementById("bpause").onclick=()=>{B.paused=!B.paused;document.getElementById("bpause").classList.toggle("on",B.paused);document.getElementById("bpause").textContent=B.paused?"▶ Resume":"⏸ Pause";};
+  const h=document.getElementById("bhud");h.classList.add("show");
+  h.innerHTML=`<div class="bstatus" id="bstatus"></div><div class="bbtns">
+    <button id="bpause">⏸ Pause</button><button id="bspeed">▶ 1×</button><button id="bretreat">⚑ Retreat</button></div>`;
+  document.getElementById("bpause").onclick=()=>{B.paused=!B.paused;const b=document.getElementById("bpause");b.classList.toggle("on",B.paused);b.textContent=B.paused?"▶ Resume":"⏸ Pause";};
   document.getElementById("bspeed").onclick=()=>{B.speed=B.speed>=4?1:B.speed*2;document.getElementById("bspeed").textContent="▶ "+B.speed+"×";};
-  document.getElementById("bretreat").onclick=()=>{ if(B.over)return; B.paused=true;
-    modal("Sound the Retreat?","<div class='evt'>Withdraw your army from the field? Surviving troops will fall back — the city will not be taken.</div>",
+  document.getElementById("bretreat").onclick=()=>{if(B.over)return;B.paused=true;
+    modal("Sound the Retreat?","<div class='evt'>Withdraw your army? Survivors fall back and the city will not be taken.</div>",
     [{t:"Retreat",cls:"primary",fn:()=>{closeModal();endBattle("lose");}},{t:"Fight on",fn:()=>{closeModal();B.paused=false;}}]);};
 }
 function updateBattleHUD(){
-  if(!B)return;
-  const a=B.units.filter(u=>u.side==="atk"&&alive(u)), d=B.units.filter(u=>u.side==="def"&&alive(u));
-  const el=document.getElementById("bstatus"); if(!el)return;
-  el.innerHTML=`<b>${B.to.name}</b> · <span style="color:${FACTIONS[B.atkFac].color}">You ${fmt(sumHp("atk"))} (${a.length})</span>`
-    +` vs <span style="color:${FACTIONS[B.defFac].color}">Defenders ${fmt(sumHp("def"))} (${d.length})</span>`
-    +` · ${Math.max(0,Math.ceil(B.maxTime-B.time))}s${B.paused?" · <b>PAUSED</b>":""}`;
+  if(!B)return;const el=document.getElementById("bstatus");if(!el)return;
+  const a=B.units.filter(u=>u.side==="atk"&&alive(u)),d=B.units.filter(u=>u.side==="def"&&alive(u));
+  el.innerHTML=`<b>${B.naval?"⚓ ":""}${B.to.name}</b> · <span style="color:${facColor(B.atkFac)}">You ${fmt(sumHp("atk"))} (${a.length})</span> vs <span style="color:${facColor(B.defFac)}">Defenders ${fmt(sumHp("def"))} (${d.length})</span> · ${Math.max(0,Math.ceil(B.maxTime-B.time))}s${B.paused?" · <b>PAUSED</b>":""}`;
 }
-window.addEventListener("keydown",e=>{ if(G&&G.mode==="battle"&&e.code==="Space"){e.preventDefault();
+
+// ---------- Input ----------
+cv.addEventListener("click",e=>{
+  if(!G||G.over)return;
+  if(G.mode==="battle"){return battleClick(e);}
+  const rect=cv.getBoundingClientRect();const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  let hit=null,best=1e9;
+  G.cities.forEach(c=>{const p=px(c),d=Math.hypot(p.x-mx,p.y-my),r=10+c.devEcon*1.0+6;if(d<r&&d<best){best=d;hit=c;}});
+  if(!hit)return;
+  if(G.marchFrom){
+    if(adj(G.marchFrom,hit.id)&&hit.owner!==ME()&&hit.owner!==G.ally){marchAttack(G.marchFrom,hit.id);return;}
+    else if(hit.id===G.marchFrom){G.marchFrom=null;toast("March cancelled.");draw();return;}
+    else toast("Not a valid target.");
+  }
+  G.sel=hit.id;renderAll();
+});
+document.getElementById("endturn").onclick=endTurn;
+document.getElementById("b-prisoners").onclick=()=>{if(G&&G.mode!=="battle")openPrisoners();};
+window.addEventListener("keydown",e=>{if(G&&G.mode==="battle"&&e.code==="Space"){e.preventDefault();
   if(B&&!B.over){B.paused=!B.paused;const b=document.getElementById("bpause");if(b){b.classList.toggle("on",B.paused);b.textContent=B.paused?"▶ Resume":"⏸ Pause";}}}});
 
+// ---------- Modal / toast ----------
+function modal(title,body,btns){
+  document.getElementById("m-head").textContent=title;
+  document.getElementById("m-body").innerHTML=body;
+  const f=document.getElementById("m-foot");f.innerHTML="";f.style.display="";
+  (btns||[{t:"OK",fn:closeModal}]).forEach(b=>{const el=document.createElement("button");el.textContent=b.t;if(b.cls)el.className=b.cls;el.onclick=b.fn;f.appendChild(el);});
+  document.getElementById("modal").classList.add("show");
+}
+function closeModal(){document.getElementById("modal").classList.remove("show");}
+function toast(msg){log(msg);}
+
+// ---------- Start screen ----------
+function showStart(){
+  const list=SCENARIOS.map((s,i)=>`<button onclick="pickScenario(${i})"><b>${s.name}</b> · ${s.year} AD<small>${s.blurb}</small></button>`).join("");
+  modal("Choose Your Campaign",`<div class="hint">A modern reimagining of Romance of the Three Kingdoms. Pick a historical scenario, then the faction you will lead.</div><div class="pick">${list}</div>`,[]);
+  document.getElementById("m-foot").style.display="none";
+}
+function pickScenario(i){
+  const s=SCENARIOS[i];
+  const facs=s.players.map((f,idx)=>`<button onclick="beginGame('${s.id}','${f}')"><b>${FACTIONS[f].short}</b><br><small>${FACTIONS[f].name}${idx===0?" · recommended":""}</small></button>`).join("");
+  modal(s.name+" — Choose a Faction",`<div class="evt">${s.blurb}</div><div class="facpick" style="margin-top:12px">${facs}</div>`,
+    [{t:"◂ Back",fn:showStart}]);
+  document.getElementById("m-foot").style.display="";
+}
+function beginGame(scenId,fac){
+  closeModal();
+  initGame(scenId,fac);
+  renderLegend();resize();renderAll();
+  // auto-focus the player's capital
+  const cap=citiesOf(ME()).find(c=>c.base)||citiesOf(ME())[0];
+  if(cap){G.sel=cap.id;renderAll();}
+}
+
 // ---------- Boot ----------
-function start(){initGame();renderLegend();resize();renderAll();}
-start();
+showStart();
 </script>
 </body>
 </html>
