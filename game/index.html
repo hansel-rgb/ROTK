@@ -111,6 +111,7 @@ canvas{display:block;width:100%;height:100%}
     <div class="stat"><b id="s-honor">—</b><span>Honor</span></div>
     <div class="stat"><b id="s-ap">—</b><span>Actions</span></div>
     <div id="turnbox">
+      <button id="b-diplomacy" class="ghost">⚑ Diplomacy</button>
       <button id="b-prisoners" class="ghost">⛓ 0</button>
       <div class="stat" style="text-align:right"><b id="s-turn">—</b><span id="s-season">—</span></div>
       <button id="endturn" class="primary">End Turn ▸</button>
@@ -202,6 +203,9 @@ const NEXTGEN = [
   {id:"wenyang",  name:"Wen Yang",   cmd:84,mgt:95,int:55,pol:40,cha:70,trait:"Duelist",amb:52},
   {id:"zhonghui", name:"Zhong Hui",  cmd:86,mgt:60,int:91,pol:82,cha:70,trait:"Ambush",amb:85},
 ];
+// preferred rulers per faction (first available becomes the head)
+const RULERS={shu:["liubei"],wei:["caocao"],wu:["sunquan","sunce"],yuan:["yuanshao"]};
+const IMPERIAL_SEAT="luoyang"; // holding the old capital = "commanding the lords" (legitimacy)
 
 // ---------- Full China map (geography only; scenarios set ownership) ----------
 const CITY_DEFS = [
@@ -343,7 +347,15 @@ function initGame(scenId, playerFac){
     treasury, foodStore, ap:4, maxAp:4, sel:null, marchFrom:null, over:false,
     mode:"map", reputation:55, prisoners:[], ally:null,
     momentum:{}, nextgen:NEXTGEN.map(g=>({...g})),
+    rulers:{}, heirs:{}, legitimacy:{}, relations:{}, coalition:null,
   };
+  // rulers, heirs, legitimacy, relations
+  [...active].filter(f=>f!=="neu").forEach(f=>{
+    const r=pickRuler(f); if(r){r.isRuler=true;G.rulers[f]=r.id;}
+    G.heirs[f]=pickHeir(f);
+    G.legitimacy[f]=40;
+    if(f!==playerFac) G.relations[f]=50;
+  });
   const facName=FACTIONS[playerFac].name;
   log(`${scen.name} (${scen.year} AD). You lead ${facName}. Recruit heroes, master the realm, and claim the Mandate of Heaven.`,"gold");
 }
@@ -421,12 +433,17 @@ function renderSide(){
   const head=document.getElementById("sidehead"),body=document.getElementById("sidebody");
   if(!G.sel){head.textContent="Realm";
     const mine=citiesOf(ME());
+    const ruler=rulerOf(ME()),heir=G.heirs[ME()]&&G.obyId[G.heirs[ME()]];
     body.innerHTML=`<div class="hint">Select a city on the map.</div><hr class="divider">
       <div class="card"><h3>${FACTIONS[ME()].name}</h3>
+      <div class="row"><span>Ruler</span><b>${ruler?ruler.name+" (age "+ruler.age+")":"—"}</b></div>
+      <div class="row"><span>Heir</span><b>${heir?heir.name:"none"}</b></div>
+      <button style="width:100%;margin:6px 0" onclick="designateHeir()">Designate Heir</button>
       <div class="row"><span>Cities</span><b>${mine.length}/${G.cities.length}</b></div>
       <div class="row"><span>Total troops</span><b>${fmt(mine.reduce((s,c)=>s+c.troops,0))}</b></div>
       <div class="row"><span>Officers</span><b>${G.officers.filter(o=>o.fac===ME()&&!o._prisoner).length}</b></div>
       <div class="row"><span>Honor</span><b>${Math.round(G.reputation)}</b></div>
+      <div class="row"><span>Legitimacy (Mandate)</span><b>${Math.round(G.legitimacy[ME()]||0)}</b></div>${pct(G.legitimacy[ME()]||0,100,"#b8893a")}
       ${(()=>{const r=G.officers.filter(o=>o.fac===ME()&&!o._prisoner&&o.loyalty<40).length;return r?`<div class="row"><span style="color:#9c2b25">Restless officers</span><b style="color:#9c2b25">${r}</b></div>`:"";})()}
       ${G.ally?`<div class="row"><span>Ally</span><b>${FACTIONS[G.ally].short}</b></div>`:""}
       </div>
@@ -516,13 +533,62 @@ function tryRecruit(c){
 }
 function proposeAlly(fac){
   if(G.ally&&G.ally!==fac){toast("Break your current alliance first.");return;}
+  const rel=G.relations[fac]??50;
   modal(`Alliance with ${FACTIONS[fac].name}`,
-    `<div class="evt">Your envoy proposes a pact against your common rivals. While allied, ${FACTIONS[fac].short} will not attack you, your officers fight with steadier morale, and you may focus your armies elsewhere.</div>`,
-    [{t:"Seal the alliance",cls:"primary",fn:()=>{G.ally=fac;closeModal();log(`You are now allied with ${FACTIONS[fac].name}.`,"good");renderAll();}},
+    `<div class="evt">Relations with ${FACTIONS[fac].short} are <b>${relLabel(rel)}</b> (${Math.round(rel)}). ${rel<25?"They are too cool to consider a pact — send tribute or arrange a marriage through the Diplomacy screen first.":"While allied, they will not attack you, your officers fight with steadier morale, and you may focus your armies elsewhere."}</div>`,
+    rel<25?[{t:"Open Diplomacy",cls:"primary",fn:()=>{closeModal();openDiplomacy();}},{t:"Close",fn:closeModal}]
+    :[{t:"Seal the alliance",cls:"primary",fn:()=>{G.ally=fac;G.relations[fac]=Math.min(100,rel+15);closeModal();log(`You are now allied with ${FACTIONS[fac].name}.`,"good");renderAll();}},
      {t:"Not yet",fn:closeModal}]);
 }
 function breakAlly(){const f=G.ally;G.ally=null;G.reputation=Math.max(0,G.reputation-6);
+  if(f)G.relations[f]=Math.max(0,(G.relations[f]??50)-30);
   log(`You break your alliance with ${FACTIONS[f].short} (honor −6).`,"war");renderAll();}
+// ---------- Diplomacy ----------
+function relLabel(v){return v>=75?"Cordial":v>=55?"Warm":v>=40?"Neutral":v>=22?"Cool":"Hostile";}
+function openDiplomacy(){
+  const facs=G.active.filter(f=>f!=="neu"&&f!==ME());
+  if(!facs.length){modal("Diplomacy","<div class='evt'>There are no rival powers to treat with.</div>",[{t:"Close",cls:"primary",fn:closeModal}]);return;}
+  const rows=facs.map(f=>{
+    const rel=G.relations[f]??50, allied=G.ally===f, ruler=rulerOf(f);
+    const cities=citiesOf(f).length, married=G._marriages&&G._marriages[f];
+    const col=rel>=55?"#2f6b54":rel>=40?"#8a7d63":"#9c2b25";
+    return `<div class="card"><h3><span class="tag" style="background:${facColor(f)}">${FACTIONS[f].short}</span> ${FACTIONS[f].name}${allied?' <span class="tag" style="background:#2f6b54">ALLIED</span>':''}${G.coalition===f?' <span class="tag" style="background:#9c2b25">COALITION TARGET</span>':''}</h3>
+      <div class="row"><span>Ruler</span><b>${ruler?ruler.name:"—"}</b></div>
+      <div class="row"><span>Cities · Legitimacy</span><b>${cities} · ${Math.round(G.legitimacy[f]||0)}</b></div>
+      <div class="row"><span>Relations</span><b style="color:${col}">${relLabel(rel)} (${Math.round(rel)})</b></div>${pct(rel,100,col)}
+      <div class="orderbtns" style="grid-template-columns:1fr 1fr 1fr">
+        ${allied?`<button onclick="breakAlly();openDiplomacy()">Break Alliance</button>`:`<button ${rel>=25?"":"disabled"} onclick="allyVia('${f}')">Alliance</button>`}
+        <button onclick="sendTribute('${f}')">Tribute 400g</button>
+        <button ${married?"disabled":""} onclick="arrangeMarriage('${f}')">Marriage</button>
+      </div>
+      ${rel<25&&!allied?'<div class="hint">Relations too cool for an alliance — send tribute or arrange a marriage first.</div>':""}
+    </div>`;}).join("");
+  modal("Diplomacy",`<div class="hint">Your honor stands at ${Math.round(G.reputation)}. Warm relations deter attacks; a coalition forms against any power that grows too dominant.</div>${rows}`,[{t:"Close",cls:"primary",fn:closeModal}]);
+}
+function allyVia(f){if((G.relations[f]??50)<25){toast("Relations too cool.");return;}
+  if(G.ally&&G.ally!==f){toast("Break your current alliance first.");return;}
+  G.ally=f;G.relations[f]=Math.min(100,(G.relations[f]??50)+15);log(`You are now allied with ${FACTIONS[f].name}.`,"good");openDiplomacy();renderTop();}
+function sendTribute(f){
+  if((G.treasury[ME()]||0)<400){toast("Not enough gold for tribute (400).");return;}
+  if(G._tributeTurn&&G._tributeTurn[f]===G.turn){toast("Already sent tribute this turn.");return;}
+  G.treasury[ME()]-=400;G.relations[f]=Math.min(100,(G.relations[f]??50)+12);
+  G._tributeTurn=G._tributeTurn||{};G._tributeTurn[f]=G.turn;
+  log(`You send tribute to ${FACTIONS[f].short} (relations +12).`,"gold");openDiplomacy();renderTop();
+}
+function arrangeMarriage(f){
+  G._marriages=G._marriages||{};
+  if(G._marriages[f]){toast("A marriage already binds your houses.");return;}
+  if((G.treasury[ME()]||0)<300){toast("A wedding befitting the houses costs 300 gold.");return;}
+  const mine=G.officers.filter(o=>o.fac===ME()&&!o._prisoner&&!o.married);
+  const theirs=G.officers.filter(o=>o.fac===f&&!o._prisoner&&!o.married);
+  if(!mine.length||!theirs.length){toast("No unwed officers to join the houses.");return;}
+  G.treasury[ME()]-=300;
+  const a=mine.sort((x,y)=>y.cha-x.cha)[0], b=theirs.sort((x,y)=>y.cha-x.cha)[0];
+  a.married=b.married=true; G._marriages[f]=true;
+  G.relations[f]=Math.min(100,(G.relations[f]??50)+25); a.loyalty=Math.min(100,a.loyalty+8);
+  log(`A dynastic marriage joins ${a.name} of your house to ${b.name} of ${FACTIONS[f].short} (relations +25).`,"good");
+  openDiplomacy();renderTop();
+}
 
 // ---------- Abstract combat (auto-resolve & AI) ----------
 function strength(city,attackingTroops,attackerSide){
@@ -601,6 +667,7 @@ function endTurn(){
     c.order=Math.min(100,c.order+3);
   });
   G.season=(G.season+1)%4;G.turn++;G.ap=G.maxAp;
+  legitimacyPhase();updateCoalition();
   loyaltyPhase();
   if(G.season===0)agingPhase();
   renderAll();maybeEvent();checkVictory();
@@ -619,6 +686,9 @@ function loyaltyPhase(){
     if(!(city&&city.owner===fac)) d-=2;                // adrift with no post
     if(fac!=="neu"&&citiesOf(fac).length<=1) d -= o.ambition/45;   // a dying cause tempts the ambitious
     d -= (o.ambition-45)/32;                           // baseline ambition erosion
+    const ruler=rulerOf(fac); if(ruler&&ruler.id!==o.id) d+=(ruler.cha-72)/22; // a charismatic lord binds the court
+    d += ((G.legitimacy[fac]||40)-45)/25;              // legitimacy of the cause
+    if(o.isRuler) d+=3;                                // the ruler does not desert himself
     if(G.officers.some(x=>x.fac===fac&&x.id!==o.id&&sworn(x,o))) d+=2.5; // sworn brothers hold fast
     d += (Math.random()-0.5)*2;
     o.loyalty=Math.max(0,Math.min(100,o.loyalty+d));
@@ -629,7 +699,7 @@ function loyaltyPhase(){
 }
 function checkDefections(){
   G.officers.slice().forEach(o=>{
-    if(o._prisoner||o.fac==="neu"||!G.obyId[o.id])return;
+    if(o._prisoner||o.fac==="neu"||o.isRuler||!G.obyId[o.id])return;
     if(o.loyalty>=26)return;
     const city=G.cityById[o.where];
     // rebellion: a powerful, ambitious, disloyal top officer seizes his city
@@ -684,10 +754,81 @@ function rewardOfficer(id){
   log(`You reward ${o.name} — loyalty rises to ${Math.round(o.loyalty)}.`,"gold");
   renderAll();
 }
+
+// ---------- Rulers, succession & legitimacy ----------
+function pickRuler(f){
+  const os=G.officers.filter(o=>o.fac===f&&!o._prisoner);
+  if(!os.length)return null;
+  for(const id of (RULERS[f]||[])){const o=os.find(x=>x.id===id);if(o)return o;}
+  return os.slice().sort((a,b)=>(b.pol+b.cha+b.cmd)-(a.pol+a.cha+a.cmd))[0];
+}
+function pickHeir(f){
+  const rid=G.rulers[f];
+  const os=G.officers.filter(o=>o.fac===f&&!o._prisoner&&o.id!==rid);
+  if(!os.length)return null;
+  return os.slice().sort((a,b)=>(b.pol+b.cha+b.cmd)-(a.pol+a.cha+a.cmd))[0].id;
+}
+function rulerOf(f){const id=G.rulers[f];const o=id&&G.obyId[id];return (o&&o.fac===f&&!o._prisoner)?o:null;}
+function handleSuccession(f,fallenName){
+  if(!G.active.includes(f))return;
+  const heirId=G.heirs[f];
+  let heir=heirId&&G.obyId[heirId];
+  if(!(heir&&heir.fac===f&&!heir._prisoner)) heir=pickRuler(f);
+  if(!heir){ // dynasty extinguished — the faction fragments
+    citiesOf(f).forEach(c=>{c.owner="neu";});
+    G.officers.filter(o=>o.fac===f).forEach(o=>{o.fac="neu";});
+    log(`With ${fallenName} gone and no heir, ${FACTIONS[f].short} collapses into independence!`, f===ME()?"war":undefined);
+    G.rulers[f]=null; return;
+  }
+  G.officers.forEach(o=>{if(o.id===heir.id)o.isRuler=true;});
+  G.rulers[f]=heir.id;
+  // succession shock: legitimacy dip and loyalty wobble across the faction
+  const quality=(heir.pol+heir.cha)/2;
+  const shock=Math.max(4,22-quality/6);
+  G.officers.filter(o=>o.fac===f&&!o._prisoner).forEach(o=>{o.loyalty=Math.max(0,o.loyalty-shock);});
+  G.legitimacy[f]=Math.max(10,(G.legitimacy[f]||40)-14);
+  G.heirs[f]=pickHeir(f);
+  log(`${fallenName} is dead. ${heir.name} succeeds as head of ${FACTIONS[f].short}${shock>14?" amid a shaky succession.":"."}`, f===ME()?"war":undefined);
+}
+function designateHeir(){
+  const f=ME();const cands=G.officers.filter(o=>o.fac===f&&!o._prisoner&&o.id!==G.rulers[f]);
+  if(!cands.length){toast("No eligible heirs.");return;}
+  const list=cands.sort((a,b)=>(b.pol+b.cha+b.cmd)-(a.pol+a.cha+a.cmd)).map(o=>
+    `<button onclick="setHeir('${o.id}')"><b>${o.name}</b>${o.id===G.heirs[f]?" · current heir":""}<small>CMD ${o.cmd} · POL ${o.pol} · CHA ${o.cha} · loyalty ${Math.round(o.loyalty)}</small></button>`).join("");
+  modal("Designate Your Heir",`<div class="hint">Should your ruler fall, a designated heir succeeds smoothly. A strong, loyal heir softens the succession shock.</div><div class="pick">${list}</div>`,[{t:"Close",fn:closeModal}]);
+}
+function setHeir(id){G.heirs[ME()]=id;const o=G.obyId[id];log(`${o.name} is named your heir.`,"gold");closeModal();renderAll();}
+function legitimacyPhase(){
+  const total=G.cities.length;
+  G.active.filter(f=>f!=="neu").forEach(f=>{
+    const share=citiesOf(f).length/total;
+    const seat=G.cityById[IMPERIAL_SEAT]&&G.cityById[IMPERIAL_SEAT].owner===f;
+    let target=15+share*70+(seat?18:0);
+    if(f===ME())target+=(G.reputation-50)/4;
+    const cur=G.legitimacy[f]||40;
+    G.legitimacy[f]=Math.max(0,Math.min(100,cur+(target-cur)*0.25));
+  });
+}
+function updateCoalition(){
+  const total=G.cities.length;
+  const majors=G.active.filter(f=>f!=="neu");
+  const sorted=majors.map(f=>({f,n:citiesOf(f).length})).sort((a,b)=>b.n-a.n);
+  const lead=sorted[0], second=sorted[1];
+  const prev=G.coalition;
+  if(lead && lead.n/total>=0.42 && (!second||lead.n>=second.n*1.4)){
+    G.coalition=lead.f;
+    if(prev!==G.coalition){
+      if(G.coalition===ME()){ majors.forEach(f=>{if(f!==ME())G.relations[f]=Math.max(0,(G.relations[f]??50)-25);});
+        log(`⚑ Alarmed by your dominance, the other powers turn against you — a coalition forms!`,"war"); }
+      else log(`⚑ A coalition forms to check the rise of ${FACTIONS[G.coalition].short}.`);
+    }
+  } else if(prev){ G.coalition=null; }
+}
 function upkeep(f){
   let gold=0,food=0;
   citiesOf(f).forEach(c=>{gold+=c.devEcon*120+Math.round(c.order)*c.devEcon/2;
     food+=c.pop*0.05-c.troops*0.06+c.devEcon*200;});
+  const ruler=rulerOf(f); if(ruler)gold*=1+(ruler.pol-70)/220; // a capable ruler enriches the state
   G.treasury[f]=Math.max(0,(G.treasury[f]||0)+Math.round(gold));
   G.foodStore[f]=Math.max(0,(G.foodStore[f]||0)+Math.round(food));
   if((G.foodStore[f]||0)<=0){citiesOf(f).forEach(c=>{c.troops=Math.floor(c.troops*0.95);c.order-=5;});
@@ -714,8 +855,12 @@ function aiTurn(f){
     neighborsOf(c.id).map(id=>G.cityById[id])
       .filter(t=>t.owner!==f && !(f===G.ally&&t.owner===ME()))
       .forEach(t=>{
+        // keep the peace with a friendly player unless a coalition marks them
+        if(t.owner===ME() && G.coalition!==ME() && (G.relations[f]??50)>=45)return;
         if(c.troops<=t.troops*1.15)return;               // only strike when we outnumber
-        const value=10 + (t.econ+(t.base?5:0))*10 + (t.owner==="neu"?15:0) - t.wall*0.3 - t.troops/1000;
+        let value=10 + (t.econ+(t.base?5:0))*10 + (t.owner==="neu"?15:0) - t.wall*0.3 - t.troops/1000;
+        if(t.owner===G.coalition) value+=40;             // pile onto the runaway leader
+        if(t.owner===ME() && (G.relations[f]??50)<30) value+=15; // a hostile neighbour eyes your lands
         if(value>bestScore){bestScore=value;best=t;bestFrom=c;}
       });
   }
@@ -767,8 +912,11 @@ function checkVictory(){
   if(mine===0){G.over=true;
     modal("The Mandate is Lost",`<div class="evt">Your banners have fallen and your cause is ended. In another telling, the heroes might yet rise again…</div>`,
       [{t:"New Campaign",cls:"primary",fn:()=>{closeModal();showStart();}}]);return;}
-  if(mine>=Math.ceil(total*0.6)){G.over=true;
-    modal("Mandate of Heaven Claimed!",`<div class="evt">With ${mine} of ${total} cities under your banner, ${FACTIONS[ME()].name} masters the realm and proclaims a new dynasty. The age of division bends to your will.<br><br><b>Victory!</b></div>`,
+  const legit=Math.round(G.legitimacy[ME()]||0);
+  const territorial=mine>=Math.ceil(total*0.6);
+  const mandate=legit>=90 && mine>=Math.ceil(total*0.45) && G.cityById[IMPERIAL_SEAT].owner===ME();
+  if(territorial||mandate){G.over=true;
+    modal("Mandate of Heaven Claimed!",`<div class="evt">${mandate&&!territorial?`Holding the old capital with a legitimacy of ${legit}, `:""}with ${mine} of ${total} cities under your banner, ${FACTIONS[ME()].name} masters the realm and proclaims a new dynasty. The age of division bends to your will.<br><br><b>Victory!</b></div>`,
       [{t:"New Campaign",cls:"primary",fn:()=>{closeModal();showStart();}}]);return;}
 }
 
@@ -1067,6 +1215,7 @@ function removeOfficer(o){
   const c=G.cityById[o.where];if(c)c.officers=c.officers.filter(x=>x!==o.id);
   G.officers=G.officers.filter(x=>x.id!==o.id);delete G.obyId[o.id];
   G.prisoners=G.prisoners.filter(p=>p.offId!==o.id);
+  if(o.isRuler&&G.rulers)handleSuccession(o.fac,o.name);
 }
 function relocatePrisoner(o){const cur=G.cityById[o.where];if(cur)cur.officers=cur.officers.filter(x=>x!==o.id);
   o.where=G.to.id;o._prisoner=true;if(!G.cityById[G.to.id].officers.includes(o.id))G.cityById[G.to.id].officers.push(o.id);}
@@ -1219,6 +1368,7 @@ cv.addEventListener("click",e=>{
 });
 document.getElementById("endturn").onclick=endTurn;
 document.getElementById("b-prisoners").onclick=()=>{if(G&&G.mode!=="battle")openPrisoners();};
+document.getElementById("b-diplomacy").onclick=()=>{if(G&&G.mode!=="battle")openDiplomacy();};
 window.addEventListener("keydown",e=>{if(G&&G.mode==="battle"&&e.code==="Space"){e.preventDefault();
   if(B&&!B.over){B.paused=!B.paused;const b=document.getElementById("bpause");if(b){b.classList.toggle("on",B.paused);b.textContent=B.paused?"▶ Resume":"⏸ Pause";}}}});
 
