@@ -15,7 +15,10 @@ dependencies — pure HTML/Canvas/JS. On launch you pick a **scenario** and the
 
 | Design doc | Implemented here |
 |------------|------------------|
-| `02` Setting & scenarios | **4 playable scenarios** — *Contending Heroes* (194), *Guandu* (200), *Red Cliffs* (208), *Three Kingdoms* (220) — on a **24-city map of China** with rivers, passes, and regions. Pick your faction (Shu / Wei / Wu / Yuan Shao where historical). |
+| `02` Setting & scenarios | **6 historical scenarios + a Sandbox** — *Yellow Turban* (184), *Dong Zhuo's Tyranny* (190), *Contending Heroes* (194), *Guandu* (200), *Red Cliffs* (208), *Three Kingdoms* (220), and a **randomized Sandbox** — on a **24-city map of China**. Pick your faction (Shu / Wei / Wu / Yuan / Dong Zhuo / Yellow Turbans where historical). |
+| Save / resume | **Save & autosave** (each turn) with a **Continue Campaign** button, so long campaigns survive across sessions; plus an **end-of-turn digest** of what the AI powers did |
+| Custom heroes | A **custom officer creator** — name, allocate stat points, choose a trait, and recruit your own hero into the campaign |
+| Presentation | **Generated officer portraits** (deterministic, stylized busts), a **procedural score + battle SFX** (Web Audio, no assets), and **battle juice** — sparks, screen shake, victory fanfare |
 | `03` Officers | 31-officer historical roster (Liu Bei, Guan Yu, Zhuge Liang, Cao Cao, Sima Yi, Sun Quan, Zhou Yu, Lü Bu, Yuan Shao, Ma Chao…) with the 5 ROTK stats, traits, recruitment, capture, defection, and per-scenario placement |
 | `04` Strategic layer | Turn/season loop, action points, economy (gold/food/order), develop / train / fortify / pacify / recruit / march, **alliances with any AI faction**, honor/reputation, seasonal events |
 | `03` Living officers | **Loyalty drifts** each turn (with your momentum, honor, posts, ambition, and sworn bonds); neglected officers **defect** to rivals, and powerful ambitious ones **rebel** and seize their city. **Reward** officers to hold their allegiance. Officers **age and die**, and **next-generation heroes** (Jiang Wei, Deng Ai, Sima Zhao…) come of age over a long campaign. |

@@ -47,7 +47,10 @@ canvas{display:block;width:100%;height:100%}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
 .actions button{padding:6px 4px;font-size:12px}
 .officer{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:5px;margin:3px 0;background:#efe5d2;border:1px solid #d6c8a8}
-.officer .av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#fff;font-size:13px;flex-shrink:0;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
+.officer .av,.prisoner .av{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-weight:bold;color:#fff;font-size:13px}
+.av svg{width:100%;height:100%;display:block}
+@keyframes shk{0%,100%{transform:translate(0,0)}20%{transform:translate(-5px,3px)}40%{transform:translate(4px,-4px)}60%{transform:translate(-3px,-3px)}80%{transform:translate(3px,3px)}}
+#mapwrap.shaking{animation:shk .32s ease-in-out}
 .officer .nm{flex:1;font-size:13px;line-height:1.2}
 .officer .nm small{color:#7a6a50;font-size:10px;display:block}
 .officer .st{font-size:10px;color:#5b4a36;text-align:right;line-height:1.3;font-variant-numeric:tabular-nums}
@@ -112,6 +115,8 @@ canvas{display:block;width:100%;height:100%}
     <div class="stat"><b id="s-ap">—</b><span>Actions</span></div>
     <div id="turnbox">
       <button id="b-help" class="ghost" title="How to play">?</button>
+      <button id="b-sound" class="ghost" title="Sound on/off">🔊</button>
+      <button id="b-save" class="ghost" title="Save campaign">💾</button>
       <button id="b-annals" class="ghost">📜 Annals</button>
       <button id="b-diplomacy" class="ghost">⚑ Diplomacy</button>
       <button id="b-prisoners" class="ghost">⛓ 0</button>
@@ -155,6 +160,8 @@ const FACTIONS = {
   wei: {name:"Wei (Cao Cao)",  short:"Wei",  color:"#3a6ea5"},
   wu:  {name:"Wu (Sun clan)",  short:"Wu",   color:"#c0392b"},
   yuan:{name:"Yuan Shao",      short:"Yuan", color:"#8156a8"},
+  dong:{name:"Dong Zhuo",      short:"Dong", color:"#6b3f6e"},
+  turban:{name:"Yellow Turbans",short:"Turban",color:"#c9a227"},
   neu: {name:"Independent",    short:"Ind.", color:"#8a7d63"},
 };
 
@@ -192,6 +199,11 @@ const ROSTER = [
   {id:"liubiao", name:"Liu Biao",    cmd:70,mgt:50,int:68,pol:78,cha:76,born:142,amb:40},
   {id:"mateng",  name:"Ma Teng",     cmd:83,mgt:88,int:55,pol:52,cha:74,trait:"Cavalry",born:156,amb:58},
   {id:"huatuo",  name:"Hua Tuo",     cmd:20,mgt:30,int:88,pol:70,cha:80,trait:"Healer",born:140,amb:20},
+  {id:"sunjian", name:"Sun Jian",    cmd:88,mgt:90,int:72,pol:66,cha:82,trait:"Duelist",born:155,amb:66},
+  {id:"zhangjiao",name:"Zhang Jiao", cmd:80,mgt:45,int:82,pol:55,cha:90,trait:"Fire Stratagem",born:140,amb:80},
+  {id:"guanhai", name:"Guan Hai",    cmd:74,mgt:83,int:38,pol:28,cha:52,born:152,amb:50},
+  {id:"bocai",   name:"Bo Cai",      cmd:70,mgt:72,int:55,pol:40,cha:48,trait:"Ambush",born:150,amb:55},
+  {id:"huaxiong",name:"Hua Xiong",   cmd:78,mgt:89,int:35,pol:25,cha:45,trait:"Duelist",born:158,amb:50},
 ];
 const ROSTER_BY = Object.fromEntries(ROSTER.map(o=>[o.id,o]));
 // next-generation heroes who "come of age" over a long campaign
@@ -206,7 +218,7 @@ const NEXTGEN = [
   {id:"zhonghui", name:"Zhong Hui",  cmd:86,mgt:60,int:91,pol:82,cha:70,trait:"Ambush",amb:85},
 ];
 // preferred rulers per faction (first available becomes the head)
-const RULERS={shu:["liubei"],wei:["caocao"],wu:["sunquan","sunce"],yuan:["yuanshao"]};
+const RULERS={shu:["liubei"],wei:["caocao"],wu:["sunquan","sunce","sunjian"],yuan:["yuanshao"],dong:["dongzhuo"],turban:["zhangjiao"]};
 const IMPERIAL_SEAT="luoyang"; // holding the old capital = "commanding the lords" (legitimacy)
 
 // ---------- Full China map (geography only; scenarios set ownership) ----------
@@ -292,6 +304,40 @@ const SCENARIOS=[
     neu:["lubu","diaochan","dongzhuo","yuanshu","liubiao","mateng","machao","huangzhong",
          "weiyan","pangtong","zhaoyun","zhuge","ganning","luxun","simayi","huatuo","sunquan"]}},
 
+ {id:"yellowturban",name:"The Yellow Turban Rebellion",year:184,
+  blurb:"Zhang Jiao's Yellow Turbans blaze across the empire. Amid the chaos, minor heroes — Cao Cao, Liu Bei, Sun Jian — first rise. The 'rags to empire' beginning.",
+  players:["wei","shu","wu","yuan","turban"],
+  capitals:{turban:"jinyang",wei:"xuchang",shu:"xinye",wu:"jianye",yuan:"ye"},
+  own:{turban:["jinyang","xiapi","changsha","wuling","guiyang","jiangxia"],
+       wei:["xuchang"], shu:["xinye"], wu:["jianye"], yuan:["ye","nanpi"]},
+  officers:{turban:["zhangjiao","guanhai","bocai"],
+    wei:["caocao","xiahou","xuhuang"], shu:["liubei","guanyu","zhangfei"],
+    wu:["sunjian","sunce","taishi"], yuan:["yuanshao","yanliang","wenchou","zhanghe"],
+    neu:["dongzhuo","lubu","diaochan","huaxiong","mateng","machao","huangzhong","zhaoyun",
+         "zhuge","luxun","zhouyu","ganning","simayi","liubiao","yuanshu","pangtong","weiyan","huatuo"]}},
+
+ {id:"dongzhuo",name:"Dong Zhuo's Tyranny",year:190,
+  blurb:"The tyrant Dong Zhuo holds the boy-emperor and the capital, his invincible Lü Bu at his side. A coalition of warlords rallies to cast him down.",
+  players:["wei","yuan","wu","dong","shu"],
+  capitals:{dong:"luoyang",wei:"xuchang",yuan:"ye",wu:"changsha",shu:"xinye"},
+  own:{dong:["luoyang","changan","wuwei","hanzhong"],
+       wei:["xuchang","wancheng"], yuan:["ye","nanpi","jinyang"],
+       wu:["changsha","jiangling"], shu:["xinye"]},
+  officers:{dong:["dongzhuo","lubu","huaxiong","diaochan","zhangliao"],
+    wei:["caocao","xiahou","xuhuang"], yuan:["yuanshao","yanliang","wenchou","zhanghe"],
+    wu:["sunjian","sunce","zhouyu","taishi"], shu:["liubei","guanyu","zhangfei"],
+    neu:["mateng","machao","zhaoyun","zhuge","luxun","ganning","simayi","liubiao",
+         "yuanshu","pangtong","weiyan","huatuo","huangzhong","guanhai"]}},
+
+ {id:"sandbox",name:"Sandbox — Contested Realm",year:200,random:true,
+  blurb:"A randomized realm, redrawn every game: the great houses are scattered across China at war's dawn. Pure what-if strategy.",
+  players:["shu","wei","wu","yuan"], factions:["shu","wei","wu","yuan"], capitals:{},
+  officers:{shu:["liubei","guanyu","zhangfei","zhaoyun","zhuge","huangzhong","weiyan","machao","pangtong"],
+    wei:["caocao","xiahou","zhangliao","simayi","xuhuang","zhanghe","huaxiong"],
+    wu:["sunquan","sunce","zhouyu","luxun","ganning","taishi","sunjian"],
+    yuan:["yuanshao","yanliang","wenchou","liubiao","yuanshu","mateng"],
+    neu:["dongzhuo","lubu","diaochan","huatuo"]}},
+
  {id:"threekingdoms",name:"Three Kingdoms",year:220,
   blurb:"The realm is settled into three great powers: Wei in the north, Shu in the west, Wu in the south. Only one can claim the Mandate.",
   players:["shu","wei","wu"],
@@ -308,10 +354,21 @@ const SEASONS=["Spring","Summer","Autumn","Winter"];
 // ---------- Game state ----------
 let G;
 function initGame(scenId, playerFac){
-  const scen=SCENARIOS.find(s=>s.id===scenId)||SCENARIOS[0];
+  const scen=JSON.parse(JSON.stringify(SCENARIOS.find(s=>s.id===scenId)||SCENARIOS[0]));
+  scen.own=scen.own||{}; scen.capitals=scen.capitals||{};
+  // sandbox: scatter cities randomly among the factions each game
+  let randomOwn=null;
+  if(scen.random){
+    randomOwn={}; const facs=scen.factions;
+    const ids=CITY_DEFS.map(c=>c.id);
+    for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]];}
+    ids.forEach((id,i)=>{ randomOwn[id]= (i%6===5)?"neu":facs[i%facs.length]; });
+    facs.forEach(f=>{ const first=ids.find(id=>randomOwn[id]===f)||ids[0]; randomOwn[first]=f; scen.capitals[f]=first; });
+  }
   const cities=CITY_DEFS.map(c=>{
     let owner="neu";
-    for(const f in scen.own){ if(scen.own[f].includes(c.id)){owner=f;break;} }
+    if(randomOwn){ owner=randomOwn[c.id]; }
+    else for(const f in scen.own){ if(scen.own[f].includes(c.id)){owner=f;break;} }
     const base = scen.capitals[owner]===c.id;
     return {...c, owner, base,
       troops: base?13000:(owner==="neu"?4000+c.econ*400:6000+c.econ*500),
@@ -321,6 +378,7 @@ function initGame(scenId, playerFac){
   const cityById=Object.fromEntries(cities.map(c=>[c.id,c]));
   // active factions in this scenario
   const active=new Set(["neu"]); Object.keys(scen.own).forEach(f=>active.add(f));
+  (scen.factions||[]).forEach(f=>active.add(f));
   // build officers per scenario assignment
   const officers=[]; const facOf={};
   for(const f in scen.officers){ scen.officers[f].forEach(id=>{facOf[id]=f;}); }
@@ -350,7 +408,7 @@ function initGame(scenId, playerFac){
     mode:"map", reputation:55, prisoners:[], ally:null,
     momentum:{}, nextgen:NEXTGEN.map(g=>({...g})),
     rulers:{}, heirs:{}, legitimacy:{}, relations:{}, coalition:null,
-    annals:[],
+    annals:[], showDigest:true,
   };
   // rulers, heirs, legitimacy, relations
   [...active].filter(f=>f!=="neu").forEach(f=>{
@@ -384,6 +442,78 @@ function annal(text,cat){ if(!G||!G.annals)return;
   const year=G.scen.year+Math.floor((G.turn-1)/4);
   G.annals.push({year,season:SEASONS[G.season],text,cat:cat||"event"});
 }
+
+// ---------- Audio (procedural, no assets) ----------
+let AC=null, soundOn=true, musicStarted=false, battleIntensity=false;
+function audio(){ if(!soundOn)return null;
+  if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){AC=null;} }
+  if(AC&&AC.state==="suspended")AC.resume();
+  return AC; }
+function tone(freq,dur,type,gain,delay){ const ac=audio(); if(!ac)return;
+  const t=ac.currentTime+(delay||0), o=ac.createOscillator(), g=ac.createGain();
+  o.type=type||"sine"; o.frequency.value=freq;
+  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(gain||0.12,t+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g).connect(ac.destination); o.start(t); o.stop(t+dur+0.03); }
+function noise(dur,gain,hp){ const ac=audio(); if(!ac)return;
+  const n=ac.createBufferSource(), buf=ac.createBuffer(1,Math.floor(ac.sampleRate*dur),ac.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1; n.buffer=buf;
+  const g=ac.createGain(); g.gain.setValueAtTime(gain||0.2,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+dur);
+  const f=ac.createBiquadFilter(); f.type="highpass"; f.frequency.value=hp||900;
+  n.connect(f).connect(g).connect(ac.destination); n.start(); n.stop(ac.currentTime+dur); }
+const sfx={
+  click:()=>tone(620,0.05,"triangle",0.05),
+  coin:()=>{tone(880,0.09,"triangle",0.09);tone(1320,0.1,"triangle",0.07,0.06);},
+  clash:()=>{noise(0.14,0.22,1400);tone(150,0.16,"sawtooth",0.1);},
+  fire:()=>{noise(0.5,0.28,500);tone(90,0.5,"sawtooth",0.08);},
+  duel:()=>{noise(0.1,0.2,1600);tone(200,0.1,"square",0.1,0.05);noise(0.12,0.2,1600,0.12);},
+  capture:()=>{[523,659,784,1047].forEach((f,i)=>tone(f,0.35,"triangle",0.1,i*0.09));},
+  defeat:()=>{[392,330,262].forEach((f,i)=>tone(f,0.4,"sawtooth",0.09,i*0.12));},
+  victory:()=>{[523,659,784,1047,784,1047].forEach((f,i)=>tone(f,0.45,"triangle",0.11,i*0.14));},
+};
+function play(name){ if(soundOn&&sfx[name])sfx[name](); }
+const PENT=[261.63,293.66,329.63,392.00,440.00,523.25,587.33];
+function musicBeat(){ if(!soundOn||!AC)return;
+  if(Math.random()<(battleIntensity?0.85:0.6)){ const f=PENT[Math.floor(Math.random()*PENT.length)]*(Math.random()<0.28?2:1);
+    tone(f,battleIntensity?0.7:1.3,"triangle",0.045); }
+  if(battleIntensity){ tone(70,0.22,"sine",0.16); if(Math.random()<0.5)noise(0.06,0.05,200); }
+}
+function startMusic(){ if(musicStarted)return; musicStarted=true; audio(); setInterval(musicBeat, 640); }
+function toggleSound(){ soundOn=!soundOn; const b=document.getElementById("b-sound"); if(b)b.textContent=soundOn?"🔊":"🔇";
+  if(soundOn){audio();startMusic();} }
+
+// ---------- Officer portraits (deterministic, generated) ----------
+function hashStr(s){let h=0;for(let i=0;i<(s||"").length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h);}
+function portraitSVG(o){
+  const h=hashStr(o.id||o.name), skins=["#e6c7a0","#dcae86","#c99a6e","#b3844f"];
+  const skin=skins[h%skins.length];
+  const warrior=(o.mgt||50)>=(o.int||50);
+  const old=(o.age||30)>46;
+  const beard=old||(warrior&&(h>>2)%2===0);
+  const robe=facColor(o.fac||"neu");
+  const hat= (o.isRuler)?"crown":(warrior?"helmet":"cap");
+  const hatCol= hat==="helmet"?"#7a6136":hat==="crown"?"#d8a94d":"#2f3350";
+  const fierce=(o.mgt||50)>85;
+  let s=`<svg viewBox="0 0 40 44" xmlns="http://www.w3.org/2000/svg">`;
+  s+=`<rect width="40" height="44" fill="#efe5d2"/>`;
+  s+=`<path d="M4 44 Q20 28 36 44 Z" fill="${robe}"/>`;                 // robe/shoulders
+  s+=`<rect x="17" y="24" width="6" height="6" fill="${skin}"/>`;        // neck
+  s+=`<ellipse cx="20" cy="18" rx="8.5" ry="9.5" fill="${skin}"/>`;      // face
+  if(beard) s+=`<path d="M12 19 Q20 34 28 19 Q20 26 12 19Z" fill="#2a231c" opacity="0.85"/>`;
+  s+=`<path d="M15 16 q2 -1.4 4 0" stroke="#2a231c" stroke-width="1.1" fill="none"/>`; // brows
+  s+=`<path d="M21 16 q2 -1.4 4 0" stroke="#2a231c" stroke-width="1.1" fill="none"/>`;
+  s+=`<circle cx="17" cy="18" r="1.1" fill="#241a12"/><circle cx="23" cy="18" r="1.1" fill="#241a12"/>`; // eyes
+  s+=`<path d="M16 22 q4 ${fierce?1.6:2.4} 8 0" stroke="#7a4a3a" stroke-width="1" fill="none"/>`; // mustache/mouth
+  // headwear
+  if(hat==="helmet"){ s+=`<path d="M10 12 Q20 -2 30 12 L30 14 Q20 8 10 14 Z" fill="${hatCol}"/><rect x="19" y="1" width="2" height="6" fill="#c0392b"/>`; }
+  else if(hat==="crown"){ s+=`<path d="M11 11 L13 4 L17 9 L20 3 L23 9 L27 4 L29 11 Z" fill="${hatCol}" stroke="#8a6520" stroke-width="0.6"/>`; }
+  else { s+=`<path d="M11 12 Q20 2 29 12 Q20 7 11 12 Z" fill="${hatCol}"/><rect x="18" y="3" width="4" height="4" fill="${hatCol}"/>`; }
+  s+=`</svg>`;
+  return s;
+}
+function avatar(o){ return `<div class="av">${portraitSVG(o)}</div>`; }
+function screenShake(){ const el=document.getElementById("mapwrap"); if(!el)return;
+  el.classList.remove("shaking"); void el.offsetWidth; el.classList.add("shaking"); }
 
 // ---------- Rendering (strategic map) ----------
 const cv=document.getElementById("map"),ctx=cv.getContext("2d");
@@ -437,7 +567,7 @@ function pct(v,max,col){return `<div class="bar"><i style="width:${Math.max(0,Ma
 function officerRow(o,mine){
   const lc=o.loyalty<30?"#c0392b":o.loyalty<60?"#c9772f":"#2f6b54";
   return `<div class="officer">
-  <div class="av" style="background:${facColor(o.fac)}">${initials(o.name)}</div>
+  ${avatar(o)}
   <div class="nm">${o.name}${o.trait?` · ${o.trait}`:""}${o.level>1?` · Lv${o.level}`:""}<small>Loyalty <b style="color:${lc}">${Math.round(o.loyalty)}</b> · Age ${o.age||"?"}${o.ambition>=70?' · <span style="color:#c9772f">ambitious</span>':""}</small></div>
   <div class="st">CMD ${o.cmd} · MGT ${o.mgt}<br>${mine?`<button style="font-size:10px;padding:2px 7px;margin-top:2px" onclick="rewardOfficer('${o.id}')">Reward</button>`:`INT ${o.int} · CHA ${o.cha}`}</div></div>`;}
 function renderSide(){
@@ -450,7 +580,8 @@ function renderSide(){
       <div class="card"><h3>${FACTIONS[ME()].name}</h3>
       <div class="row"><span>Ruler</span><b>${ruler?ruler.name+" (age "+ruler.age+")":"—"}</b></div>
       <div class="row"><span>Heir</span><b>${heir?heir.name:"none"}</b></div>
-      <button style="width:100%;margin:6px 0" onclick="designateHeir()">Designate Heir</button>
+      <button style="width:100%;margin:6px 0 0" onclick="designateHeir()">Designate Heir</button>
+      <button style="width:100%;margin:6px 0" onclick="openCreator()">＋ Create Officer</button>
       <div class="row"><span>Cities</span><b>${mine.length}/${G.cities.length}</b></div>
       <div class="row"><span>Total troops</span><b>${fmt(mine.reduce((s,c)=>s+c.troops,0))}</b></div>
       <div class="row"><span>Officers</span><b>${G.officers.filter(o=>o.fac===ME()&&!o._prisoner).length}</b></div>
@@ -669,6 +800,7 @@ function resolveBattle(from,to,army,atkOs){
 // ---------- End turn / AI ----------
 function endTurn(){
   if(G.over||G.mode==="battle")return;
+  const digestMark=G.annals.length;
   const before={};G.active.forEach(f=>before[f]=citiesOf(f).length);
   upkeep(ME());
   G.active.filter(f=>f!==ME()).forEach(f=>{if(f!=="neu")upkeep(f);aiTurn(f);});
@@ -684,7 +816,11 @@ function endTurn(){
   loyaltyPhase();
   if(G.season===0)agingPhase();
   renderAll();maybeEvent();checkVictory();
-  if(!G.over)log(`— ${SEASONS[G.season]}, Year ${G.scen.year+Math.floor((G.turn-1)/4)} —`);
+  if(!G.over){
+    log(`— ${SEASONS[G.season]}, Year ${G.scen.year+Math.floor((G.turn-1)/4)} —`);
+    if(G.showDigest && !document.getElementById("modal").classList.contains("show")) showDigest(G.annals.slice(digestMark));
+    autosave();
+  }
 }
 // ---------- Living-officer simulation ----------
 function loyaltyPhase(){
@@ -764,6 +900,7 @@ function rewardOfficer(id){
   if((G.treasury[ME()]||0)<150){toast("Not enough gold to reward (150).");return;}
   if(o._rewardedTurn===G.turn){toast(`${o.name} was already rewarded this turn.`);return;}
   G.treasury[ME()]-=150; o.loyalty=Math.min(100,o.loyalty+12); o._rewardedTurn=G.turn;
+  play("coin");
   log(`You reward ${o.name} — loyalty rises to ${Math.round(o.loyalty)}.`,"gold");
   renderAll();
 }
@@ -800,7 +937,7 @@ function openIntrigue(id){
     </div></div>`;
   if(enemyOs.length){
     h+=`<div class="card"><h3>Target an Officer</h3>${enemyOs.map(o=>`<div class="prisoner">
-      <div class="av" style="background:${facColor(o.fac)}">${initials(o.name)}</div>
+      ${avatar(o)}
       <div class="pn">${o.name}<small>Loyalty ${Math.round(o.loyalty)} · INT ${o.int}${o.level>1?" · Lv"+o.level:""}</small></div>
       <div class="pa"><button onclick="intrigueOff('${id}','${o.id}','subvert')">Subvert</button>
         <button onclick="intrigueOff('${id}','${o.id}','defect')">Turn</button>
@@ -957,8 +1094,8 @@ function aiResolve(from,to,army,f){
   awardExp(atkOs, routed?60:win?35:15);
   if(routed){const prev=to.owner;to.owner=f;to.troops=surv;to.order=Math.max(40,to.order-20);
     officersAt(to.id).slice().forEach(o=>relocateOfficerHome(o,prev));
-    if(wasMine)log(`${FACTIONS[f].name} has captured ${to.name} from you!`,"war");
-    else log(`${FACTIONS[f].short} seized ${to.name} from ${FACTIONS[prev].short}.`);
+    if(wasMine){log(`${FACTIONS[f].name} has captured ${to.name} from you!`,"war");annal(`${FACTIONS[f].short} captured ${to.name} from you.`,"battle");}
+    else annal(`${FACTIONS[f].short} seized ${to.name} from ${FACTIONS[prev].short}.`,"event");
   } else from.troops+=surv;
 }
 function relocateOfficerHome(o,faction){
@@ -990,14 +1127,14 @@ function maybeEvent(){
 function checkVictory(){
   if(G.over)return;
   const total=G.cities.length,mine=citiesOf(ME()).length;
-  if(mine===0){G.over=true;
+  if(mine===0){G.over=true;play("defeat");
     annal(`${FACTIONS[ME()].name} was extinguished. The dream ends.`,"death");
     modal("The Mandate is Lost",`<div class="evt">Your banners have fallen and your cause is ended. In another telling, the heroes might yet rise again…</div>`,
       [{t:"📜 Read the Annals",fn:openAnnals},{t:"New Campaign",cls:"primary",fn:()=>{closeModal();showStart();}}]);return;}
   const legit=Math.round(G.legitimacy[ME()]||0);
   const territorial=mine>=Math.ceil(total*0.55);
   const mandate=legit>=88 && mine>=Math.ceil(total*0.42) && G.cityById[IMPERIAL_SEAT].owner===ME();
-  if(territorial||mandate){G.over=true;
+  if(territorial||mandate){G.over=true;play("victory");
     annal(`${FACTIONS[ME()].name} claimed the Mandate of Heaven and proclaimed a new dynasty over the realm.`,"triumph");
     modal("Mandate of Heaven Claimed!",`<div class="evt">${mandate&&!territorial?`Holding the old capital with a legitimacy of ${legit}, `:""}with ${mine} of ${total} cities under your banner, ${FACTIONS[ME()].name} masters the realm and proclaims a new dynasty. The age of division bends to your will.<br><br><b>Victory!</b></div>`,
       [{t:"📜 Read the Annals",fn:openAnnals},{t:"New Campaign",cls:"primary",fn:()=>{closeModal();showStart();}}]);return;}
@@ -1008,7 +1145,7 @@ function openPrisoners(){
   if(!G.prisoners.length){modal("Prisoners","<div class='evt'>You hold no captives. Win a battle and choose to imprison defeated officers to hold them here.</div>",[{t:"Close",cls:"primary",fn:closeModal}]);return;}
   const body=G.prisoners.map(pr=>{const o=G.obyId[pr.offId];const city=G.cityById[pr.cityId];
     return `<div class="prisoner">
-      <div class="av" style="background:${facColor(o.fac)}">${initials(o.name)}</div>
+      ${avatar(o)}
       <div class="pn">${o.name}<small>${FACTIONS[o.fac].short} · held at ${city?city.name:"?"} · CMD ${o.cmd} MGT ${o.mgt} INT ${o.int}</small></div>
       <div class="pa">
         <button onclick="prisonerAct('${o.id}','recruit')">Recruit</button>
@@ -1110,7 +1247,7 @@ function startTactical(from,to,army,atkOs,naval){
     terrain:makeTerrain(naval),fires:[],texts:[],paused:false,speed:1,time:0,maxTime:150,
     sel:null,fireAim:null,over:false,duelDone:new Set(),duelBusy:false,lastTs:null,
     defWallBonus:1+to.wall/140,isSiege:to.wall>0&&!naval};
-  G.mode="battle";G.to=to;G.from=from;
+  G.mode="battle";G.to=to;G.from=from;B.sparks=[];battleIntensity=true;startMusic();
   document.getElementById("help").style.display="none";
   document.getElementById("legend").style.display="none";
   document.getElementById("endturn").disabled=true;
@@ -1137,6 +1274,7 @@ function simulate(dt){
   B.units.forEach(u=>{if(u.cd>0)u.cd-=dt;if(u.charge>0)u.charge-=dt;if(u.contact>0)u.contact-=dt;});
   B.fires.forEach(f=>f.t-=dt);B.fires=B.fires.filter(f=>f.t>0);
   B.texts.forEach(t=>{t.t-=dt;t.y-=8*dt;});B.texts=B.texts.filter(t=>t.t>0);
+  if(B.sparks){B.sparks.forEach(s=>{s.t-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.vy+=30*dt;});B.sparks=B.sparks.filter(s=>s.t>0);}
   B.units.forEach(u=>{if(alive(u)&&!u.routing&&u.side!==playerSide())aiUnit(u);});
   for(const u of B.units){
     if(!alive(u))continue;
@@ -1185,7 +1323,7 @@ function damage(u,cas,src,kind){
   if(!alive(u))return;
   u.hp-=cas;u.morale-=cas/u.maxHp*90*(1-u.off.cmd/400);
   if(kind==="fire")u.morale-=cas/u.maxHp*40;
-  if(u.hp<=0){u.hp=0;u.dead=true;floatText(u.x,u.y,"ROUTED","#e05b52");
+  if(u.hp<=0){u.hp=0;u.dead=true;floatText(u.x,u.y,"ROUTED","#e05b52");sparks(u.x,u.y,"#e05b52",10);play("clash");screenShake();
     B.units.forEach(v=>{if(alive(v)&&dist(v,u)<22)v.morale+=(v.side===u.side?-14:6);});
     log(`${u.off.name}'s ${TYPES[u.type].n} are destroyed.`,u.side===playerSide()?"war":"good");
   } else if(u.morale<=15&&!u.routing){u.routing=true;floatText(u.x,u.y,"FLEEING!","#e0a35b");}
@@ -1195,6 +1333,8 @@ function recover(u,dt,routing){if(u.contact>0)return;
   if(u.morale<base)u.morale=Math.min(base,u.morale+(routing?4:6)*dt);
   if(routing&&u.morale>40)u.routing=false;}
 function floatText(x,y,txt,col){B.texts.push({x,y,txt,col,t:1.1});}
+function sparks(x,y,col,n){ if(!B.sparks)B.sparks=[]; for(let i=0;i<(n||8);i++){const a=Math.random()*6.28,sp=8+Math.random()*22;
+  B.sparks.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,t:0.5+Math.random()*0.4,col});} }
 function aiUnit(u){
   const ne=nearestEnemy(u);if(!ne){u.order={type:"idle"};u.target=null;return;}
   u.target=ne;
@@ -1212,7 +1352,7 @@ function maybeDuel(u,tgt){
   if(B.duelDone.has(key))return;
   if(Math.random()<0.01){B.duelDone.add(key);triggerDuel(u,tgt);}
 }
-function triggerDuel(a,d){B.duelBusy=true;B.paused=true;
+function triggerDuel(a,d){B.duelBusy=true;B.paused=true;play("duel");screenShake();
   modal("⚔ Single Combat",`<div class="evt" style="text-align:center"><b>${a.off.name}</b> (MGT ${a.off.mgt}) charges forth to challenge <b>${d.off.name}</b> (MGT ${d.off.mgt})! The armies pause to watch their champions clash.</div>`,
     [{t:"Watch the duel",cls:"primary",fn:()=>resolveDuel(a,d)}]);}
 function resolveDuel(a,d){
@@ -1243,7 +1383,7 @@ function castFire(u,x,y){
   B.fires.push({x,y,r:naval?15:12,rate:u.hp*(naval?1.1:0.9),t:naval?7:5.5});
   if(forest){const f=B.fires[B.fires.length-1];f.r=16;f.t=7.5;}
   if(naval){B.fires.push({x:x+8,y:y+4,r:12,rate:u.hp*0.9,t:6});} // fire spreads between ships
-  floatText(x,y,"🔥 FIRE!","#ff7a2f");
+  floatText(x,y,"🔥 FIRE!","#ff7a2f");sparks(x,y,"#ff9b3f",16);play("fire");screenShake();
   log(`${u.off.name} unleashes a fire stratagem${naval?" — flames leap between the ships!":forest?" — the forest blazes!":"!"}`,u.side===playerSide()?"good":"war");
   markStratUsed(u);
 }
@@ -1277,6 +1417,7 @@ function endBattle(result){
   }
 }
 function finishBattleUI(from,to,atkSurv,defSurv,won,next){
+  play(won?"capture":"defeat");
   modal(won?`Victory at ${to.name}!`:`Defeat at ${to.name}`,
     `<div class="battle-line"><div class="battle-side" style="color:${facColor(B.atkFac)}"><b>Your army</b><br>${fmt(atkSurv)} survive</div>`
     +`<div class="vs">${won?"⚑":"✕"}</div>`
@@ -1285,13 +1426,14 @@ function finishBattleUI(from,to,atkSurv,defSurv,won,next){
     [{t:"Continue",cls:"primary",fn:()=>{closeModal();next();}}]);
 }
 function exitBattle(){
-  B=null;G.mode="map";
+  B=null;G.mode="map";battleIntensity=false;
   document.getElementById("bhud").classList.remove("show");
   document.getElementById("legend").style.display="";
   document.getElementById("help").style.display="";
   document.getElementById("endturn").disabled=false;
   if(G.to)G.sel=G.to.id;
   renderAll();checkVictory();
+  if(!G.over)autosave();
 }
 
 /* ---- captured-officer decisions ---- */
@@ -1385,6 +1527,8 @@ function drawBattle(){
   });
   ctx.textBaseline="alphabetic";
   if(B.fireAim){ctx.fillStyle="#ff7a2f";ctx.font="13px Georgia";ctx.textAlign="center";ctx.fillText("◎ click to target fire stratagem",cw/2,24);}
+  if(B.sparks)B.sparks.forEach(s=>{ctx.globalAlpha=Math.max(0,Math.min(1,s.t*2));ctx.fillStyle=s.col;ctx.fillRect(bx(s.x)-1.5,by(s.y)-1.5,3,3);});
+  ctx.globalAlpha=1;
   B.texts.forEach(t=>{ctx.globalAlpha=Math.min(1,t.t);ctx.fillStyle=t.col;ctx.font="bold 13px Georgia";ctx.textAlign="center";ctx.fillText(t.txt,bx(t.x),by(t.y));ctx.globalAlpha=1;});
 }
 function battleClick(e){
@@ -1416,7 +1560,7 @@ function renderBattleSide(){
     </div></div>
     <div class="card"><h3>Order of Battle</h3>
     ${B.units.filter(x=>!x.left).map(x=>`<div class="officer">
-      <div class="av" style="background:${facColor(x.faction)}">${initials(x.off.name)}</div>
+      ${avatar(x.off)}
       <div class="nm">${x.off.name}<small>${TYPES[x.type].n} · ${x.side===playerSide()?"yours":"enemy"}</small></div>
       <div class="st">${x.dead?"routed":fmt(x.hp)}<br>${x.routing&&!x.dead?"fleeing":Math.round(x.morale)+"% mor"}</div></div>`).join("")}</div>`;
 }
@@ -1456,6 +1600,10 @@ document.getElementById("b-prisoners").onclick=()=>{if(G&&G.mode!=="battle")open
 document.getElementById("b-diplomacy").onclick=()=>{if(G&&G.mode!=="battle")openDiplomacy();};
 document.getElementById("b-annals").onclick=()=>{if(G&&G.mode!=="battle")openAnnals();};
 document.getElementById("b-help").onclick=()=>{if(G&&G.mode!=="battle")showTutorial(0);};
+document.getElementById("b-save").onclick=()=>{if(G&&G.mode!=="battle")saveGame();};
+document.getElementById("b-sound").onclick=toggleSound;
+// start audio on first user gesture (browser autoplay policy) and click SFX for buttons
+window.addEventListener("pointerdown",e=>{ startMusic(); if(e.target&&e.target.tagName==="BUTTON")play("click"); },true);
 window.addEventListener("keydown",e=>{if(G&&G.mode==="battle"&&e.code==="Space"){e.preventDefault();
   if(B&&!B.over){B.paused=!B.paused;const b=document.getElementById("bpause");if(b){b.classList.toggle("on",B.paused);b.textContent=B.paused?"▶ Resume":"⏸ Pause";}}}});
 
@@ -1469,6 +1617,70 @@ function modal(title,body,btns){
 }
 function closeModal(){document.getElementById("modal").classList.remove("show");}
 function toast(msg){log(msg);}
+
+// ---------- Save / load ----------
+const SAVE_KEY="3k_moh_save";
+function serialize(){const g={...G};delete g.cityById;delete g.obyId;return JSON.stringify(g);}
+function saveGame(silent){ if(!G||G.mode==="battle")return false;
+  const data=serialize();
+  try{ localStorage.setItem(SAVE_KEY,data); }catch(e){ window.__memSave=data; }
+  if(!silent)toast("Campaign saved.");
+  return true;
+}
+function savedData(){ try{const d=localStorage.getItem(SAVE_KEY);if(d)return d;}catch(e){} return window.__memSave||null; }
+function hasSave(){ return !!savedData(); }
+function loadGame(){
+  const d=savedData(); if(!d){toast("No saved campaign found.");return;}
+  try{
+    const g=JSON.parse(d);
+    g.cityById=Object.fromEntries(g.cities.map(c=>[c.id,c]));
+    g.obyId=Object.fromEntries(g.officers.map(o=>[o.id,o]));
+    g.mode="map"; g.marchFrom=null; g.over=false;
+    G=g; closeModal(); renderLegend(); resize(); renderAll();
+    log(`Campaign resumed — ${G.scen.name}, ${SEASONS[G.season]} ${G.scen.year+Math.floor((G.turn-1)/4)} AD.`,"gold");
+  }catch(e){ toast("Saved campaign could not be read."); }
+}
+function autosave(){ saveGame(true); }
+function showDigest(entries){
+  if(!entries.length)return;
+  const icon={triumph:"⚑",battle:"⚔",death:"✝",event:"◦"};
+  const rows=entries.map(a=>{const col=a.cat==="triumph"?"#2f6b54":a.cat==="battle"?"#9c2b25":a.cat==="death"?"#7a4a44":"#5b4a36";
+    return `<div class="battle-line"><div style="font-size:12px;color:#7a6a50;min-width:96px">${a.year} AD · ${a.season}</div><div class="battle-side" style="flex:1;color:${col}">${icon[a.cat]||"◦"} ${a.text}</div></div>`;}).join("");
+  modal(`The Realm Stirs — ${SEASONS[G.season]}, ${G.scen.year+Math.floor((G.turn-1)/4)} AD`,
+    `<div class="hint">While you deliberated, the other powers moved.</div><div style="max-height:44vh;overflow:auto;margin-top:8px">${rows}</div>`,
+    [{t:"Stop showing digests",fn:()=>{G.showDigest=false;closeModal();}},{t:"Continue",cls:"primary",fn:closeModal}]);
+}
+
+// ---------- Custom officer creator ----------
+function openCreator(){
+  const labels={cmd:"Command",mgt:"Might",int:"Intellect",pol:"Politics",cha:"Charisma"};
+  modal("Recruit a Custom Hero",
+   `<div class="hint">Forge a new officer to enter your service (costs 800 gold). Distribute up to <b>360</b> stat points across the five attributes.</div>
+    <div class="card"><div class="row"><span>Name</span><input id="co-name" value="New Officer" maxlength="24" style="font-family:inherit;padding:4px 8px;border:1px solid #cdbf9f;border-radius:4px;width:58%"></div>
+    ${Object.keys(labels).map(s=>`<div class="row"><span>${labels[s]}</span><input id="co-${s}" type="number" min="20" max="100" value="60" oninput="creatorPoints()" style="width:74px;font-family:inherit;padding:3px 6px;border:1px solid #cdbf9f;border-radius:4px;text-align:right"></div>`).join("")}
+    <div class="row"><span>Trait</span><select id="co-trait" style="font-family:inherit;padding:4px;border:1px solid #cdbf9f;border-radius:4px">${["None","Duelist","Cavalry","Archer","Fire Stratagem","Ambush","Navy","Healer"].map(t=>`<option>${t}</option>`).join("")}</select></div>
+    <div class="row"><span>Points used</span><b id="co-pts">300 / 360</b></div></div>`,
+   [{t:"Recruit (800g)",cls:"primary",fn:createOfficer},{t:"Cancel",fn:closeModal}]);
+  creatorPoints();
+}
+function creatorPoints(){const sum=["cmd","mgt","int","pol","cha"].reduce((s,k)=>{const el=document.getElementById("co-"+k);return s+(el?+el.value||0:0);},0);
+  const el=document.getElementById("co-pts");if(el){el.textContent=sum+" / 360";el.style.color=sum>360?"#9c2b25":"#2f6b54";}}
+function createOfficer(){
+  const get=k=>Math.max(20,Math.min(100,Math.round(+document.getElementById("co-"+k).value||60)));
+  const st={cmd:get("cmd"),mgt:get("mgt"),int:get("int"),pol:get("pol"),cha:get("cha")};
+  const sum=st.cmd+st.mgt+st.int+st.pol+st.cha;
+  if(sum>360){toast(`Too many points (${sum}/360).`);return;}
+  if((G.treasury[ME()]||0)<800){toast("Not enough gold (need 800).");return;}
+  const cap=citiesOf(ME()).find(c=>c.base)||citiesOf(ME())[0]; if(!cap){toast("You hold no cities.");return;}
+  const name=(document.getElementById("co-name").value||"New Officer").slice(0,24);
+  let trait=document.getElementById("co-trait").value; if(trait==="None")trait=undefined;
+  G.treasury[ME()]-=800;
+  const id="custom_"+(G._custN=(G._custN||0)+1);
+  const o={id,name,...st,trait,fac:ME(),loyalty:85,where:cap.id,age:26,ambition:40,exp:0,level:1,gain:0,born:G.scen.year-26};
+  G.officers.push(o);G.obyId[id]=o;cap.officers.push(id);
+  chronicle(`${name} enters your service — a hero of your own making.`,"triumph");
+  closeModal();renderAll();
+}
 
 // ---------- Annals (auto-written, shareable chronicle) ----------
 function annalsText(){
@@ -1519,7 +1731,8 @@ function showTutorial(i){
 // ---------- Start screen ----------
 function showStart(){
   const list=SCENARIOS.map((s,i)=>`<button onclick="pickScenario(${i})"><b>${s.name}</b> · ${s.year} AD<small>${s.blurb}</small></button>`).join("");
-  modal("Choose Your Campaign",`<div class="hint">A modern reimagining of Romance of the Three Kingdoms. Pick a historical scenario, then the faction you will lead.</div><div class="pick">${list}</div>`,[]);
+  const cont=hasSave()?`<button onclick="loadGame()" style="border-color:var(--gold);background:rgba(216,169,77,.12)"><b>▸ Continue Campaign</b><small>Resume your last saved game</small></button>`:"";
+  modal("Choose Your Campaign",`<div class="hint">A modern reimagining of Romance of the Three Kingdoms. Pick a historical scenario, then the faction you will lead.</div><div class="pick">${cont}${list}</div>`,[]);
   document.getElementById("m-foot").style.display="none";
 }
 function pickScenario(i){
