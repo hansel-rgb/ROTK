@@ -19,6 +19,8 @@ dependencies — pure HTML/Canvas/JS. On launch you pick a **scenario** and the
 | `03` Officers | 31-officer historical roster (Liu Bei, Guan Yu, Zhuge Liang, Cao Cao, Sima Yi, Sun Quan, Zhou Yu, Lü Bu, Yuan Shao, Ma Chao…) with the 5 ROTK stats, traits, recruitment, capture, defection, and per-scenario placement |
 | `04` Strategic layer | Turn/season loop, action points, economy (gold/food/order), develop / train / fortify / pacify / recruit / march, **alliances with any AI faction**, honor/reputation, seasonal events |
 | `03` Living officers | **Loyalty drifts** each turn (with your momentum, honor, posts, ambition, and sworn bonds); neglected officers **defect** to rivals, and powerful ambitious ones **rebel** and seize their city. **Reward** officers to hold their allegiance. Officers **age and die**, and **next-generation heroes** (Jiang Wei, Deng Ai, Sima Zhao…) come of age over a long campaign. |
+| `04` Intrigue | A strategic **espionage** system (🗡 from any foreign city): **sabotage** a garrison, **incite unrest**, **subvert** an enemy officer's loyalty, **turn** him to your side, or **assassinate** him — success pits your spymaster's Intellect against enemy counter-intel; foiled schemes cost honor and relations |
+| `03` Officer growth | Officers gain **experience** from battle and **level up**, raising their best stats (with a career cap) — a light RPG progression layer |
 | Rulers & succession | Every faction has a **ruler** (Liu Bei, Cao Cao, Sun Quan…) whose politics/charisma give faction-wide bonuses. When a ruler dies, a **designated heir succeeds** (you can name yours) — a weak succession dents legitimacy and shakes loyalty. |
 | Legitimacy / Mandate | A per-faction **legitimacy** score rising with territory, honor, and control of the **imperial seat (Luoyang)** — "commanding the lords." An alternate **Mandate victory** rewards holding the seat at high legitimacy. |
 | Diplomacy | A full **Diplomacy screen**: relations per faction, **tribute**, **dynastic marriage**, and **alliances** gated by relations. Warm relations deter attacks; a **coalition** forms against any power (including you) that grows too dominant — a built-in anti-snowball. |
@@ -52,6 +54,8 @@ dependencies — pure HTML/Canvas/JS. On launch you pick a **scenario** and the
    a disloyal officer may defect, and an ambitious one may rebel and take his city.
 9. **Rule & succeed:** name an **heir** (realm panel) so your cause survives your
    ruler's death; a strong heir softens the succession shock.
+9b. **Intrigue:** open an enemy city and choose **🗡 Intrigue** to sabotage, incite
+    unrest, subvert or turn their officers, or attempt an assassination.
 10. **Diplomacy** (⚑ top bar): send **tribute**, arrange a **marriage**, or form an
     **alliance** to warm relations and deter attacks — but beware the **coalition**
     that forms if you grow too dominant.

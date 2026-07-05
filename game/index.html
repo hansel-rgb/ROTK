@@ -327,7 +327,7 @@ function initGame(scenId, playerFac){
   ROSTER.forEach(base=>{
     const f=facOf[base.id]; if(!f)return; // not present this scenario
     const age=Math.max(18, scen.year-(base.born||scen.year-35));
-    officers.push({...base, fac:f, loyalty:88, where:null, age, ambition:base.amb??45});
+    officers.push({...base, fac:f, loyalty:88, where:null, age, ambition:base.amb??45, exp:0, level:1, gain:0});
   });
   const obyId=Object.fromEntries(officers.map(o=>[o.id,o]));
   // place officers in their faction's cities (capital first)
@@ -438,7 +438,7 @@ function officerRow(o,mine){
   const lc=o.loyalty<30?"#c0392b":o.loyalty<60?"#c9772f":"#2f6b54";
   return `<div class="officer">
   <div class="av" style="background:${facColor(o.fac)}">${initials(o.name)}</div>
-  <div class="nm">${o.name}${o.trait?` · ${o.trait}`:""}<small>Loyalty <b style="color:${lc}">${Math.round(o.loyalty)}</b> · Age ${o.age||"?"}${o.ambition>=70?' · <span style="color:#c9772f">ambitious</span>':""}</small></div>
+  <div class="nm">${o.name}${o.trait?` · ${o.trait}`:""}${o.level>1?` · Lv${o.level}`:""}<small>Loyalty <b style="color:${lc}">${Math.round(o.loyalty)}</b> · Age ${o.age||"?"}${o.ambition>=70?' · <span style="color:#c9772f">ambitious</span>':""}</small></div>
   <div class="st">CMD ${o.cmd} · MGT ${o.mgt}<br>${mine?`<button style="font-size:10px;padding:2px 7px;margin-top:2px" onclick="rewardOfficer('${o.id}')">Reward</button>`:`INT ${o.int} · CHA ${o.cha}`}</div></div>`;}
 function renderSide(){
   if(G.mode==="battle"){return renderBattleSide();}
@@ -487,6 +487,7 @@ function renderSide(){
       <div class="hint">${reach?"Adjacent to your territory. Select your bordering city and March to attack"+(neighborsOf(c.id).some(n=>G.cityById[n].owner===ME()&&isNaval(n,c.id))?" — this front is fought at sea.":"."):"Not adjacent to your lands."}</div>
       ${canAlly?`<button onclick="proposeAlly('${c.owner}')" style="margin-top:8px;width:100%">Propose Alliance with ${FACTIONS[c.owner].short}</button>`:""}
       ${c.owner===G.ally?`<button onclick="breakAlly()" style="margin-top:8px;width:100%">Break Alliance with ${FACTIONS[c.owner].short}</button>`:""}
+      <button onclick="openIntrigue('${c.id}')" style="margin-top:8px;width:100%">🗡 Intrigue ▸</button>
       </div>`;
   }
   h+=`<div class="card"><h3>Officers <span class="tag" style="background:#5b4a36">${os.length}</span></h3>
@@ -647,6 +648,7 @@ function resolveBattle(from,to,army,atkOs){
   const dLoss=Math.round(to.troops*(win?0.6+ratio*0.35:0.18+(1-ratio)*0.4));
   const surv=Math.max(0,army-aLoss);to.troops=Math.max(0,to.troops-dLoss);
   const routed=win&&to.troops<=Math.max(1200,surv*0.28);
+  awardExp(atkOs, routed?70:win?40:20);
   if(routed){
     const prev=to.owner;to.owner=ME();to.troops=surv;to.order=Math.max(40,to.order-25);to.justTook=true;
     const defOs=officersAt(to.id);const captured=[];
@@ -751,7 +753,7 @@ function agingPhase(){
     if(facs.length){ const g=G.nextgen.shift();
       const fac=facs[Math.floor(Math.random()*facs.length)];
       const homes=citiesOf(fac); const c=homes[Math.floor(Math.random()*homes.length)];
-      const o={...g, fac, loyalty:82, where:c.id, age:20, ambition:g.amb??45};
+      const o={...g, fac, loyalty:82, where:c.id, age:20, ambition:g.amb??45, exp:0, level:1, gain:0};
       G.officers.push(o); G.obyId[o.id]=o; c.officers.push(o.id);
       chronicle(`A new hero came of age: ${o.name} entered the service of ${FACTIONS[fac].short}.`, fac===ME()?"triumph":"event");
     }
@@ -764,6 +766,73 @@ function rewardOfficer(id){
   G.treasury[ME()]-=150; o.loyalty=Math.min(100,o.loyalty+12); o._rewardedTurn=G.turn;
   log(`You reward ${o.name} — loyalty rises to ${Math.round(o.loyalty)}.`,"gold");
   renderAll();
+}
+// officers grow through campaigning (RPG progression)
+function awardExp(list,amt){
+  (list||[]).forEach(o=>{ if(!o||o._captain)return;
+    o.exp=(o.exp||0)+amt; o.level=o.level||1; o.gain=o.gain||0;
+    while(o.exp>=o.level*100 && o.gain<16){
+      o.exp-=o.level*100; o.level++;
+      const s=["cmd","mgt","int"].sort((a,b)=>o[b]-o[a]);
+      o[s[0]]=Math.min(100,o[s[0]]+2); o[s[1]]=Math.min(100,o[s[1]]+1); o.gain+=3;
+      if(o.fac===ME()) log(`${o.name} grows in prowess — now level ${o.level} (${s[0].toUpperCase()} +2, ${s[1].toUpperCase()} +1).`,"good");
+    }
+  });
+}
+
+// ---------- Strategic intrigue / espionage ----------
+function spymaster(){return G.officers.filter(o=>o.fac===ME()&&!o._prisoner).reduce((m,o)=>(!m||o.int>m.int)?o:m,null);}
+function counterInt(city){const os=officersAt(city.id).filter(o=>o.fac!==ME()&&!o._prisoner);return os.length?Math.max(...os.map(o=>o.int)):45;}
+function intrigueChance(city,mod){const sm=spymaster();const s=sm?sm.int:45;
+  return Math.max(5,Math.min(92, 42+(s-counterInt(city))*0.8+(mod||0)));}
+function spendIntrigue(gold){ if(G.ap<=0){toast("No actions left this turn.");return false;}
+  if((G.treasury[ME()]||0)<gold){toast("Not enough gold for this scheme.");return false;} G.ap--;G.treasury[ME()]-=gold;return true; }
+function intrigueFail(fac){ G.reputation=Math.max(0,G.reputation-2);
+  if(fac&&fac!=="neu"&&G.relations[fac]!=null)G.relations[fac]=Math.max(0,G.relations[fac]-8);
+  log("Your scheme is uncovered — honor and relations suffer.","war"); }
+function openIntrigue(id){
+  const c=G.cityById[id]; if(!c||c.owner===ME())return;
+  const sm=spymaster(); const enemyOs=officersAt(id).filter(o=>o.fac!==ME()&&!o._prisoner);
+  let h=`<div class="hint">Spymaster: <b>${sm?sm.name+" (INT "+sm.int+")":"none"}</b> vs enemy counter-intel (INT ${Math.round(counterInt(c))}). Each scheme costs 1 action and gold; a foiled scheme costs honor and relations.</div>
+    <div class="card"><h3>Schemes against ${c.name}</h3><div class="orderbtns">
+      <button onclick="intrigueCity('${id}','sabotage')">Sabotage Garrison<br><small>~${Math.round(intrigueChance(c,10))}% · 300g</small></button>
+      <button onclick="intrigueCity('${id}','unrest')">Incite Unrest<br><small>~${Math.round(intrigueChance(c,5))}% · 250g</small></button>
+    </div></div>`;
+  if(enemyOs.length){
+    h+=`<div class="card"><h3>Target an Officer</h3>${enemyOs.map(o=>`<div class="prisoner">
+      <div class="av" style="background:${facColor(o.fac)}">${initials(o.name)}</div>
+      <div class="pn">${o.name}<small>Loyalty ${Math.round(o.loyalty)} · INT ${o.int}${o.level>1?" · Lv"+o.level:""}</small></div>
+      <div class="pa"><button onclick="intrigueOff('${id}','${o.id}','subvert')">Subvert</button>
+        <button onclick="intrigueOff('${id}','${o.id}','defect')">Turn</button>
+        <button onclick="intrigueOff('${id}','${o.id}','assassinate')">Kill</button></div></div>`).join("")}</div>`;
+  } else h+=`<div class="hint">No enemy officers are stationed here to target.</div>`;
+  modal(`Intrigue — ${c.name}`,h,[{t:"Close",cls:"primary",fn:closeModal}]);
+}
+function reopenIntrigue(id){ if(document.getElementById("modal").classList.contains("show")) openIntrigue(id); }
+function intrigueCity(id,kind){
+  const c=G.cityById[id]; if(!spendIntrigue(kind==="sabotage"?300:250))return;
+  if(Math.random()*100<intrigueChance(c,kind==="sabotage"?10:5)){
+    if(kind==="sabotage"){const loss=Math.floor(c.troops*(0.15+Math.random()*0.12));c.troops=Math.max(0,c.troops-loss);
+      chronicle(`Your agents sabotaged ${c.name}, scattering ${fmt(loss)} of its garrison.`,"event");}
+    else {c.order=Math.max(0,c.order-(25+Math.random()*12));log(`Your agents incite unrest in ${c.name} — order falls to ${Math.round(c.order)}%.`,"good");}
+  } else intrigueFail(c.owner);
+  renderAll();reopenIntrigue(id);
+}
+function intrigueOff(cid,oid,kind){
+  const c=G.cityById[cid],o=G.obyId[oid]; if(!o)return;
+  const cost=kind==="assassinate"?500:kind==="defect"?450:300;
+  const mod=kind==="assassinate"?-28:kind==="defect"?(-8-(o.loyalty-45)*0.6):8;
+  if(!spendIntrigue(cost))return;
+  if(Math.random()*100<intrigueChance(c,mod)){
+    if(kind==="subvert"){o.loyalty=Math.max(0,o.loyalty-(18+Math.random()*10));
+      chronicle(`Your agents sow discord; ${o.name}'s loyalty to ${FACTIONS[o.fac].short} wavers (${Math.round(o.loyalty)}).`,"event");}
+    else if(kind==="defect"){const from=o.fac,cur=G.cityById[o.where];if(cur)cur.officers=cur.officers.filter(x=>x!==o.id);
+      o.fac=ME();o.loyalty=60;o.isRuler=false;const home=citiesOf(ME()).find(x=>adj(x.id,cid))||citiesOf(ME())[0];o.where=home.id;home.officers.push(o.id);
+      chronicle(`${o.name} is turned by your agents and defects from ${FACTIONS[from].short} to your cause!`,"triumph");}
+    else if(kind==="assassinate"){const nm=o.name,fac=o.fac;removeOfficer(o);
+      chronicle(`Your assassins strike down ${nm} of ${FACTIONS[fac].short}.`,"death");}
+  } else { intrigueFail(o.fac); if(kind==="assassinate")G.reputation=Math.max(0,G.reputation-5); }
+  renderAll();reopenIntrigue(cid);
 }
 
 // ---------- Rulers, succession & legitimacy ----------
@@ -885,6 +954,7 @@ function aiResolve(from,to,army,f){
   const dLoss=Math.round(to.troops*(win?0.65:0.25)),aLoss=Math.round(army*(win?0.25:0.5));
   to.troops=Math.max(0,to.troops-dLoss);const surv=Math.max(0,army-aLoss);
   const wasMine=to.owner===ME();const routed=win&&to.troops<=Math.max(1200,surv*0.28);
+  awardExp(atkOs, routed?60:win?35:15);
   if(routed){const prev=to.owner;to.owner=f;to.troops=surv;to.order=Math.max(40,to.order-20);
     officersAt(to.id).slice().forEach(o=>relocateOfficerHome(o,prev));
     if(wasMine)log(`${FACTIONS[f].name} has captured ${to.name} from you!`,"war");
@@ -1194,6 +1264,7 @@ function endBattle(result){
   const atkSurv=Math.round(sumHp("atk")),defSurv=Math.round(sumHp("def"));
   cv.classList.remove("tgtcursor");
   const fallen=B.units.filter(u=>u.side==="def"&&u.off&&!u.off._captain&&(u.dead||u.left));
+  awardExp(B.units.filter(u=>u.side==="atk"&&alive(u)).map(u=>u.off), won?70:25);
   if(won){
     const prev=to.owner;to.owner=from.owner;to.troops=Math.max(500,atkSurv);to.order=Math.max(40,to.order-25);to.justTook=true;
     B.units.filter(u=>u.side==="def"&&alive(u)&&u.off&&!u.off._captain).forEach(u=>relocateOfficerHome(u.off,prev));
