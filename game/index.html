@@ -157,6 +157,7 @@ input,select{background:var(--panel2);color:var(--text);border:1px solid var(--l
       <button id="b-theme" class="ghost" title="Light / dark theme">🌙</button>
       <button id="b-sound" class="ghost" title="Sound on/off">🔊</button>
       <button id="b-save" class="ghost" title="Save campaign">💾</button>
+      <button id="b-roster" class="ghost">👥 Roster</button>
       <button id="b-annals" class="ghost">📜 Annals</button>
       <button id="b-diplomacy" class="ghost">⚑ Diplomacy</button>
       <button id="b-prisoners" class="ghost">⛓ 0</button>
@@ -448,7 +449,7 @@ function initGame(scenId, playerFac){
     mode:"map", reputation:55, prisoners:[], ally:null,
     momentum:{}, nextgen:NEXTGEN.map(g=>({...g})),
     rulers:{}, heirs:{}, legitimacy:{}, relations:{}, coalition:null,
-    annals:[], showDigest:true,
+    annals:[], showDigest:true, seen:[],
   };
   // rulers, heirs, legitimacy, relations
   [...active].filter(f=>f!=="neu").forEach(f=>{
@@ -466,6 +467,27 @@ function ME(){return G.player;}
 function adj(a,b){return EDGES.some(e=>(e[0]===a&&e[1]===b)||(e[1]===a&&e[0]===b));}
 function neighborsOf(id){const r=[];EDGES.forEach(e=>{if(e[0]===id)r.push(e[1]);if(e[1]===id)r.push(e[0]);});return r;}
 function citiesOf(f){return G.cities.filter(c=>c.owner===f);}
+// ---- fog of war ----
+function computeVis(){const set=new Set();
+  const add=c=>{set.add(c.id);neighborsOf(c.id).forEach(n=>set.add(n));};
+  citiesOf(ME()).forEach(add); if(G.ally)citiesOf(G.ally).forEach(add);
+  (G.seen||[]).forEach(id=>{}); // seen tracked separately
+  return set;}
+function isVisible(id){return (G._vis||computeVis()).has(id);}
+function isSeen(id){return isVisible(id)||(G.seen||[]).includes(id);}
+// stylized China landmass outline (normalized 0..1), enclosing all cities
+const CHINA=[[.06,.26],[.12,.14],[.24,.09],[.40,.06],[.52,.10],[.62,.05],[.80,.05],[.83,.15],
+  [.73,.21],[.82,.30],[.75,.40],[.92,.52],[.90,.64],[.80,.73],[.64,.94],[.49,.95],[.36,.90],
+  [.30,.74],[.20,.67],[.10,.58],[.055,.44]];
+function drawChina(w,h,land,coast){
+  const p=CHINA.map(a=>({x:a[0]*w,y:a[1]*h})),n=p.length;
+  ctx.beginPath();
+  const m0={x:(p[n-1].x+p[0].x)/2,y:(p[n-1].y+p[0].y)/2};ctx.moveTo(m0.x,m0.y);
+  for(let i=0;i<n;i++){const cur=p[i],nx=p[(i+1)%n],mid={x:(cur.x+nx.x)/2,y:(cur.y+nx.y)/2};ctx.quadraticCurveTo(cur.x,cur.y,mid.x,mid.y);}
+  ctx.closePath();
+  ctx.save();ctx.shadowColor="rgba(0,0,0,.28)";ctx.shadowBlur=22;ctx.shadowOffsetY=6;ctx.fillStyle=land;ctx.fill();ctx.restore();
+  ctx.strokeStyle=coast;ctx.lineWidth=1.5;ctx.stroke();
+}
 function officersAt(id){return G.cityById[id].officers.map(o=>G.obyId[o]).filter(Boolean);}
 function bestOfficerStat(city,stat){const os=officersAt(city.id);return os.length?Math.max(...os.map(o=>o[stat])):40;}
 function initials(n){const p=n.split(" ");return (p[0][0]+(p[1]?p[1][0]:"")).toUpperCase();}
@@ -557,12 +579,16 @@ function screenShake(){ const el=document.getElementById("mapwrap"); if(!el)retu
 
 // ---------- Theme (light / dark) + color helpers ----------
 const THEME={
-  light:{mapA:"#e0e6ef",mapB:"#eef2f8",grid:"rgba(40,60,90,.05)",river:"rgba(70,140,180,.32)",riverCore:"rgba(150,200,225,.5)",
-    edge:"rgba(60,80,110,.20)",edgeNav:"rgba(45,140,190,.55)",cityStroke:"#ffffff",name:"#2a3646",star:"#c0871c",flag:"#c0871c",
-    terrPlain:"#c6d2c4",terrForest:"#9dbf9f",terrHill:"#d6cba6",terrWater:"#a5cfe0",terrShore:"#d7d1b6",vignette:"rgba(24,32,44,.07)",wallRing:"rgba(255,255,255,.7)"},
-  dark:{mapA:"#111823",mapB:"#0a0e14",grid:"rgba(120,140,170,.045)",river:"rgba(64,130,168,.4)",riverCore:"rgba(120,190,225,.35)",
-    edge:"rgba(150,168,195,.16)",edgeNav:"rgba(90,170,210,.5)",cityStroke:"#0b0e13",name:"#c6cfdb",star:"#e0a63f",flag:"#e0a63f",
-    terrPlain:"#212a25",terrForest:"#20362a",terrHill:"#33322a",terrWater:"#16303f",terrShore:"#2f3226",vignette:"rgba(0,0,0,.30)",wallRing:"rgba(255,255,255,.55)"},
+  light:{sea1:"#c3d3e2",sea2:"#d6e2ee",landA:"#eef1ea",landB:"#e2e7dc",coast:"rgba(70,95,120,.45)",
+    grid:"rgba(60,80,110,.06)",river:"rgba(70,140,180,.4)",riverCore:"rgba(150,205,230,.6)",
+    edge:"rgba(60,80,110,.22)",edgeNav:"rgba(45,140,190,.6)",cityStroke:"#ffffff",name:"#2a3646",star:"#c0871c",flag:"#c0871c",
+    fog:"#c8ccc4",fogInk:"#8a9284",
+    terrPlain:"#c6d2c4",terrForest:"#9dbf9f",terrHill:"#d6cba6",terrWater:"#a5cfe0",terrShore:"#d7d1b6",vignette:"rgba(24,32,44,.08)",wallRing:"rgba(255,255,255,.7)"},
+  dark:{sea1:"#0a0f16",sea2:"#070a0e",landA:"#18202b",landB:"#121924",coast:"rgba(120,150,180,.4)",
+    grid:"rgba(120,140,170,.05)",river:"rgba(64,130,168,.45)",riverCore:"rgba(120,190,225,.4)",
+    edge:"rgba(150,168,195,.18)",edgeNav:"rgba(90,170,210,.55)",cityStroke:"#0b0e13",name:"#c6cfdb",star:"#e0a63f",flag:"#e0a63f",
+    fog:"#0d131b",fogInk:"#4a5563",
+    terrPlain:"#212a25",terrForest:"#20362a",terrHill:"#33322a",terrWater:"#16303f",terrShore:"#2f3226",vignette:"rgba(0,0,0,.34)",wallRing:"rgba(255,255,255,.55)"},
 };
 let THEME_MODE="light";
 function TH(){return THEME[THEME_MODE];}
@@ -590,18 +616,31 @@ function draw(){
   const w=cv.clientWidth,h=cv.clientHeight;
   ctx.clearRect(0,0,w,h);
   const T=TH();
+  // update fog visibility + discovered memory
+  G._vis=computeVis(); G.seen=G.seen||[]; G._vis.forEach(id=>{if(!G.seen.includes(id))G.seen.push(id);});
+  // sea
   const g=ctx.createLinearGradient(0,0,w,h);
-  g.addColorStop(0,T.mapA);g.addColorStop(1,T.mapB);
+  g.addColorStop(0,T.sea1);g.addColorStop(1,T.sea2);
   ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
-  // subtle grid texture
+  // China landmass
+  const lg=ctx.createLinearGradient(0,0,0,h);lg.addColorStop(0,T.landA);lg.addColorStop(1,T.landB);
+  drawChina(w,h,lg,T.coast);
+  // clip subsequent map detail to the land
+  ctx.save();
+  ctx.beginPath();
+  {const p=CHINA.map(a=>({x:a[0]*w,y:a[1]*h})),n=p.length,m0={x:(p[n-1].x+p[0].x)/2,y:(p[n-1].y+p[0].y)/2};
+   ctx.moveTo(m0.x,m0.y);for(let i=0;i<n;i++){const cur=p[i],nx=p[(i+1)%n],mid={x:(cur.x+nx.x)/2,y:(cur.y+nx.y)/2};ctx.quadraticCurveTo(cur.x,cur.y,mid.x,mid.y);}ctx.closePath();}
+  ctx.clip();
+  // subtle grid texture (on land)
   ctx.strokeStyle=T.grid;ctx.lineWidth=1;
   for(let gx=0;gx<w;gx+=46){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,h);ctx.stroke();}
   for(let gy=0;gy<h;gy+=46){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke();}
-  // faction territory shading — soft influence blobs behind cities build up into regions
-  G.cities.forEach(c=>{ if(c.owner==="neu")return; const p=px(c),col=facColor(c.owner),rad=80+c.devEcon*3;
+  // faction territory shading — only for discovered cities
+  G.cities.forEach(c=>{ if(c.owner==="neu"||!isSeen(c.id))return; const p=px(c),col=facColor(c.owner),rad=80+c.devEcon*3;
     const gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,rad);
-    gr.addColorStop(0,hexA(col,THEME_MODE==="light"?0.20:0.30));gr.addColorStop(1,hexA(col,0));
+    gr.addColorStop(0,hexA(col,THEME_MODE==="light"?0.22:0.34));gr.addColorStop(1,hexA(col,0));
     ctx.fillStyle=gr;ctx.beginPath();ctx.arc(p.x,p.y,rad,0,7);ctx.fill(); });
+  ctx.restore();
   // Yangtze — layered for depth
   ctx.lineCap="round";
   ctx.strokeStyle=T.river;ctx.lineWidth=15;
@@ -625,21 +664,30 @@ function draw(){
   // vignette (under cities so labels stay crisp)
   const vg=ctx.createRadialGradient(w/2,h*0.45,Math.min(w,h)*0.32,w/2,h*0.5,Math.max(w,h)*0.72);
   vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,T.vignette);ctx.fillStyle=vg;ctx.fillRect(0,0,w,h);
-  // cities — glossy tokens with shadow
+  // cities — glossy tokens with shadow; fog of war applies
   G.cities.forEach(c=>{
-    const p=px(c),col=facColor(c.owner),r=10+c.devEcon*1.0;
+    const p=px(c),r=10+c.devEcon*1.0,vis=G._vis.has(c.id),seen=isSeen(c.id);
+    if(!seen){ // undiscovered
+      ctx.fillStyle=T.fog;ctx.strokeStyle=T.fogInk;ctx.lineWidth=1.5;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.arc(p.x,p.y,r*0.8,0,7);ctx.fill();ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=T.fogInk;ctx.font="bold 12px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("?",p.x,p.y);
+      ctx.textBaseline="alphabetic";return;
+    }
+    const col=facColor(c.owner);
+    ctx.globalAlpha=vis?1:0.62;
     if(G.sel===c.id){ctx.save();ctx.shadowColor="rgba(216,69,47,.7)";ctx.shadowBlur=16;ctx.fillStyle="rgba(216,69,47,.28)";ctx.beginPath();ctx.arc(p.x,p.y,r+8,0,7);ctx.fill();ctx.restore();}
     ctx.save();ctx.shadowColor="rgba(0,0,0,"+(THEME_MODE==="light"?.28:.55)+")";ctx.shadowBlur=9;ctx.shadowOffsetY=2;
     const grd=ctx.createRadialGradient(p.x-r*0.4,p.y-r*0.5,r*0.15,p.x,p.y,r);
     grd.addColorStop(0,lighten(col,0.4));grd.addColorStop(1,col);
     ctx.fillStyle=grd;ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fill();ctx.restore();
     ctx.strokeStyle=T.cityStroke;ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.stroke();
-    ctx.strokeStyle=T.wallRing;ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,r-4,-1.57,-1.57+6.283*(c.wall/100));ctx.stroke();
+    if(vis){ctx.strokeStyle=T.wallRing;ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,r-4,-1.57,-1.57+6.283*(c.wall/100));ctx.stroke();}
     if(c.base){ctx.fillStyle=T.star;ctx.font="bold 12px system-ui,sans-serif";ctx.textAlign="center";ctx.fillText("★",p.x,p.y-r-3);}
     ctx.fillStyle="#fff";ctx.font="bold 10px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
-    ctx.save();ctx.shadowColor="rgba(0,0,0,.5)";ctx.shadowBlur=2;ctx.fillText(fmt(c.troops),p.x,p.y);ctx.restore();
+    ctx.save();ctx.shadowColor="rgba(0,0,0,.5)";ctx.shadowBlur=2;ctx.fillText(vis?fmt(c.troops):"?",p.x,p.y);ctx.restore();
     ctx.fillStyle=T.name;ctx.font="600 12px system-ui,sans-serif";ctx.textBaseline="top";ctx.fillText(c.name,p.x,p.y+r+3);
-    const os=c.officers.length;if(os){ctx.fillStyle=T.flag;ctx.font="9px system-ui,sans-serif";ctx.fillText("⚑".repeat(Math.min(os,5)),p.x,p.y-r-(c.base?16:5));}
+    const os=c.officers.length;if(os&&vis){ctx.fillStyle=T.flag;ctx.font="9px system-ui,sans-serif";ctx.fillText("⚑".repeat(Math.min(os,5)),p.x,p.y-r-(c.base?16:5));}
+    ctx.globalAlpha=1;
   });
   ctx.textBaseline="alphabetic";
 }
@@ -651,7 +699,7 @@ function officerRow(o,mine){
   return `<div class="officer">
   ${avatar(o)}
   <div class="nm">${o.name}${o.trait?` · ${o.trait}`:""}${o.level>1?` · Lv${o.level}`:""}<small>Loyalty <b style="color:${lc}">${Math.round(o.loyalty)}</b> · Age ${o.age||"?"}${o.ambition>=70?' · <span style="color:#c9772f">ambitious</span>':""}</small></div>
-  <div class="st">CMD ${o.cmd} · MGT ${o.mgt}<br>${mine?`<button style="font-size:10px;padding:2px 7px;margin-top:2px" onclick="rewardOfficer('${o.id}')">Reward</button>`:`INT ${o.int} · CHA ${o.cha}`}</div></div>`;}
+  <div class="st">CMD ${o.cmd} · MGT ${o.mgt}<br>${mine?`<button style="font-size:10px;padding:2px 6px;margin:3px 0 0 2px" onclick="rewardOfficer('${o.id}')">Reward</button><button style="font-size:10px;padding:2px 6px;margin:3px 0 0 2px" onclick="moveOfficer('${o.id}')">Move</button>`:`INT ${o.int} · CHA ${o.cha}`}</div></div>`;}
 function renderSide(){
   if(G.mode==="battle"){return renderBattleSide();}
   const head=document.getElementById("sidehead"),body=document.getElementById("sidebody");
@@ -674,15 +722,19 @@ function renderSide(){
       </div>
       <div class="hint" style="margin-top:6px">Neglected officers lose loyalty and may defect or rebel. Select a city and <b>Reward</b> them to keep their allegiance.</div>`; return;}
   const c=G.cityById[G.sel],mine=c.owner===ME();
-  head.textContent=c.name+" — "+FACTIONS[c.owner].short;
+  const vis=mine||isVisible(c.id), seen=mine||isSeen(c.id);
+  head.textContent=c.name+" — "+(seen?FACTIONS[c.owner].short:"Uncharted");
   const os=officersAt(c.id).filter(o=>!o._prisoner);
   let h=`<div class="card">
-    <h3>${c.name} <span class="tag" style="background:${facColor(c.owner)}">${FACTIONS[c.owner].short}</span>${c.base?'<span class="tag" style="background:#b8893a">CAPITAL</span>':''}</h3>
-    <div class="row"><span>Garrison</span><b>${fmt(c.troops)}</b></div>
-    <div class="row"><span>Walls</span><b>${c.wall}</b></div>${pct(c.wall,100,"#8a7d63")}
-    <div class="row"><span>Order</span><b>${Math.round(c.order)}%</b></div>${pct(c.order,100,c.order<50?"#9c2b25":"#2f6b54")}
+    <h3>${c.name} ${seen?`<span class="tag" style="background:${facColor(c.owner)}">${FACTIONS[c.owner].short}</span>`:`<span class="tag" style="background:var(--dim)">UNCHARTED</span>`}${c.base&&seen?'<span class="tag" style="background:var(--accent2)">CAPITAL</span>':''}</h3>`;
+  if(!seen){ h+=`<div class="hint">You have no intelligence on this region. Expand toward it, or send agents, to reveal its garrison and officers.</div></div>`; }
+  else if(!vis){ h+=`<div class="row"><span>Garrison</span><b>? (no recent intel)</b></div>
+    <div class="hint" style="margin-top:6px">Last known to be held by ${FACTIONS[c.owner].short}. Move a force adjacent to see its strength.</div></div>`; }
+  else { h+=`<div class="row"><span>Garrison</span><b>${fmt(c.troops)}</b></div>
+    <div class="row"><span>Walls</span><b>${c.wall}</b></div>${pct(c.wall,100,"var(--dim)")}
+    <div class="row"><span>Order</span><b>${Math.round(c.order)}%</b></div>${pct(c.order,100,c.order<50?"#c0392b":"#2f8f5b")}
     <div class="row"><span>Economy lv</span><b>${c.devEcon}</b></div>
-    <div class="row"><span>Food</span><b>${fmt(c.food)}</b></div></div>`;
+    <div class="row"><span>Food</span><b>${fmt(c.food)}</b></div></div>`; }
   if(mine){
     h+=`<div class="card"><h3>Govern</h3><div class="hint">Each action costs 1 AP (you have ${G.ap}).</div>
       <div class="actions">
@@ -693,18 +745,20 @@ function renderSide(){
         <button onclick="act('recruit')">Recruit<br><small>nearby heroes</small></button>
         <button onclick="act('march')">March Army ▸<br><small>then click target</small></button>
       </div></div>`;
-  } else {
+  } else if(seen){
     const reach=citiesOf(ME()).some(mc=>adj(mc.id,c.id));
     const canAlly = c.owner!=="neu" && c.owner!==G.ally;
     h+=`<div class="card"><h3>Foreign City</h3>
       <div class="hint">${reach?"Adjacent to your territory. Select your bordering city and March to attack"+(neighborsOf(c.id).some(n=>G.cityById[n].owner===ME()&&isNaval(n,c.id))?" — this front is fought at sea.":"."):"Not adjacent to your lands."}</div>
       ${canAlly?`<button onclick="proposeAlly('${c.owner}')" style="margin-top:8px;width:100%">Propose Alliance with ${FACTIONS[c.owner].short}</button>`:""}
       ${c.owner===G.ally?`<button onclick="breakAlly()" style="margin-top:8px;width:100%">Break Alliance with ${FACTIONS[c.owner].short}</button>`:""}
-      <button onclick="openIntrigue('${c.id}')" style="margin-top:8px;width:100%">🗡 Intrigue ▸</button>
+      ${reach?`<button onclick="openIntrigue('${c.id}')" style="margin-top:8px;width:100%">🗡 Intrigue ▸</button>`:""}
       </div>`;
   }
-  h+=`<div class="card"><h3>Officers <span class="tag" style="background:#5b4a36">${os.length}</span></h3>
+  if(mine||vis){
+    h+=`<div class="card"><h3>Officers <span class="tag" style="background:var(--line2)">${os.length}</span></h3>
       ${os.length?os.map(o=>officerRow(o,mine)).join(""):'<div class="hint">No officers stationed here.</div>'}</div>`;
+  }
   body.innerHTML=h;
 }
 
@@ -721,7 +775,7 @@ function renderTop(){
   document.getElementById("b-prisoners").textContent="⛓ "+G.prisoners.length;
   document.getElementById("brandsub").textContent=G.scen.name.toUpperCase()+" · "+FACTIONS[ME()].short.toUpperCase();
 }
-function renderAll(){renderTop();renderSide();draw();}
+function renderAll(){if(G)G._vis=computeVis();renderTop();renderSide();draw();}
 function renderLegend(){
   const el=document.getElementById("legend");
   el.innerHTML=G.active.map(f=>`<div class="li"><span class="dot" style="background:${facColor(f)}"></span>${FACTIONS[f].name}${f===ME()?" (you)":f===G.ally?" (ally)":""}</div>`).join("")
@@ -1681,6 +1735,7 @@ document.getElementById("endturn").onclick=endTurn;
 document.getElementById("b-prisoners").onclick=()=>{if(G&&G.mode!=="battle")openPrisoners();};
 document.getElementById("b-diplomacy").onclick=()=>{if(G&&G.mode!=="battle")openDiplomacy();};
 document.getElementById("b-annals").onclick=()=>{if(G&&G.mode!=="battle")openAnnals();};
+document.getElementById("b-roster").onclick=()=>{if(G&&G.mode!=="battle")openRoster();};
 document.getElementById("b-help").onclick=()=>{if(G&&G.mode!=="battle")showTutorial(0);};
 document.getElementById("b-save").onclick=()=>{if(G&&G.mode!=="battle")saveGame();};
 document.getElementById("b-sound").onclick=toggleSound;
@@ -1733,6 +1788,40 @@ function showDigest(entries){
     `<div class="hint">While you deliberated, the other powers moved.</div><div style="max-height:44vh;overflow:auto;margin-top:8px">${rows}</div>`,
     [{t:"Stop showing digests",fn:()=>{G.showDigest=false;closeModal();}},{t:"Continue",cls:"primary",fn:closeModal}]);
 }
+
+// ---------- Move officers / roster search ----------
+function moveOfficer(id){
+  const o=G.obyId[id]; if(!o||o.fac!==ME())return;
+  if(o._movedTurn===G.turn){toast(`${o.name} has already redeployed this turn.`);return;}
+  const dests=citiesOf(ME()).filter(c=>c.id!==o.where);
+  if(!dests.length){toast("You hold no other city to move to.");return;}
+  const list=dests.map(c=>`<button onclick="doMove('${id}','${c.id}')"><b>${c.name}</b>${c.base?" · capital":""}<small>garrison ${fmt(c.troops)} · ${officersAt(c.id).filter(x=>!x._prisoner).length} officers${neighborsOf(o.where).includes(c.id)?" · adjacent":""}</small></button>`).join("");
+  modal(`Move ${o.name}`,`<div class="hint">Reassign ${o.name} from <b>${G.cityById[o.where].name}</b> to another of your cities (once per officer per turn, no action cost).</div><div class="pick">${list}</div>`,[{t:"Cancel",fn:closeModal}]);
+}
+function doMove(id,cid){const o=G.obyId[id],from=G.cityById[o.where],to=G.cityById[cid];
+  if(from)from.officers=from.officers.filter(x=>x!==id); to.officers.push(id); o.where=cid; o._movedTurn=G.turn;
+  log(`${o.name} redeploys to ${to.name}.`); closeModal(); renderAll();}
+function openRoster(){renderRoster("");}
+function renderRoster(q){
+  q=(q||"").toLowerCase(); const vis=G._vis||computeVis();
+  const list=G.officers.filter(o=>{
+    if(o.fac===ME())return true;
+    if(o._prisoner)return G.prisoners.some(p=>p.offId===o.id&&vis.has(p.cityId));
+    return vis.has(o.where);
+  }).filter(o=>!q||o.name.toLowerCase().includes(q))
+    .sort((a,b)=>((b.fac===ME())-(a.fac===ME()))||((b.cmd+b.mgt+b.int)-(a.cmd+a.mgt+a.int)));
+  const rows=list.map(o=>{const mine=o.fac===ME(),city=G.cityById[o.where];
+    return `<div class="prisoner"><div class="av">${portraitSVG(o)}</div>
+      <div class="pn">${o.name}${o.trait?` · ${o.trait}`:""}${o.level>1?` · Lv${o.level}`:""}<small>${FACTIONS[o.fac].short}${o._prisoner?" · prisoner":""} · ${city?city.name:"?"} · CMD ${o.cmd} MGT ${o.mgt} INT ${o.int} · loy ${Math.round(o.loyalty)}</small></div>
+      <div class="pa"><button onclick="rosterGo('${o.id}')">${mine?"Manage":"Locate"}</button>${mine&&!o._prisoner?`<button onclick="closeModal();moveOfficer('${o.id}')">Move</button>`:""}</div></div>`;}).join("")||'<div class="hint">No officers match your search.</div>';
+  modal("Officer Roster",
+    `<input id="rsearch" placeholder="Search officers by name…" value="${q.replace(/"/g,'&quot;')}" oninput="renderRoster(this.value)" style="width:100%;padding:9px 12px;margin-bottom:10px;font-size:14px">
+     <div class="hint" style="margin-bottom:8px">${list.length} officer(s) — all of yours, plus any in territory you can see.</div>
+     <div style="max-height:52vh;overflow:auto">${rows}</div>`,
+    [{t:"Close",cls:"primary",fn:closeModal}]);
+  const inp=document.getElementById("rsearch"); if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
+}
+function rosterGo(id){const o=G.obyId[id]; if(!o)return; if(isSeen(o.where))G.sel=o.where; closeModal(); renderAll();}
 
 // ---------- Custom officer creator ----------
 function openCreator(){
