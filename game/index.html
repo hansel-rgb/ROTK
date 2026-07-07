@@ -449,7 +449,7 @@ function initGame(scenId, playerFac){
     mode:"map", reputation:55, prisoners:[], ally:null,
     momentum:{}, nextgen:NEXTGEN.map(g=>({...g})),
     rulers:{}, heirs:{}, legitimacy:{}, relations:{}, coalition:null,
-    annals:[], showDigest:true, seen:[],
+    annals:[], showDigest:true, seen:[], scouted:{}, scoutMode:false,
   };
   // rulers, heirs, legitimacy, relations
   [...active].filter(f=>f!=="neu").forEach(f=>{
@@ -471,14 +471,26 @@ function citiesOf(f){return G.cities.filter(c=>c.owner===f);}
 function computeVis(){const set=new Set();
   const add=c=>{set.add(c.id);neighborsOf(c.id).forEach(n=>set.add(n));};
   citiesOf(ME()).forEach(add); if(G.ally)citiesOf(G.ally).forEach(add);
-  (G.seen||[]).forEach(id=>{}); // seen tracked separately
+  if(G.scouted)Object.keys(G.scouted).forEach(id=>{if(G.scouted[id]>=G.turn)set.add(id);}); // active scouts
   return set;}
 function isVisible(id){return (G._vis||computeVis()).has(id);}
 function isSeen(id){return isVisible(id)||(G.seen||[]).includes(id);}
-// stylized China landmass outline (normalized 0..1), enclosing all cities
-const CHINA=[[.06,.26],[.12,.14],[.24,.09],[.40,.06],[.52,.10],[.62,.05],[.80,.05],[.83,.15],
-  [.73,.21],[.82,.30],[.75,.40],[.92,.52],[.90,.64],[.80,.73],[.64,.94],[.49,.95],[.36,.90],
-  [.30,.74],[.20,.67],[.10,.58],[.055,.44]];
+// China landmass outline (normalized 0..1), following the real silhouette:
+// broad northwest, dipped northern border, the northeastern (Manchuria) bulge,
+// a Bohai indent + Shandong bump on the east coast, tapering to the south.
+const CHINA=[
+  [.075,.30],[.09,.20],[.15,.14],[.22,.115],
+  [.30,.145],[.38,.115],[.46,.14],
+  [.55,.09],[.64,.055],[.73,.05],[.80,.075],
+  [.84,.13],[.785,.185],
+  [.72,.235],[.765,.29],
+  [.83,.335],[.755,.40],
+  [.845,.475],[.90,.55],[.90,.63],
+  [.83,.71],[.70,.80],
+  [.60,.875],[.52,.915],[.44,.895],[.37,.85],
+  [.29,.78],[.235,.685],
+  [.155,.63],[.10,.52],[.065,.42]
+];
 function drawChina(w,h,land,coast){
   const p=CHINA.map(a=>({x:a[0]*w,y:a[1]*h})),n=p.length;
   ctx.beginPath();
@@ -488,6 +500,21 @@ function drawChina(w,h,land,coast){
   ctx.save();ctx.shadowColor="rgba(0,0,0,.28)";ctx.shadowBlur=22;ctx.shadowOffsetY=6;ctx.fillStyle=land;ctx.fill();ctx.restore();
   ctx.strokeStyle=coast;ctx.lineWidth=1.5;ctx.stroke();
 }
+function chinaPolyPx(w,h){return CHINA.map(a=>({x:a[0]*w,y:a[1]*h}));}
+// clip a polygon to the half-plane of points closer to site s than to site o
+function clipHP(poly,s,o){const dx=o.x-s.x,dy=o.y-s.y,mx=(s.x+o.x)/2,my=(s.y+o.y)/2,f=p=>(p.x-mx)*dx+(p.y-my)*dy,out=[];
+  for(let i=0;i<poly.length;i++){const A=poly[i],B=poly[(i+1)%poly.length],fa=f(A),fb=f(B);
+    if(fa<=0)out.push(A);
+    if((fa<0&&fb>0)||(fa>0&&fb<0)){const t=fa/(fa-fb);out.push({x:A.x+t*(B.x-A.x),y:A.y+t*(B.y-A.y)});}}
+  return out;}
+// Voronoi province cells: clip the China landmass by every site's bisectors
+function voronoiCells(w,h){const base=chinaPolyPx(w,h),sites=G.cities.map(c=>({id:c.id,x:c.x*w,y:c.y*h})),cells={};
+  sites.forEach(s=>{let poly=base;sites.forEach(o=>{if(o.id!==s.id&&poly.length>=3)poly=clipHP(poly,s,o);});cells[s.id]=poly;});
+  return cells;}
+function fillPoly(poly){if(poly.length<3)return;ctx.beginPath();ctx.moveTo(poly[0].x,poly[0].y);for(let i=1;i<poly.length;i++)ctx.lineTo(poly[i].x,poly[i].y);ctx.closePath();}
+function pointInPoly(x,y,poly){let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+  const xi=poly[i].x,yi=poly[i].y,xj=poly[j].x,yj=poly[j].y;
+  if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;}return inside;}
 function officersAt(id){return G.cityById[id].officers.map(o=>G.obyId[o]).filter(Boolean);}
 function bestOfficerStat(city,stat){const os=officersAt(city.id);return os.length?Math.max(...os.map(o=>o[stat])):40;}
 function initials(n){const p=n.split(" ");return (p[0][0]+(p[1]?p[1][0]:"")).toUpperCase();}
@@ -582,12 +609,12 @@ const THEME={
   light:{sea1:"#c3d3e2",sea2:"#d6e2ee",landA:"#eef1ea",landB:"#e2e7dc",coast:"rgba(70,95,120,.45)",
     grid:"rgba(60,80,110,.06)",river:"rgba(70,140,180,.4)",riverCore:"rgba(150,205,230,.6)",
     edge:"rgba(60,80,110,.22)",edgeNav:"rgba(45,140,190,.6)",cityStroke:"#ffffff",name:"#2a3646",star:"#c0871c",flag:"#c0871c",
-    fog:"#c8ccc4",fogInk:"#8a9284",
+    fog:"#c8ccc4",fogInk:"#8a9284",provBorder:"rgba(50,68,92,.28)",frontier:"rgba(28,38,52,.6)",
     terrPlain:"#c6d2c4",terrForest:"#9dbf9f",terrHill:"#d6cba6",terrWater:"#a5cfe0",terrShore:"#d7d1b6",vignette:"rgba(24,32,44,.08)",wallRing:"rgba(255,255,255,.7)"},
   dark:{sea1:"#0a0f16",sea2:"#070a0e",landA:"#18202b",landB:"#121924",coast:"rgba(120,150,180,.4)",
     grid:"rgba(120,140,170,.05)",river:"rgba(64,130,168,.45)",riverCore:"rgba(120,190,225,.4)",
     edge:"rgba(150,168,195,.18)",edgeNav:"rgba(90,170,210,.55)",cityStroke:"#0b0e13",name:"#c6cfdb",star:"#e0a63f",flag:"#e0a63f",
-    fog:"#0d131b",fogInk:"#4a5563",
+    fog:"#0d131b",fogInk:"#4a5563",provBorder:"rgba(150,170,200,.18)",frontier:"rgba(225,235,248,.42)",
     terrPlain:"#212a25",terrForest:"#20362a",terrHill:"#33322a",terrWater:"#16303f",terrShore:"#2f3226",vignette:"rgba(0,0,0,.34)",wallRing:"rgba(255,255,255,.55)"},
 };
 let THEME_MODE="light";
@@ -627,19 +654,26 @@ function draw(){
   drawChina(w,h,lg,T.coast);
   // clip subsequent map detail to the land
   ctx.save();
-  ctx.beginPath();
   {const p=CHINA.map(a=>({x:a[0]*w,y:a[1]*h})),n=p.length,m0={x:(p[n-1].x+p[0].x)/2,y:(p[n-1].y+p[0].y)/2};
-   ctx.moveTo(m0.x,m0.y);for(let i=0;i<n;i++){const cur=p[i],nx=p[(i+1)%n],mid={x:(cur.x+nx.x)/2,y:(cur.y+nx.y)/2};ctx.quadraticCurveTo(cur.x,cur.y,mid.x,mid.y);}ctx.closePath();}
+   ctx.beginPath();ctx.moveTo(m0.x,m0.y);for(let i=0;i<n;i++){const cur=p[i],nx=p[(i+1)%n],mid={x:(cur.x+nx.x)/2,y:(cur.y+nx.y)/2};ctx.quadraticCurveTo(cur.x,cur.y,mid.x,mid.y);}ctx.closePath();}
   ctx.clip();
   // subtle grid texture (on land)
   ctx.strokeStyle=T.grid;ctx.lineWidth=1;
   for(let gx=0;gx<w;gx+=46){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,h);ctx.stroke();}
   for(let gy=0;gy<h;gy+=46){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke();}
-  // faction territory shading — only for discovered cities
-  G.cities.forEach(c=>{ if(c.owner==="neu"||!isSeen(c.id))return; const p=px(c),col=facColor(c.owner),rad=80+c.devEcon*3;
-    const gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,rad);
-    gr.addColorStop(0,hexA(col,THEME_MODE==="light"?0.22:0.34));gr.addColorStop(1,hexA(col,0));
-    ctx.fillStyle=gr;ctx.beginPath();ctx.arc(p.x,p.y,rad,0,7);ctx.fill(); });
+  // ---- province shapes (Voronoi cells) filled by owner ----
+  const cells=voronoiCells(w,h); G._cells=cells;
+  G.cities.forEach(c=>{const cell=cells[c.id];if(!cell||cell.length<3)return;
+    const seen=isSeen(c.id),vis=G._vis.has(c.id);
+    if(!seen){ fillPoly(cell);ctx.fillStyle=T.fog;ctx.globalAlpha=THEME_MODE==="light"?0.72:0.82;ctx.fill();ctx.globalAlpha=1;return; }
+    fillPoly(cell);ctx.fillStyle=facColor(c.owner);ctx.globalAlpha=vis?(THEME_MODE==="light"?0.42:0.5):(THEME_MODE==="light"?0.24:0.3);ctx.fill();ctx.globalAlpha=1;});
+  // province borders (thin) then frontier borders (bold, between different seen owners)
+  ctx.lineJoin="round";
+  G.cities.forEach(c=>{const cell=cells[c.id];if(!cell||cell.length<3)return;
+    fillPoly(cell);ctx.strokeStyle=T.provBorder;ctx.lineWidth=1;ctx.stroke();});
+  G.cities.forEach(c=>{const cell=cells[c.id];if(!cell||cell.length<3||!isSeen(c.id))return;
+    const frontier=neighborsOf(c.id).some(n=>{const o=G.cityById[n];return isSeen(n)&&o.owner!==c.owner;});
+    if(frontier){fillPoly(cell);ctx.strokeStyle=T.frontier;ctx.lineWidth=2.4;ctx.stroke();}});
   ctx.restore();
   // Yangtze — layered for depth
   ctx.lineCap="round";
@@ -661,6 +695,7 @@ function draw(){
     const fpt=px(G.cityById[G.marchFrom]);ctx.fillStyle="#d8452f";ctx.font="600 11px system-ui,sans-serif";ctx.textAlign="center";
     ctx.fillText("marching from here →",fpt.x,fpt.y-28);
   }
+  if(G.scoutMode){ctx.fillStyle="#2b7fb0";ctx.font="600 12px system-ui,sans-serif";ctx.textAlign="center";ctx.fillText("🔍 click any region to scout it",w/2,24);}
   // vignette (under cities so labels stay crisp)
   const vg=ctx.createRadialGradient(w/2,h*0.45,Math.min(w,h)*0.32,w/2,h*0.5,Math.max(w,h)*0.72);
   vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,T.vignette);ctx.fillStyle=vg;ctx.fillRect(0,0,w,h);
@@ -744,6 +779,7 @@ function renderSide(){
         <button onclick="act('order')">Pacify<br><small>+order</small></button>
         <button onclick="act('recruit')">Recruit<br><small>nearby heroes</small></button>
         <button onclick="act('march')">March Army ▸<br><small>then click target</small></button>
+        <button onclick="act('scout')">🔍 Scout ▸<br><small>reveal a region · 200g</small></button>
       </div></div>`;
   } else if(seen){
     const reach=citiesOf(ME()).some(mc=>adj(mc.id,c.id));
@@ -796,6 +832,9 @@ function act(kind){
   else if(kind==="recruit"){tryRecruit(c);}
   else if(kind==="march"){if(c.troops<2000){toast("Garrison too small to march (need 2,000+).");return;}
     G.marchFrom=c.id;toast("Select an adjacent enemy or neutral city to attack.");draw();return;}
+  else if(kind==="scout"){if(G.ap<=0){toast("No actions left this turn.");return;}
+    if((G.treasury[ME()]||0)<200){toast("Scouting costs 200 gold.");return;}
+    G.scoutMode=true;G.marchFrom=null;toast("Select any region on the map to scout it.");draw();return;}
   renderAll();checkVictory();
 }
 function tryRecruit(c){
@@ -876,6 +915,18 @@ function strength(city,attackingTroops,attackerSide){
   const cmd=os.length?Math.max(...os.map(o=>o.cmd)):40;
   const mgt=os.length?Math.max(...os.map(o=>o.mgt)):40;
   return {power:(attackingTroops||city.troops)*(0.7+cmd/140+mgt/300), cmd, mgt, os};
+}
+function doScout(id){
+  G.scoutMode=false;
+  const c=G.cityById[id]; if(!c){draw();return;}
+  if(c.owner===ME()){toast("No need to scout your own lands.");draw();return;}
+  if(G.ap<=0){toast("No actions left this turn.");draw();return;}
+  if((G.treasury[ME()]||0)<200){toast("Not enough gold to scout.");draw();return;}
+  G.ap--; G.treasury[ME()]-=200;
+  if(Math.random()<0.9){ if(!G.seen.includes(id))G.seen.push(id); G.scouted[id]=G.turn+2;
+    log(`Scouts bring back intelligence on ${c.name} — held by ${FACTIONS[c.owner].short}, garrison ${fmt(c.troops)}.`,"good"); G.sel=id; }
+  else log(`Your scouts were turned back before they could map the region.`,"war");
+  renderAll();
 }
 function battlePreview(army,atkOs,to){
   const A=strength(null,army,atkOs).power;
@@ -1722,8 +1773,11 @@ cv.addEventListener("click",e=>{
   if(G.mode==="battle"){return battleClick(e);}
   const rect=cv.getBoundingClientRect();const mx=e.clientX-rect.left,my=e.clientY-rect.top;
   let hit=null,best=1e9;
-  G.cities.forEach(c=>{const p=px(c),d=Math.hypot(p.x-mx,p.y-my),r=10+c.devEcon*1.0+6;if(d<r&&d<best){best=d;hit=c;}});
+  // pick the province whose cell contains the point, else nearest city node
+  if(G._cells){G.cities.forEach(c=>{const cell=G._cells[c.id];if(cell&&cell.length>=3&&pointInPoly(mx,my,cell))hit=c;});}
+  if(!hit)G.cities.forEach(c=>{const p=px(c),d=Math.hypot(p.x-mx,p.y-my),r=14+c.devEcon;if(d<r&&d<best){best=d;hit=c;}});
   if(!hit)return;
+  if(G.scoutMode){doScout(hit.id);return;}
   if(G.marchFrom){
     if(adj(G.marchFrom,hit.id)&&hit.owner!==ME()&&hit.owner!==G.ally){marchAttack(G.marchFrom,hit.id);return;}
     else if(hit.id===G.marchFrom){G.marchFrom=null;toast("March cancelled.");draw();return;}
